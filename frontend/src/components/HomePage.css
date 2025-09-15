@@ -1,0 +1,69 @@
+﻿.home-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.recent-activity {
+  margin-top: auto;
+  background: rgba(248, 249, 250, 0.8);
+  border-radius: 16px;
+  padding: 1rem;
+}
+
+.recent-activity h2 {
+  font-size: 1.2rem;
+  color: #333;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.activity-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.activity-card {
+  background: white;
+  border-radius: 12px;
+  padding: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.activity-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+}
+
+.activity-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.activity-content {
+  flex-grow: 1;
+}
+
+.activity-content h4 {
+  font-size: 0.9rem;
+  color: #333;
+  margin-bottom: 0.2rem;
+  font-weight: 600;
+}
+
+.activity-content p {
+  font-size: 0.8rem;
+  color: #666;
+  margin: 0;
+}

@@ -1,0 +1,7 @@
+image
+*.png
+__pycache__
+*.wav
+node_modules/
+venv/
+

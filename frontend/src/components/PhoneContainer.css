@@ -1,0 +1,127 @@
+.phone-screen-container {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f0f0f0;
+  position: relative;
+}
+
+.phone-container {
+  width: 375px;
+  height: 812px;
+  background-color: #ffffff;
+  border-radius: 25px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 10px 50px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+.status-bar {
+  height: 44px;
+  background-color: #f8f8f8;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.status-icons {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.signal, .wifi, .battery {
+  font-size: 12px;
+}
+
+.phone-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.phone-header {
+  padding: 1rem;
+  text-align: center;
+  border-bottom: 1px solid #e0e0e0;
+  background: #fff;
+}
+
+.phone-header h1 {
+  font-size: 1.4rem;
+  color: #333;
+  margin: 0;
+  font-weight: 600;
+}
+
+.phone-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 1rem;
+  background: #f8f9fa;
+}
+
+/* 滾動條樣式 */
+.phone-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.phone-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.phone-body::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.phone-body::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* 響應式設計 - 在小屏幕上全屏顯示 */
+@media (max-width: 400px) {
+  .phone-screen-container {
+    padding: 0;
+  }
+  
+  .phone-container {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
+
+/* 橫屏適配 */
+@media (max-height: 600px) and (orientation: landscape) {
+  .phone-container {
+    height: 100vh;
+    width: auto;
+    max-width: 90vw;
+  }
+  
+  .phone-body {
+    padding: 0.5rem;
+  }
+}
+
+/* 平板適配 */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .phone-container {
+    width: 400px;
+    height: 700px;
+  }
+}

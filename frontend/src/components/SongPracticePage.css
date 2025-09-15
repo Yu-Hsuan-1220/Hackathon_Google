@@ -1,0 +1,535 @@
+.song-practice-page {
+  min-height: 100vh;
+  padding: 0.5rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f8f9fa;
+}
+
+.practice-content {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding: 0.8rem 0;
+}
+
+.page-header h1 {
+  color: #333;
+  font-size: 1.6rem;
+  margin: 0;
+}
+
+.back-button, .home-button {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: background-color 0.3s ease;
+}
+
+.back-button:hover, .home-button:hover {
+  background: #5a6268;
+}
+
+.home-button {
+  background: #FF6B6B;
+}
+
+.home-button:hover {
+  background: #ff5252;
+}
+
+.practice-intro {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.practice-intro h2 {
+  color: #333;
+  margin-bottom: 1rem;
+  font-size: 1.8rem;
+}
+
+.practice-intro p {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.songs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.practice-song-card {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.practice-song-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.song-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.song-header h3 {
+  color: #333;
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.difficulty {
+  padding: 0.3rem 0.8rem;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: white;
+}
+
+.difficulty.beginner {
+  background: #28a745;
+}
+
+.difficulty.intermediate {
+  background: #ffc107;
+  color: #333;
+}
+
+.chord-preview h4 {
+  color: #333;
+  margin-bottom: 0.8rem;
+  font-size: 1rem;
+}
+
+.chord-list-preview {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.chord-preview-item {
+  background: #e9ecef;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.9rem;
+}
+
+.song-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat-label {
+  display: block;
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 0.3rem;
+}
+
+.stat-value {
+  display: block;
+  color: #333;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.start-practice-btn {
+  width: 100%;
+  background: #4ECDC4;
+  color: white;
+  border: none;
+  padding: 1rem;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.start-practice-btn:hover {
+  background: #45b7aa;
+  transform: translateY(-2px);
+}
+
+/* 練習界面樣式 */
+.practice-interface {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.song-info {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.song-info h2 {
+  color: #333;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 12px;
+  background: #e9ecef;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4ECDC4, #45B7D1);
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  color: #666;
+  font-weight: 600;
+}
+
+.current-chord-display {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.current-chord-display h3 {
+  color: #333;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+
+.chord-container {
+  display: flex;
+  justify-content: center;
+}
+
+.chord-diagram {
+  text-align: center;
+}
+
+.chord-name {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #4ECDC4;
+  margin-bottom: 1rem;
+}
+
+.fretboard {
+  display: flex;
+  flex-direction: column;
+  border: 2px solid #333;
+  border-radius: 8px;
+  padding: 1rem;
+  background: #f8f9fa;
+}
+
+.fret {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.fret:last-child {
+  border-bottom: none;
+}
+
+.string {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.finger {
+  width: 20px;
+  height: 20px;
+  background: #FF6B6B;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.8rem;
+}
+
+.open {
+  color: #28a745;
+  font-weight: bold;
+}
+
+.chord-sequence {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.chord-sequence h3 {
+  color: #333;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-size: 1.5rem;
+}
+
+.chord-list {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.chord-item {
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
+  border: 2px solid #e9ecef;
+  background: white;
+  color: #666;
+}
+
+.chord-item.active {
+  background: #4ECDC4;
+  color: white;
+  border-color: #4ECDC4;
+  transform: scale(1.1);
+  box-shadow: 0 4px 15px rgba(78, 205, 196, 0.4);
+}
+
+.chord-item.completed {
+  background: #28a745;
+  color: white;
+  border-color: #28a745;
+}
+
+.practice-controls {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.tempo-control {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.tempo-control label {
+  display: block;
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.tempo-control input[type="range"] {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: #ddd;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.tempo-control input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #4ECDC4;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.control-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.play-button, .stop-button {
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.play-button {
+  background: #4ECDC4;
+  color: white;
+}
+
+.play-button:hover {
+  background: #45b7aa;
+}
+
+.play-button.playing {
+  background: #ffc107;
+  color: #333;
+}
+
+.stop-button {
+  background: #FF6B6B;
+  color: white;
+}
+
+.stop-button:hover {
+  background: #ff5252;
+}
+
+.practice-tips {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.practice-tips h3 {
+  color: #333;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-size: 1.5rem;
+}
+
+.tips-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tip {
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  color: #495057;
+  font-weight: 500;
+}
+
+.practice-stats {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.practice-stats h3 {
+  color: #333;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-size: 1.5rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.stat-card {
+  text-align: center;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  background: #e9ecef;
+  transform: translateY(-2px);
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #4ECDC4;
+  margin-bottom: 0.5rem;
+}
+
+.stat-card .stat-label {
+  color: #666;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .song-practice-page {
+    padding: 1rem;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .songs-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .chord-list {
+    gap: 0.5rem;
+  }
+  
+  .chord-item {
+    padding: 0.8rem 1rem;
+    font-size: 1rem;
+  }
+  
+  .control-buttons {
+    flex-direction: column;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
