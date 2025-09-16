@@ -18,6 +18,7 @@ const App = () => {
   const [currentScreen, setCurrentScreen] = useState('home');
   const [poseResult, setPoseResult] = useState(null);
   const [isFirstTime, setIsFirstTime] = useState(true);
+  const [navigationSource, setNavigationSource] = useState(null);
 
   useEffect(() => {
     // 檢查是否為首次使用者
@@ -36,7 +37,6 @@ const App = () => {
   };
 
   const handlePoseResult = (result) => {
-    console.log('收到姿勢檢測結果:', result);
     setPoseResult(result);
     setCurrentScreen('result');
   };
@@ -44,6 +44,12 @@ const App = () => {
   const handleRetryPose = () => {
     setPoseResult(null);
     setCurrentScreen('camera');
+  };
+
+  // 創建智能導航函數，可以跟蹤來源
+  const handleNavigate = (screen, source = null) => {
+    setNavigationSource(source || currentScreen);
+    setCurrentScreen(screen);
   };
 
   const renderScreen = () => {
@@ -65,7 +71,7 @@ const App = () => {
         return (
           <GuitarLessonPage 
             onBack={() => setCurrentScreen('home')}
-            onNavigate={setCurrentScreen}
+            onNavigate={(screen) => handleNavigate(screen, 'guitar-lesson')}
           />
         );
 
@@ -116,6 +122,8 @@ const App = () => {
         return (
           <SongPracticePage 
             onBack={() => setCurrentScreen('home')}
+            onNavigate={setCurrentScreen}
+            songId={navigationSource === 'guitar-lesson' ? 'twinkle-star' : null}
           />
         );
       

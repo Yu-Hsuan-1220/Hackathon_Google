@@ -10,7 +10,6 @@ function GuitarLessonPage({ onNavigate }) {
       description: '學習正確的吉他持琴姿勢，包括坐姿和站姿',
       difficulty: '初級',
       duration: '10 分鐘',
-      thumbnail: '🎸',
       route: 'guitar-grip'
     },
     {
@@ -19,7 +18,6 @@ function GuitarLessonPage({ onNavigate }) {
       description: '學習 C、G、D 等基本和弦的按法',
       difficulty: '初級',
       duration: '15 分鐘',
-      thumbnail: '🎵',
       route: 'chord-practice'
     },
     {
@@ -28,17 +26,15 @@ function GuitarLessonPage({ onNavigate }) {
       description: '掌握正確的撥弦手法和節拍',
       difficulty: '中級',
       duration: '20 分鐘',
-      thumbnail: '👋',
       route: 'picking-technique'
     },
     {
       id: 4,
-      title: '歌曲練習',
-      description: '用學過的和弦演奏簡單歌曲',
+      title: '小星星練習',
+      description: '學習彈奏經典兒歌《小星星》',
       difficulty: '中級',
       duration: '25 分鐘',
-      thumbnail: '🎤',
-      route: 'song-tutorial'
+      route: 'song-practice'
     }
   ];
 
@@ -47,8 +43,6 @@ function GuitarLessonPage({ onNavigate }) {
   };
 
   const handleVoiceCommand = (command) => {
-    console.log('GuitarLessonPage 收到語音指令:', command);
-    
     if (command === 'navigate-back' || command === 'navigate-home') {
       onNavigate('home');
     } else if (command.includes('第一課') || command.includes('第1課') || command.includes('握法')) {
@@ -57,8 +51,8 @@ function GuitarLessonPage({ onNavigate }) {
       onNavigate('chord-practice');
     } else if (command.includes('第三課') || command.includes('第3課') || command.includes('撥弦')) {
       onNavigate('picking-technique');
-    } else if (command.includes('第四課') || command.includes('第4課') || command.includes('歌曲')) {
-      onNavigate('song-tutorial');
+    } else if (command.includes('第四課') || command.includes('第4課') || command.includes('小星星') || command.includes('歌曲')) {
+      onNavigate('song-practice');
     }
   };
 
@@ -79,26 +73,35 @@ function GuitarLessonPage({ onNavigate }) {
           </button>
         </div>
 
-        <div className="lessons-grid-four-columns">{lessons.map((lesson) => (
-            <div
-              key={lesson.id}
-              className="lesson-card-compact"
-              onClick={() => handleLessonSelect(lesson)}
-            >
-              <div className="lesson-thumbnail-large">{lesson.thumbnail}</div>
-              <div className="lesson-content">
-                <h3 className="lesson-title-compact">{lesson.title}</h3>
-                <div className="lesson-meta-compact">
-                  <span className="difficulty-compact">{lesson.difficulty}</span>
-                  <span className="duration-compact">{lesson.duration}</span>
+        <div className="lessons-grid-four-columns">{lessons.map((lesson) => {
+            // 為每個課程添加對應的emoji
+            const lessonEmojis = {
+              1: '🎸',
+              2: '🎵', 
+              3: '🎼',
+              4: '⭐'
+            };
+            
+            return (
+              <div
+                key={lesson.id}
+                className={`lesson-card-compact lesson-${lesson.id}`}
+                onClick={() => handleLessonSelect(lesson)}
+              >
+                <div className="lesson-icon">
+                  {lessonEmojis[lesson.id]}
                 </div>
-                <p className="lesson-description-compact">{lesson.description}</p>
-                <button className="start-lesson-btn-compact">
-                  開始學習
-                </button>
+                <div className="lesson-content">
+                  <h3 className="lesson-title-compact">{lesson.title}</h3>
+                  <div className="lesson-meta-compact">
+                    <span className="difficulty-compact">{lesson.difficulty}</span>
+                    <span className="duration-compact">{lesson.duration}</span>
+                  </div>
+                  <p className="lesson-description-compact">{lesson.description}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </PhoneContainer>

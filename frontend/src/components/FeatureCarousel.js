@@ -10,6 +10,7 @@ const FeatureCarousel = ({ features, onFeatureSelect }) => {
 
   // 自動輪播功能（可選）
   useEffect(() => {
+    // eslint-disable-next-line no-unused-vars
     const nextSlide = () => {
       if (isTransitioning) return;
       setIsTransitioning(true);

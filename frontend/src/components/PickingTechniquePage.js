@@ -54,8 +54,6 @@ function PickingTechniquePage({ onNavigate }) {
   };
 
   const handleVoiceCommand = (command) => {
-    console.log('PickingTechniquePage 收到語音指令:', command);
-    
     if (command === 'navigate-back') {
       onNavigate('guitar-lesson');
     } else if (command === 'navigate-home') {

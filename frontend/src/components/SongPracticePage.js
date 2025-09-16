@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import PhoneContainer from './PhoneContainer';
 import './SongPracticePage.css';
 
-function SongPracticePage({ onNavigate }) {
+function SongPracticePage({ onNavigate, songId }) {
   const [selectedSong, setSelectedSong] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentChord, setCurrentChord] = useState(0);
@@ -118,6 +118,16 @@ function SongPracticePage({ onNavigate }) {
       fingers: ['1', '', '', '2', '3', '4']
     }
   };
+
+  // 處理從吉他教學頁面傳來的歌曲ID
+  useEffect(() => {
+    if (songId === 'twinkle-star' && practiceSongs.length > 0) {
+      const song = practiceSongs.find(s => s.title === '小星星');
+      if (song) {
+        setSelectedSong(song);
+      }
+    }
+  }, [songId]);
 
   useEffect(() => {
     if (isPlaying && selectedSong) {

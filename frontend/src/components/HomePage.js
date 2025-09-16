@@ -33,12 +33,17 @@ function HomePage({ onNavigate }) {
       description: '學習經典歌曲的演奏方法',
       icon: '🎵',
       color: '#45B7D1'
+    },
+    {
+      id: 'song-practice',
+      title: '歌曲練習',
+      description: '跟著節拍練習彈奏歌曲',
+      icon: '🎶',
+      color: '#E74C3C'
     }
   ];
 
   const handleVoiceCommand = (command) => {
-    console.log('HomePage 收到語音指令:', command);
-    
     // 處理導航指令
     if (command.includes('調音器') || command.includes('調音')) {
       onNavigate('tuner');

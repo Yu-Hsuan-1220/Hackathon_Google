@@ -21,12 +21,12 @@
 }
 
 /* 隱藏任何可能的進度指示器 */
-.progress-indicator,
-.step,
-.step-indicator,
-[class*="step"],
-[class*="progress"] {
-  display: none !important;
+.first-time-page .progress-indicator,
+.first-time-page .step,
+.first-time-page .step-indicator,
+.first-time-page [class*="step"],
+.first-time-page [class*="progress"] {
+  display: none;
 }
 
 

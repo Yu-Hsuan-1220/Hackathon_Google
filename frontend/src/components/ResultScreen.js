@@ -122,8 +122,8 @@ const ResultScreen = ({ result, onBack, onRetry }) => {
         <div className="result-main-content">
           <div className="suggestion-card">
             <div className="card-header">
-              <span className="card-icon">💡</span>
-              <h4 className="card-title">改善建議</h4>
+              <span className="result-card-icon">💡</span>
+              <h4 className="result-card-title">改善建議</h4>
             </div>
             <div className="suggestion-content">
               {result.suggestion || '沒有具體建議'}

@@ -136,7 +136,7 @@
 .card-title {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #333;
+  color: #a49e9e;
   margin-bottom: 0.6rem;
   line-height: 1.2;
   height: 1.5rem;
@@ -172,64 +172,6 @@
 }
 
 /* 點擊區域 */
-.click-area {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 15;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  opacity: 0;
-}
-
-.click-area:hover {
-  opacity: 1;
-  background: rgba(0, 0, 0, 0.05);
-}
-
-.click-area-left {
-  left: 0;
-  justify-content: flex-start;
-  padding-left: 20px;
-}
-
-.click-area-right {
-  right: 0;
-  justify-content: flex-end;
-  padding-right: 20px;
-}
-
-.click-hint {
-  width: 40px;
-  height: 40px;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: #333;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-}
-
-.click-area:hover .click-hint {
-  background: rgba(255, 255, 255, 1);
-  transform: scale(1.1);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-}
-
-/* 隱藏舊的導航按鈕 */
-.carousel-btn {
-  display: none;
-}
-
 /* 指示器 */
 .carousel-indicators {
   display: flex;
@@ -347,17 +289,21 @@
   
   .card-icon {
     font-size: 2.8rem;
-    height: 60px;
+    height: 80px;
   }
   
   .card-title {
     font-size: 1.1rem;
     height: 1.5rem;
+    color: #1a1a1a;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   }
   
   .card-description {
     font-size: 0.78rem;
     min-height: 60px;
+    color: #2c3e50;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
   }
   
   .feature-preview {
@@ -397,10 +343,12 @@
   
   .card-title {
     color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   }
   
   .card-description {
     color: #cbd5e0;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
   }
   
   .current-feature-info {

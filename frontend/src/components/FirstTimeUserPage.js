@@ -69,7 +69,7 @@ function FirstTimeUserPage({ onComplete }) {
 
   return (
     <PhoneContainer>
-      <div className="name-input-container">
+      <div className="first-time-page name-input-container">
         <div className="welcome-section">
           <h1>歡迎使用吉他學習應用</h1>
           <p className="welcome-text">

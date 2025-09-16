@@ -53,41 +53,6 @@
   background: #0056b3;
 }
 
-.lesson-info {
-  background: white;
-  padding: 1rem;
-  border-radius: 16px;
-  margin-bottom: 1rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.lesson-meta {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.8rem;
-}
-
-.difficulty, .duration {
-  background: #e9ecef;
-  color: #495057;
-  padding: 0.2rem 0.6rem;
-  border-radius: 12px;
-  font-size: 0.7rem;
-  font-weight: 600;
-}
-
-.difficulty {
-  background: #fff3cd;
-  color: #856404;
-}
-
-.lesson-desc {
-  color: #666;
-  line-height: 1.5;
-  margin: 0;
-  font-size: 0.9rem;
-}
-
 .lesson-content {
   background: white;
   border-radius: 16px;

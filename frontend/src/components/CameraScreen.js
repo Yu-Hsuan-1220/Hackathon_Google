@@ -8,7 +8,6 @@ const CameraScreen = ({ onBack, onResult }) => {
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [statusMessage, setStatusMessage] = useState('正在啟動相機...');
   const [countdown, setCountdown] = useState(null);
-  const [autoCapture, setAutoCapture] = useState(false);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
@@ -142,8 +141,6 @@ const CameraScreen = ({ onBack, onResult }) => {
   }, []);
 
   const handleVoiceCommand = (command) => {
-    console.log('CameraScreen 收到語音指令:', command);
-    
     if (command.includes('返回') || command.includes('回去')) {
       if (onBack) onBack();
     }
