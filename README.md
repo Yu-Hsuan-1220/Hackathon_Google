@@ -18,3 +18,15 @@ pip install -r requirements.txt
 export GOOGLE_API_KEY="YOUR_API_KEY"
 python -m app.main
 ```
+
+## Frontend
+
+```
+cd /home/apollo/Hackathon/Hackathon_Google/frontend && npm install
+```
+
+will see 9 vulnerabilities (3 moderate, 6 high)
+
+```
+npm start
+```
