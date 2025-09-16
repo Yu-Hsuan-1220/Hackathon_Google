@@ -1,0 +1,245 @@
+.tuner-container {
+  padding: 0.8rem;
+  height: 100%;
+  background: linear-gradient(135deg, #2E3B4E 0%, #4A5D73 100%);
+  color: white;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tuner-header {
+  text-align: center;
+  margin-bottom: 15px;
+  flex-shrink: 0;
+}
+
+.tuner-header h1 {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.tuner-header p {
+  opacity: 0.8;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.progress-info {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 8px 16px;
+  border-radius: 20px;
+  display: inline-block;
+  font-size: 14px;
+}
+
+.string-selector {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 15px;
+  flex-shrink: 0;
+}
+
+.string-button {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 12px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.string-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.string-button.active {
+  background: rgba(33, 150, 243, 0.3);
+  border-color: #2196F3;
+}
+
+.string-button.tuned {
+  background: rgba(76, 175, 80, 0.3);
+  border-color: #4CAF50;
+}
+
+.string-number {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.string-note {
+  font-size: 16px;
+  opacity: 0.8;
+}
+
+.check-mark {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: #4CAF50;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.current-tuning {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 25px;
+  margin-bottom: 25px;
+  backdrop-filter: blur(10px);
+}
+
+.current-string-info {
+  text-align: center;
+  margin-bottom: 15px;
+  flex-shrink: 0;
+}
+
+.current-string-info h2 {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.note-name {
+  font-size: 32px;
+  font-weight: bold;
+  margin: 10px 0;
+  color: #64B5F6;
+}
+
+.target-freq {
+  opacity: 0.7;
+  font-size: 12px;
+}
+
+.frequency-display {
+  text-align: center;
+  margin-bottom: 15px;
+  flex-shrink: 0;
+}
+
+.detected-freq {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  font-family: 'Courier New', monospace;
+}
+
+.tuning-status {
+  font-size: 14px;
+  font-weight: bold;
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.tuning-controls {
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.start-tuning-btn, .stop-tuning-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.start-tuning-btn {
+  background: #4CAF50;
+  color: white;
+}
+
+.start-tuning-btn:hover {
+  background: #45a049;
+  transform: translateY(-2px);
+}
+
+.stop-tuning-btn {
+  background: #f44336;
+  color: white;
+}
+
+.stop-tuning-btn:hover {
+  background: #da190b;
+  transform: translateY(-2px);
+}
+
+.tuning-progress {
+  margin-bottom: 25px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4CAF50, #8BC34A);
+  transition: width 0.5s ease;
+}
+
+.tuner-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.skip-btn, .complete-btn {
+  padding: 12px 24px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 25px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.skip-btn:hover, .complete-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.complete-btn {
+  background: #4CAF50;
+  border-color: #4CAF50;
+}
+
+.complete-btn:hover {
+  background: #45a049;
+}
+
+/* 動畫效果 */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.string-button.active {
+  animation: pulse 2s infinite;
+}

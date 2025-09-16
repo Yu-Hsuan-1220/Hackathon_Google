@@ -1,0 +1,227 @@
+.name-input-container {
+  padding: 15px;
+  height: 100%;
+  background: white;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* 隱藏滾動條 */
+.name-input-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* 隱藏任何可能的進度指示器 */
+.progress-indicator,
+.step,
+.step-indicator,
+[class*="step"],
+[class*="progress"] {
+  display: none !important;
+}
+
+
+
+.welcome-section {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  flex-shrink: 0;
+}
+
+.welcome-section h1 {
+  font-size: 24px;
+  margin-bottom: 15px;
+  font-weight: bold;
+  color: #333;
+}
+
+.welcome-text {
+  font-size: 14px;
+  line-height: 1.4;
+  opacity: 0.8;
+  margin-bottom: 0;
+  color: #666;
+}
+
+.voice-input-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  min-height: 0;
+  padding: 40px 0 20px 0;
+}
+
+.recording-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.microphone-button {
+  margin-bottom: 25px;
+}
+
+.mic-btn {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: none;
+  background: #4ECDC4;
+  color: white;
+  font-size: 56px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
+  border: 2px solid #4ECDC4;
+}
+
+.mic-btn:hover {
+  background: #45b7aa;
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(78, 205, 196, 0.4);
+}
+
+.mic-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.microphone-button.listening .mic-btn {
+  background: #FF6B6B;
+  animation: pulse 1.5s infinite;
+  border-color: #FF6B6B;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4);
+  }
+  70% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 20px rgba(255, 107, 107, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0);
+  }
+}
+
+.instruction {
+  font-size: 18px;
+  margin-bottom: 20px;
+  opacity: 0.8;
+  color: #666;
+}
+
+.listening-animation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+}
+
+.wave {
+  width: 4px;
+  height: 20px;
+  background: #4ECDC4;
+  border-radius: 2px;
+  animation: wave 1.2s ease-in-out infinite;
+}
+
+.wave:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.wave:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+@keyframes wave {
+  0%, 40%, 100% {
+    transform: scaleY(0.4);
+  }
+  20% {
+    transform: scaleY(1.0);
+  }
+}
+
+.confirm-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 20px 0;
+}
+
+.confirm-section h2 {
+  font-size: 20px;
+  margin-bottom: 25px;
+  color: #333;
+}
+
+.name-display {
+  background: #f8f9fa;
+  padding: 15px 25px;
+  border-radius: 15px;
+  margin-bottom: 25px;
+  border: 2px solid #4ECDC4;
+  box-shadow: 0 4px 15px rgba(78, 205, 196, 0.2);
+}
+
+.detected-name {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+.confirm-buttons {
+  display: flex;
+  gap: 20px;
+}
+
+.confirm-btn, .retry-btn {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.confirm-btn {
+  background: #4ECDC4;
+  color: white;
+}
+
+.confirm-btn:hover {
+  background: #45b7aa;
+  transform: translateY(-2px);
+}
+
+.retry-btn {
+  background: #f8f9fa;
+  color: #666;
+  border: 2px solid #ddd;
+}
+
+.retry-btn:hover {
+  background: #e9ecef;
+  transform: translateY(-2px);
+  border-color: #4ECDC4;
+}

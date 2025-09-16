@@ -47,7 +47,16 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* 全域隱藏滾動條但保持滾動功能 */
+.phone-content::-webkit-scrollbar {
+  display: none;
 }
 
 .phone-header {
@@ -72,23 +81,14 @@
   background: #f8f9fa;
 }
 
-/* 滾動條樣式 */
+/* 隱藏滾動條 */
 .phone-body::-webkit-scrollbar {
-  width: 6px;
+  display: none;
 }
 
-.phone-body::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
-}
-
-.phone-body::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 3px;
-}
-
-.phone-body::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+.phone-body {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
 
 /* 響應式設計 - 在小屏幕上全屏顯示 */

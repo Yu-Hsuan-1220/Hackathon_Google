@@ -4,10 +4,20 @@
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  padding: 0.5rem;
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
   padding-left: env(safe-area-inset-left, 0px);
   padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* 隱藏滾動條 */
+.lesson-list::-webkit-scrollbar {
+  display: none;
 }
 
 .lesson-nav {
@@ -63,205 +73,492 @@
 
 .lessons-grid {
   display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  flex: 1;
+  padding: 0;
+  margin-bottom: 1rem;
+}
+
+/* 四列布局 - 四排（四行）佈局 */
+.lessons-grid-four-columns {
+  display: grid;
   grid-template-columns: 1fr;
+  grid-template-rows: repeat(4, 1fr);
   gap: 0.8rem;
   flex: 1;
-  padding: 0 0.5rem;
+  padding: 0;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 480px) {
+  .lessons-grid-four-columns {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(4, 1fr);
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .lessons-grid-four-columns {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(4, 1fr);
+    gap: 1rem;
+  }
 }
 
 .lesson-card {
-  background: white;
-  border-radius: 12px;
-  padding: 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+  border-radius: 16px;
+  padding: 1.2rem;
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.08),
+    0 2px 10px rgba(0, 0, 0, 0.04);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.8rem;
+  text-align: center;
   position: relative;
-  min-height: 80px;
+  min-height: 140px;
+  border: 2px solid transparent;
 }
 
 .lesson-card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 
+    0 8px 30px rgba(0, 0, 0, 0.12),
+    0 4px 15px rgba(0, 0, 0, 0.06);
+  border-color: rgba(255, 107, 107, 0.3);
+}
+
+.lesson-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(255, 255, 255, 0.1) 100%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 16px;
+  pointer-events: none;
+}
+
+.lesson-card:hover::before {
+  opacity: 1;
 }
 
 .lesson-thumbnail {
-  font-size: 2rem;
+  font-size: 2.5rem;
   flex-shrink: 0;
+}
+
+/* 緊湊卡片樣式 - 橫式佈局（四排）統一大小 */
+.lesson-card-compact {
+  background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+  border-radius: 12px;
+  padding: 0.8rem;
+  box-shadow: 
+    0 2px 15px rgba(0, 0, 0, 0.08),
+    0 1px 8px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  text-align: left;
+  position: relative;
+  height: 120px;
+  border: 2px solid transparent;
+  gap: 0.8rem;
+}
+
+.lesson-card-compact:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 
+    0 6px 20px rgba(0, 0, 0, 0.12),
+    0 3px 12px rgba(0, 0, 0, 0.06);
+  border-color: rgba(255, 107, 107, 0.3);
+}
+
+.lesson-thumbnail-large {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+  margin-right: 0.8rem;
+  margin-bottom: 0;
+}
+
+.lesson-content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.lesson-title-compact {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 0.3rem 0;
+  line-height: 1.2;
+}
+
+.lesson-meta-compact {
+  display: flex;
+  gap: 0.3rem;
+  margin-bottom: 0.4rem;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.difficulty-compact, .duration-compact {
+  background: #e9ecef;
+  color: #495057;
+  padding: 0.15rem 0.4rem;
+  border-radius: 8px;
+  font-size: 0.6rem;
+  font-weight: 600;
+}
+
+.difficulty-compact {
+  background: #d4edda;
+  color: #155724;
+}
+
+.lesson-description-compact {
+  color: #666;
+  font-size: 0.7rem;
+  line-height: 1.3;
+  margin: 0 0 0.5rem 0;
+  flex-grow: 1;
+}
+
+.start-lesson-btn-compact {
+  background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 15px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  align-self: flex-start;
+  margin-top: auto;
+}
+
+.start-lesson-btn-compact:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+.lesson-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.8rem;
+  width: 100%;
+}
+
+.lesson-thumbnail-icon {
   width: 60px;
   height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f8f9fa;
-  border-radius: 8px;
+  background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+  border-radius: 12px;
+  margin-bottom: 0.8rem;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.1));
+  position: relative;
+  z-index: 2;
 }
 
 .lesson-info {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 2;
 }
 
 .lesson-info h3 {
   color: #333;
   margin: 0 0 0.4rem 0;
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.2;
 }
 
 .lesson-info p {
   color: #666;
-  margin: 0 0 0.75rem 0;
-  line-height: 1.4;
-  font-size: 0.9rem;
+  margin: 0 0 0.6rem 0;
+  line-height: 1.3;
+  font-size: 0.75rem;
+  text-align: center;
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
 }
 
 .lesson-meta {
   display: flex;
-  gap: 1rem;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: auto;
 }
 
 .difficulty, .duration {
-  background: #f8f9fa;
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
-  font-size: 0.8rem;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 0.2rem 0.4rem;
+  border-radius: 8px;
+  font-size: 0.7rem;
   color: #495057;
-  font-weight: 500;
+  font-weight: 600;
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .difficulty {
-  background: #e3f2fd;
+  background: rgba(227, 242, 253, 0.9);
   color: #1976d2;
 }
 
+.duration {
+  background: rgba(255, 235, 238, 0.9);
+  color: #d32f2f;
+}
+
 .lesson-status {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  top: 8px;
+  right: 8px;
+  z-index: 3;
 }
 
 /* 課程詳情頁面樣式 */
 .lesson-detail {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 3rem;
-  margin-top: 2rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  padding: 0.5rem;
+}
+
+/* 隱藏滾動條 */
+.lesson-detail::-webkit-scrollbar {
+  display: none;
 }
 
 .lesson-detail .lesson-info {
-  background: white;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  height: fit-content;
+  background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+  padding: 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin-bottom: 1rem;
+  text-align: center;
 }
 
 .lesson-detail .lesson-info h1 {
   color: #333;
   margin: 1rem 0;
-  font-size: 2rem;
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 
 .lesson-detail .lesson-thumbnail {
-  font-size: 4rem;
+  font-size: 3rem;
   text-align: center;
   margin-bottom: 1rem;
+  background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+  width: 80px;
+  height: 80px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem auto;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.1));
 }
 
 .lesson-content {
-  background: white;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+  padding: 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  flex: 1;
 }
 
 .lesson-content h2 {
   color: #333;
+  margin-bottom: 1.2rem;
+  font-size: 1.3rem;
+  font-weight: 700;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+/* 動作要點說明欄樣式 */
+.key-points-section {
+  margin-bottom: 2rem;
+}
+
+.key-points-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
   margin-bottom: 1.5rem;
-  font-size: 1.5rem;
+}
+
+.key-point-card {
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.05) 0%, rgba(78, 205, 196, 0.05) 100%);
+  border: 1px solid rgba(255, 107, 107, 0.1);
+  border-radius: 12px;
+  padding: 1rem;
+  transition: all 0.3s ease;
+}
+
+.key-point-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border-color: rgba(255, 107, 107, 0.2);
+}
+
+.key-point-header {
+  margin-bottom: 0.5rem;
+}
+
+.key-point-header h3 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+}
+
+.key-point-desc {
+  font-size: 0.8rem;
+  color: #666;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* 響應式設計 - 小螢幕上改為單列 */
+@media (max-width: 320px) {
+  .key-points-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .lesson-desc {
   color: #666;
-  line-height: 1.6;
-  margin-bottom: 1.5rem;
-  margin-left: 42px; /* 與步驟文字對齊 (30px圓圈 + 1rem間距) */
-  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  text-align: center;
 }
 
 .steps-list {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .step-item {
   display: flex;
   align-items: flex-start;
-  margin-bottom: 1rem;
+  margin-bottom: 0.8rem;
   padding: 1rem;
-  background: #f8f9fa;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .step-number {
-  background: #FF6B6B;
+  background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
   color: white;
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  margin-right: 1rem;
+  font-size: 0.8rem;
+  margin-right: 0.8rem;
   flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
 }
 
 .step-text {
   flex: 1;
   color: #333;
-  line-height: 1.5;
+  line-height: 1.4;
+  font-size: 0.9rem;
 }
 
 .lesson-actions {
   display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: auto;
+  padding-top: 1rem;
 }
 
 .practice-button, .video-button {
-  padding: 1rem 2rem;
+  padding: 1rem 1.5rem;
   border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .practice-button {
-  background: #4ECDC4;
+  background: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%);
   color: white;
-  flex: 1;
+  width: 100%;
+  max-width: 280px;
 }
 
 .practice-button:hover {
-  background: #45b7aa;
-  transform: scale(1.02);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(78, 205, 196, 0.4);
+}
+
+.practice-button:active {
+  transform: translateY(0) scale(0.98);
 }
 
 .video-button {
-  background: #45B7D1;
+  background: linear-gradient(135deg, #45B7D1 0%, #2196F3 100%);
   color: white;
-  flex: 1;
+  width: 100%;
+  max-width: 280px;
 }
 
 .video-button:hover {
-  background: #3a9bc1;
-  transform: scale(1.02);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(69, 183, 209, 0.4);
+}
+
+.video-button:active {
+  transform: translateY(0) scale(0.98);
 }
 
 @media (max-width: 768px) {
