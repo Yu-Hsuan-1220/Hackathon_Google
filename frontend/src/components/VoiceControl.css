@@ -185,4 +185,30 @@
   .voice-status {
     font-size: 0.6rem;
   }
+  
+  .file-count-display {
+    max-width: 150px;
+    font-size: 0.6rem;
+  }
+}
+
+.file-count {
+  margin-top: 0.3rem;
+  font-size: 0.7rem;
+  color: #28a745;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* 簡化的檔案計數器顯示 */
+.file-count-display {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  font-size: 0.7rem;
+  color: #28a745;
+  text-align: center;
+  font-weight: 500;
+  max-width: 180px;
 }
