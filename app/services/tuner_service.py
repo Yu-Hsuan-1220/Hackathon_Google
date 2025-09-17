@@ -82,7 +82,7 @@ def get_random_tuning_audio(string_num: str, tune_status: str) -> str:
         folder_status = tune_status.replace(" ", "_")
         
         # Construct folder path
-        audio_folder = os.path.join("audio", "tuner", f"string{string_num}_{folder_status}")
+        audio_folder = os.path.join("frontend/public/audio", "tuner", f"string{string_num}_{folder_status}")
         
         # Check if folder exists
         if not os.path.exists(audio_folder):

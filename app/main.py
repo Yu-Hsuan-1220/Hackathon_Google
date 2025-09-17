@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 
 # local lib
-from app.routers import pose_check, menu, home, first_used
+from app.routers import pose_check, menu, home, first_used,tuner
 
 
 app = FastAPI()
