@@ -45,8 +45,8 @@ async def text_to_speech(text: str, output_filename: str = "tts.wav") -> str:
         
         # Save as WAV file
         wave_file(output_filename, audio_data)
-        
-        return output_filename
+        os.rename(output_filename, os.path.join("frontend/public", output_filename))
+        return os.path.join("frontend/public", output_filename)
         
     except Exception as e:
         print(f"Error generating TTS: {e}")
