@@ -34,7 +34,7 @@ function GuitarLessonPage({ onNavigate }) {
       description: '學習彈奏經典兒歌《小星星》',
       difficulty: '中級',
       duration: '25 分鐘',
-      route: 'song-practice'
+      route: 'song-twinkle-star'
     }
   ];
 
@@ -52,7 +52,7 @@ function GuitarLessonPage({ onNavigate }) {
     } else if (command.includes('第三課') || command.includes('第3課') || command.includes('撥弦')) {
       onNavigate('picking-technique');
     } else if (command.includes('第四課') || command.includes('第4課') || command.includes('小星星') || command.includes('歌曲')) {
-      onNavigate('song-practice');
+      onNavigate('song-twinkle-star');
     }
   };
 

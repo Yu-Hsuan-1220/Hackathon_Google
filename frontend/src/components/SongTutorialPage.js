@@ -30,14 +30,6 @@ function SongTutorialPage({ onNavigate }) {
 
   const songsList = [
     {
-      id: 'twinkle-star',
-      title: '小星星',
-      emoji: '⭐',
-      difficulty: '初級',
-      chords: ['C', 'F', 'G'],
-      route: 'song-twinkle-star'
-    },
-    {
       id: 'happy-birthday',
       title: '生日快樂',
       emoji: '🎂',
@@ -78,7 +70,7 @@ function SongTutorialPage({ onNavigate }) {
       enableVoice={true}
       showStatusBar={true}
     >
-      <div className="song-tutorial-page">
+      <div className="lesson-list">
         <div className="lesson-nav">
           <button 
             className="back-button"
@@ -88,43 +80,35 @@ function SongTutorialPage({ onNavigate }) {
           </button>
         </div>
         
-        <div className="lesson-content">
-          <div className="songs-section">
-            <h2>🎵 選擇歌曲</h2>
-            <div className="songs-grid">
-              {songsList.map((song) => (
-                <div 
-                  key={song.id} 
-                  className="song-card"
-                  onClick={() => onNavigate(song.route)}
-                >
-                  <div className="song-emoji">{song.emoji}</div>
-                  <h3 className="song-title">{song.title}</h3>
-                  <div className="song-difficulty">{song.difficulty}</div>
-                  <div className="song-chords">
-                    {song.chords.map((chord, index) => (
-                      <span key={index} className="chord-tag">{chord}</span>
-                    ))}
-                  </div>
-                  <div className="song-arrow">→</div>
-                </div>
-              ))}
-            </div>
-          </div>
+        <div className="lessons-grid-four-columns">
+          {songsList.map((song) => {
+            // 為每個歌曲添加對應的樣式類
+            const difficultyClass = {
+              '初級': 'beginner',
+              '中級': 'intermediate', 
+              '高級': 'advanced'
+            }[song.difficulty] || 'beginner';
 
-          <div className="key-points-section">
-            <h2>💡 教學重點</h2>
-            <div className="key-points-grid">
-              {lessonData.keyPoints.map((point, index) => (
-                <div key={index} className="key-point-card">
-                  <div className="key-point-header">
-                    <h3>{point.title}</h3>
+            return (
+              <div 
+                key={song.id} 
+                className={`lesson-card-compact ${difficultyClass}`}
+                onClick={() => onNavigate(song.route)}
+              >
+                <div className="lesson-icon">{song.emoji}</div>
+                <div className="lesson-content">
+                  <h3 className="lesson-title-compact">{song.title}</h3>
+                  <div className="lesson-meta-compact">
+                    <span className={`difficulty-compact ${difficultyClass}`}>
+                      {song.difficulty}
+                    </span>
+                    <span className="duration-compact">{song.chords.length} 和弦</span>
                   </div>
-                  <p className="key-point-desc">{point.description}</p>
+                  <p className="lesson-description-compact">學習演奏這首經典歌曲</p>
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </PhoneContainer>

@@ -2,7 +2,7 @@ import React from 'react';
 import PhoneContainer from './PhoneContainer';
 import './SongTwinkleStarPage.css';
 
-function SongTwinkleStarPage({ onNavigate }) {
+function SongTwinkleStarPage({ onBack, onHome }) {
   const songData = {
     title: '小星星',
     artist: '傳統兒歌',
@@ -38,11 +38,11 @@ function SongTwinkleStarPage({ onNavigate }) {
 
   const handleVoiceCommand = (command) => {
     if (command === 'navigate-back') {
-      onNavigate('song-tutorial');
+      onBack();
     } else if (command === 'navigate-home') {
-      onNavigate('home');
+      onHome();
     } else if (command.includes('練習')) {
-      onNavigate('song-practice');
+      onBack(); // 返回到來源頁面
     }
   };
 
@@ -84,13 +84,13 @@ function SongTwinkleStarPage({ onNavigate }) {
         <div className="song-nav">
           <button 
             className="back-button"
-            onClick={() => onNavigate('song-tutorial')}
+            onClick={() => onBack()}
           >
             ← 返回歌曲選單
           </button>
           <button 
             className="home-button"
-            onClick={() => onNavigate('home')}
+            onClick={() => onHome()}
           >
             🏠 主頁
           </button>
@@ -139,15 +139,6 @@ function SongTwinkleStarPage({ onNavigate }) {
                 </div>
               ))}
             </div>
-          </div>
-
-          <div className="actions-section">
-            <button 
-              className="practice-button"
-              onClick={() => onNavigate('song-practice')}
-            >
-              🎯 開始練習
-            </button>
           </div>
         </div>
       </div>

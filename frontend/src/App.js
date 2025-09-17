@@ -4,7 +4,6 @@ import GuitarLessonPage from './components/GuitarLessonPage';
 import GuitarGripPage from './components/GuitarGripPage';
 import ChordPracticePage from './components/ChordPracticePage';
 import PickingTechniquePage from './components/PickingTechniquePage';
-import SongLessonPage from './components/SongLessonPage';
 import MetronomePage from './components/MetronomePage';
 import SongTutorialPage from './components/SongTutorialPage';
 import SongPracticePage from './components/SongPracticePage';
@@ -124,14 +123,6 @@ const App = () => {
             onNavigate={setCurrentScreen}
           />
         );
-
-      case 'song-lesson':
-        return (
-          <SongLessonPage 
-            onNavigate={setCurrentScreen}
-          />
-        );
-      
       case 'metronome':
         return (
           <MetronomePage 
@@ -176,7 +167,7 @@ const App = () => {
       case 'song-twinkle-star':
         return (
           <SongTwinkleStarPage
-            onBack={() => setCurrentScreen('song-tutorial')}
+            onBack={() => setCurrentScreen(navigationSource === 'guitar-lesson' ? 'guitar-lesson' : 'song-tutorial')}
             onHome={() => setCurrentScreen('home')}
           />
         );
