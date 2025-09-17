@@ -1,9 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import PhoneContainer from './PhoneContainer';
 import FeatureCarousel from './FeatureCarousel';
 import './HomePage.css';
 
 function HomePage({ onNavigate }) {
+  const hasCalledAPI = useRef(false);
+
+  useEffect(() => {
+    if (!hasCalledAPI.current) {
+      hasCalledAPI.current = true;
+      callIntroAPI();
+    }
+  }, []);
+
+  const callIntroAPI = async () => {
+    const response = await fetch(`http://localhost:8000/home/intro`);
+    const data = await response.json();
+    
+    const audio = new Audio(`/home_intro.wav`);
+    audio.play();
+  };
+  
   const userName = localStorage.getItem('userName') || '用戶';
   const features = [
     {
