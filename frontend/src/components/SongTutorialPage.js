@@ -28,6 +28,41 @@ function SongTutorialPage({ onNavigate }) {
     ]
   };
 
+  const songsList = [
+    {
+      id: 'twinkle-star',
+      title: '小星星',
+      emoji: '⭐',
+      difficulty: '初級',
+      chords: ['C', 'F', 'G'],
+      route: 'song-twinkle-star'
+    },
+    {
+      id: 'happy-birthday',
+      title: '生日快樂',
+      emoji: '🎂',
+      difficulty: '初級',
+      chords: ['C', 'F', 'G', 'Am'],
+      route: 'song-happy-birthday'
+    },
+    {
+      id: 'childhood',
+      title: '童年',
+      emoji: '🌈',
+      difficulty: '中級',
+      chords: ['C', 'Am', 'F', 'G', 'Dm', 'Em'],
+      route: 'song-childhood'
+    },
+    {
+      id: 'moon-heart',
+      title: '月亮代表我的心',
+      emoji: '🌙',
+      difficulty: '高級',
+      chords: ['C', 'Am', 'F', 'G', 'Em', 'Dm', 'A7', 'D7'],
+      route: 'song-moon-heart'
+    }
+  ];
+
   const handleVoiceCommand = (command) => {
     if (command === 'navigate-back') {
       onNavigate('home');
@@ -54,6 +89,29 @@ function SongTutorialPage({ onNavigate }) {
         </div>
         
         <div className="lesson-content">
+          <div className="songs-section">
+            <h2>🎵 選擇歌曲</h2>
+            <div className="songs-grid">
+              {songsList.map((song) => (
+                <div 
+                  key={song.id} 
+                  className="song-card"
+                  onClick={() => onNavigate(song.route)}
+                >
+                  <div className="song-emoji">{song.emoji}</div>
+                  <h3 className="song-title">{song.title}</h3>
+                  <div className="song-difficulty">{song.difficulty}</div>
+                  <div className="song-chords">
+                    {song.chords.map((chord, index) => (
+                      <span key={index} className="chord-tag">{chord}</span>
+                    ))}
+                  </div>
+                  <div className="song-arrow">→</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div className="key-points-section">
             <h2>💡 教學重點</h2>
             <div className="key-points-grid">

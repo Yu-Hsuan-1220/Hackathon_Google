@@ -347,15 +347,6 @@ function TunerPage({ onNavigate }) {
             </button>
           )}
         </div>
-
-        <div className="progress-indicator">
-          <div className="step">1</div>
-          <div className="step-line"></div>
-          <div className="step active">2</div>
-          <div className="step-line"></div>
-          <div className="step">3</div>
-          <p className="step-text">名字輸入 → 調音器 → 開始學習</p>
-        </div>
       </div>
     </PhoneContainer>
   );

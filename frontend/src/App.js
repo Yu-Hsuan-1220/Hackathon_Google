@@ -12,6 +12,10 @@ import CameraScreen from './components/CameraScreen';
 import ResultScreen from './components/ResultScreen';
 import FirstTimeUserPage from './components/FirstTimeUserPage';
 import TunerPage from './components/TunerPage';
+import SongTwinkleStarPage from './components/SongTwinkleStarPage';
+import SongHappyBirthdayPage from './components/SongHappyBirthdayPage';
+import SongChildhoodPage from './components/SongChildhoodPage';
+import SongMoonHeartPage from './components/SongMoonHeartPage';
 import './App.css';
 
 const App = () => {
@@ -166,6 +170,38 @@ const App = () => {
             result={poseResult}
             onBack={() => setCurrentScreen('home')}
             onRetry={handleRetryPose}
+          />
+        );
+      
+      case 'song-twinkle-star':
+        return (
+          <SongTwinkleStarPage
+            onBack={() => setCurrentScreen('song-tutorial')}
+            onHome={() => setCurrentScreen('home')}
+          />
+        );
+      
+      case 'song-happy-birthday':
+        return (
+          <SongHappyBirthdayPage
+            onBack={() => setCurrentScreen('song-tutorial')}
+            onHome={() => setCurrentScreen('home')}
+          />
+        );
+      
+      case 'song-childhood':
+        return (
+          <SongChildhoodPage
+            onBack={() => setCurrentScreen('song-tutorial')}
+            onHome={() => setCurrentScreen('home')}
+          />
+        );
+      
+      case 'song-moon-heart':
+        return (
+          <SongMoonHeartPage
+            onBack={() => setCurrentScreen('song-tutorial')}
+            onHome={() => setCurrentScreen('home')}
           />
         );
       

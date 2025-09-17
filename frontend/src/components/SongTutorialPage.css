@@ -1,226 +1,118 @@
-/* SongTutorialPage.css - 緊湊版本 */
-.song-tutorial-page {
-  padding: 0.4rem;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #f8f9fa;
-}
-
-.song-tutorial-content {
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  padding-left: env(safe-area-inset-left, 0px);
-  padding-right: env(safe-area-inset-right, 0px);
-}
-
-/* 歌曲詳情頁面 - 更緊湊 */
-.song-detail {
-  padding: 0.4rem;
-}
-
-.song-nav {
-  margin-bottom: 0.6rem;
-}
-
-.back-button {
-  background: transparent;
-  border: none;
-  color: #007bff;
-  font-size: 0.8rem;
-  cursor: pointer;
-  padding: 0.2rem 0;
-}
-
-.back-button:hover {
-  color: #0056b3;
-  text-decoration: underline;
-}
-
-.song-info {
-  text-align: center;
-  margin-bottom: 0.8rem;
-  padding: 0.6rem;
-  background: linear-gradient(135deg, #fff3cd 0%, #fff8e1 100%);
-  border-radius: 8px;
-}
-
-.song-info .song-thumbnail {
-  font-size: 2rem;
-  margin-bottom: 0.3rem;
-}
-
-.song-info h1 {
-  font-size: 1.1rem;
-  margin: 0.2rem 0;
-  color: #2c3e50;
-}
-
-.song-info .artist {
-  font-size: 0.75rem;
-  color: #6c757d;
-  margin: 0.2rem 0;
-}
-
-.song-meta {
+﻿.home-content {
+  height: 100%;
   display: flex;
-  justify-content: center;
-  gap: 0.6rem;
-  margin-top: 0.4rem;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 0.5rem;
 }
 
-.difficulty-badge {
-  padding: 0.2rem 0.4rem;
-  border-radius: 8px;
-  font-size: 0.65rem;
-  font-weight: 600;
+/* 隱藏滾動條但保持滾動功能 */
+.home-content::-webkit-scrollbar {
+  display: none;
+}
+
+.home-content {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* 管理者專用區域 */
+.admin-section {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.admin-reset-btn {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
   color: white;
-}
-
-.song-meta .duration {
-  padding: 0.2rem 0.4rem;
-  background-color: #e2e3e5;
-  border-radius: 8px;
-  font-size: 0.65rem;
-  color: #495057;
-}
-
-.description {
-  font-size: 0.75rem;
-  color: #495057;
-  margin: 0.3rem 0;
-}
-
-.song-content {
-  margin-top: 1rem;
-}
-
-/* 和弦區域 - 更小 */
-.chords-section {
-  margin-bottom: 0.8rem;
-}
-
-.chords-section h3 {
-  font-size: 0.9rem;
-  margin-bottom: 0.4rem;
-  color: #2c3e50;
-}
-
-.chords-list {
-  display: flex;
-  gap: 0.3rem;
-  flex-wrap: wrap;
-}
-
-.chord-item {
-  padding: 0.3rem 0.5rem;
-  background-color: #007bff;
-  color: white;
-  border-radius: 6px;
-  font-size: 0.7rem;
-  font-weight: 600;
-}
-
-/* 歌曲結構 - 更緊湊 */
-.sections {
-  margin-bottom: 0.8rem;
-}
-
-.sections h3 {
-  font-size: 0.9rem;
-  margin-bottom: 0.4rem;
-  color: #2c3e50;
-}
-
-.section-item {
-  background: white;
-  border: 1px solid #e9ecef;
-  border-radius: 6px;
-  padding: 0.5rem;
-  margin-bottom: 0.4rem;
-}
-
-.section-name {
-  font-size: 0.8rem;
-  margin: 0 0 0.3rem 0;
-  color: #495057;
-}
-
-.section-chords {
-  background-color: #f8f9fa;
-  padding: 0.4rem;
-  border-radius: 4px;
-  font-family: 'Courier New', monospace;
-  font-size: 0.75rem;
-  color: #2c3e50;
-  border: 1px solid #dee2e6;
-}
-
-/* 小貼士 - 更小 */
-.tips-section {
-  margin-bottom: 0.8rem;
-}
-
-.tips-section h3 {
-  font-size: 0.9rem;
-  margin-bottom: 0.4rem;
-  color: #2c3e50;
-}
-
-.tips-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.tip-item {
-  background: white;
-  border: 1px solid #e9ecef;
-  border-radius: 6px;
-  padding: 0.4rem 0.6rem;
-  margin-bottom: 0.3rem;
-  font-size: 0.75rem;
-  color: #495057;
-  display: flex;
-  align-items: flex-start;
-  gap: 0.4rem;
-}
-
-.tip-icon {
-  font-size: 0.8rem;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 0.4rem;
-}
-
-.practice-button, .metronome-button {
-  flex: 1;
-  padding: 0.5rem 0.6rem;
   border: none;
-  border-radius: 6px;
-  font-size: 0.75rem;
+  border-radius: 25px;
+  padding: 8px 16px;
+  font-size: 0.8rem;
+  font-weight: 600;
   cursor: pointer;
+  box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
   transition: all 0.3s ease;
-  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-  color: white;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
-.metronome-button {
-  background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
+.admin-reset-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+  background: linear-gradient(135deg, #c0392b, #a93226);
 }
 
-.practice-button:hover, .metronome-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+.admin-reset-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(231, 76, 60, 0.3);
 }
 
-/* 響應式設計 */
-@media (max-width: 320px) {
-  .song-tutorial-page {
-    padding: 0.3rem;
-  }
-  
-  .action-buttons {
-    flex-direction: column;
-  }
+.recent-activity {
+  margin-top: auto;
+  background: rgba(248, 249, 250, 0.8);
+  border-radius: 16px;
+  padding: 1rem;
+}
+
+.recent-activity h2 {
+  font-size: 1.2rem;
+  color: #333;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.activity-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.activity-card {
+  background: white;
+  border-radius: 12px;
+  padding: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.activity-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+}
+
+.activity-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.activity-content {
+  flex-grow: 1;
+}
+
+.activity-content h4 {
+  font-size: 0.9rem;
+  color: #333;
+  margin-bottom: 0.2rem;
+  font-weight: 600;
+}
+
+.activity-content p {
+  font-size: 0.8rem;
+  color: #666;
+  margin: 0;
 }
