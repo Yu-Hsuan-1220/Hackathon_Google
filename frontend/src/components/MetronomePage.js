@@ -87,8 +87,19 @@ function MetronomePage({ onNavigate }) {
   const handleBpmChange = (newBpm) => {
     setBpm(newBpm);
     if (isPlaying) {
-      stopMetronome();
-      setTimeout(() => startMetronome(), 100);
+      // Immediately restart with new BPM
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+      setBeat(0);
+      
+      intervalRef.current = setInterval(() => {
+        setBeat(prevBeat => {
+          const nextBeat = (prevBeat + 1) % timeSignature;
+          playClick(nextBeat === 0); // 第一拍為重音
+          return nextBeat;
+        });
+      }, (60 / newBpm) * 1000);
     }
   };
 

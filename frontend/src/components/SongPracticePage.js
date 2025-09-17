@@ -217,6 +217,14 @@ function SongPracticePage({ onNavigate, songId }) {
         showStatusBar={true}
       >
         <div className="practice-interface">
+          {/* Thin progress bar in top-right corner */}
+          <div className="top-progress-bar">
+            <div 
+              className="top-progress-fill" 
+              style={{width: `${progress}%`}}
+            ></div>
+          </div>
+
           <div className="practice-nav">
             <button 
               className="back-button"
@@ -228,15 +236,6 @@ function SongPracticePage({ onNavigate, songId }) {
 
           <div className="song-info">
             <h2>正在練習：{selectedSong.title}</h2>
-            <div className="progress-bar">
-              <div 
-                className="progress-fill" 
-                style={{width: `${progress}%`}}
-              ></div>
-            </div>
-            <div className="progress-text">
-              進度: {Math.round(progress)}%
-            </div>
           </div>
 
           <div className="current-chord-display">
@@ -261,18 +260,6 @@ function SongPracticePage({ onNavigate, songId }) {
           </div>
 
           <div className="practice-controls">
-            <div className="tempo-control">
-              <label>速度: {tempo} BPM</label>
-              <input 
-                type="range"
-                min="60"
-                max="140"
-                value={tempo}
-                onChange={(e) => setTempo(parseInt(e.target.value))}
-                disabled={isPlaying}
-              />
-            </div>
-
             <div className="control-buttons">
               <button 
                 className={`play-button ${isPlaying ? 'playing' : ''}`}
@@ -286,15 +273,6 @@ function SongPracticePage({ onNavigate, songId }) {
               >
                 ⏹️ 停止
               </button>
-            </div>
-          </div>
-
-          <div className="practice-tips">
-            <h3>練習建議</h3>
-            <div className="tips-list">
-              <div className="tip">💡 跟隨節拍，不要急躁</div>
-              <div className="tip">🎯 專注於和弦轉換的流暢性</div>
-              <div className="tip">🎵 可以配合哼唱旋律</div>
             </div>
           </div>
         </div>

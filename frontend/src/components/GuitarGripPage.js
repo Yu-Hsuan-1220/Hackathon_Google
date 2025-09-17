@@ -1,13 +1,8 @@
-import React, { useState } from 'react';
-import CameraScreen from './CameraScreen';
-import ResultScreen from './ResultScreen';
+import React from 'react';
 import PhoneContainer from './PhoneContainer';
 import './GuitarGripPage.css';
 
 function GuitarGripPage({ onNavigate }) {
-  const [currentMode, setCurrentMode] = useState('lesson'); // 'lesson', 'camera', 'result'
-  const [analysisResult, setAnalysisResult] = useState(null);
-  
   const lessonData = {
     title: '吉他握法',
     description: '學習正確的吉他持琴姿勢，包括坐姿和站姿',
@@ -34,17 +29,8 @@ function GuitarGripPage({ onNavigate }) {
   };
 
   const handleStartPractice = () => {
-    setCurrentMode('camera');
-  };
-
-  const handleAnalysisComplete = (result) => {
-    setAnalysisResult(result);
-    setCurrentMode('result');
-  };
-
-  const handleBackToLesson = () => {
-    setCurrentMode('lesson');
-    setAnalysisResult(null);
+    // 導航到姿勢檢測相機頁面
+    onNavigate('guitar-grip-camera');
   };
 
   const handleVoiceCommand = (command) => {
@@ -53,52 +39,10 @@ function GuitarGripPage({ onNavigate }) {
     } else if (command === 'navigate-home') {
       onNavigate('home');
     } else if (command.includes('開始') || command.includes('檢測') || command.includes('練習')) {
-      if (currentMode === 'lesson') {
-        handleStartPractice();
-      }
+      handleStartPractice();
     }
   };
 
-  // 相機模式
-  if (currentMode === 'camera') {
-    return (
-      <PhoneContainer 
-        title="🎸 握法姿勢檢測"
-        onVoiceCommand={handleVoiceCommand}
-        enableVoice={true}
-        showStatusBar={true}
-      >
-        <div className="camera-content">
-          <CameraScreen 
-            onBack={handleBackToLesson}
-            onResult={handleAnalysisComplete} 
-          />
-        </div>
-      </PhoneContainer>
-    );
-  }
-
-  // 結果模式
-  if (currentMode === 'result') {
-    return (
-      <PhoneContainer 
-        title="🎸 檢測結果"
-        onVoiceCommand={handleVoiceCommand}
-        enableVoice={true}
-        showStatusBar={true}
-      >
-        <div className="result-content">
-          <ResultScreen 
-            result={analysisResult} 
-            onRetry={() => setCurrentMode('camera')}
-            onBack={handleBackToLesson}
-          />
-        </div>
-      </PhoneContainer>
-    );
-  }
-
-  // 教學模式
   return (
     <PhoneContainer 
       title="🎸 吉他握法"
@@ -123,7 +67,6 @@ function GuitarGripPage({ onNavigate }) {
         </div>
         
         <div className="lesson-content">
-          {/* 動作要點說明欄 */}
           <div className="key-points-section">
             <h2>💡 動作要點</h2>
             <div className="key-points-grid">
@@ -140,7 +83,7 @@ function GuitarGripPage({ onNavigate }) {
           
           <div className="lesson-actions">
             <button 
-              className="practice-button"
+              className="practice-button large-button"
               onClick={handleStartPractice}
             >
               🎯 開始姿勢檢測

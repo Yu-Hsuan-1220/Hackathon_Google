@@ -46,9 +46,17 @@ const App = () => {
     setCurrentScreen('camera');
   };
 
-  // 創建智能導航函數，可以跟蹤來源
-  const handleNavigate = (screen, source = null) => {
-    setNavigationSource(source || currentScreen);
+  // 創建智能導航函數，可以跟蹤來源並傳遞數據
+  const handleNavigate = (screen, sourceOrData = null) => {
+    // 如果sourceOrData是字符串，則為來源；如果是對象，則為數據
+    if (typeof sourceOrData === 'string') {
+      setNavigationSource(sourceOrData);
+    } else if (typeof sourceOrData === 'object' && sourceOrData !== null) {
+      setPoseResult(sourceOrData);
+      setNavigationSource(currentScreen);
+    } else {
+      setNavigationSource(sourceOrData || currentScreen);
+    }
     setCurrentScreen(screen);
   };
 
@@ -65,7 +73,7 @@ const App = () => {
         );
       
       case 'home':
-        return <HomePage onNavigate={setCurrentScreen} />;
+        return <HomePage onNavigate={(screen) => handleNavigate(screen, 'home')} />;
       
       case 'guitar-lesson':
         return (
@@ -78,7 +86,24 @@ const App = () => {
       case 'guitar-grip':
         return (
           <GuitarGripPage 
-            onNavigate={setCurrentScreen}
+            onNavigate={handleNavigate}
+          />
+        );
+
+      case 'guitar-grip-camera':
+        return (
+          <CameraScreen 
+            onBack={() => handleNavigate('guitar-grip')}
+            onResult={(result) => handleNavigate('guitar-grip-result', result)}
+          />
+        );
+
+      case 'guitar-grip-result':
+        return (
+          <ResultScreen 
+            result={poseResult}
+            onBack={() => handleNavigate('guitar-grip')}
+            onRetry={() => handleNavigate('guitar-grip-camera')}
           />
         );
 

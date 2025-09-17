@@ -53,6 +53,41 @@
   background: #0056b3;
 }
 
+.lesson-info {
+  background: white;
+  padding: 1rem;
+  border-radius: 16px;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.lesson-meta {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.difficulty, .duration {
+  background: #e9ecef;
+  color: #495057;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.difficulty {
+  background: #d4edda;
+  color: #155724;
+}
+
+.lesson-desc {
+  color: #666;
+  line-height: 1.5;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
 .lesson-content {
   background: white;
   border-radius: 16px;
@@ -193,6 +228,12 @@
   font-weight: 600;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+/*按鈕大小*/
+.practice-button.large-button {
+  font-size: 1rem;
+  padding: 1.5rem 3rem;
+  border-radius: 35px;
 }
 
 .practice-button:hover {

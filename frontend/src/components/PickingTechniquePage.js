@@ -1,13 +1,8 @@
-import React, { useState } from 'react';
-import CameraScreen from './CameraScreen';
-import ResultScreen from './ResultScreen';
+import React from 'react';
 import PhoneContainer from './PhoneContainer';
 import './PickingTechniquePage.css';
 
 function PickingTechniquePage({ onNavigate }) {
-  const [currentMode, setCurrentMode] = useState('lesson'); // 'lesson', 'camera', 'result'
-  const [analysisResult, setAnalysisResult] = useState(null);
-  
   const lessonData = {
     title: '右手撥弦技巧',
     description: '掌握正確的撥弦手法和節拍',
@@ -30,27 +25,7 @@ function PickingTechniquePage({ onNavigate }) {
         title: '節拍穩定',
         description: '保持穩定的節拍，從慢速開始逐漸加快'
       }
-    ],
-    steps: [
-      '學習正確的撥弦手型',
-      '練習下撥和上撥',
-      '掌握基本節拍型',
-      '配合和弦練習'
     ]
-  };
-
-  const handleStartPractice = () => {
-    setCurrentMode('camera');
-  };
-
-  const handleAnalysisComplete = (result) => {
-    setAnalysisResult(result);
-    setCurrentMode('result');
-  };
-
-  const handleBackToLesson = () => {
-    setCurrentMode('lesson');
-    setAnalysisResult(null);
   };
 
   const handleVoiceCommand = (command) => {
@@ -58,56 +33,12 @@ function PickingTechniquePage({ onNavigate }) {
       onNavigate('guitar-lesson');
     } else if (command === 'navigate-home') {
       onNavigate('home');
-    } else if (command.includes('開始') || command.includes('檢測') || command.includes('練習')) {
-      if (currentMode === 'lesson') {
-        handleStartPractice();
-      }
     }
   };
 
-  // 相機模式
-  if (currentMode === 'camera') {
-    return (
-      <PhoneContainer 
-        title="👋 撥弦姿勢檢測"
-        onVoiceCommand={handleVoiceCommand}
-        enableVoice={true}
-        showStatusBar={true}
-      >
-        <div className="camera-content">
-          <CameraScreen 
-            onBack={handleBackToLesson}
-            onResult={handleAnalysisComplete} 
-          />
-        </div>
-      </PhoneContainer>
-    );
-  }
-
-  // 結果模式
-  if (currentMode === 'result') {
-    return (
-      <PhoneContainer 
-        title="👋 檢測結果"
-        onVoiceCommand={handleVoiceCommand}
-        enableVoice={true}
-        showStatusBar={true}
-      >
-        <div className="result-content">
-          <ResultScreen 
-            result={analysisResult} 
-            onRetry={() => setCurrentMode('camera')}
-            onBack={handleBackToLesson}
-          />
-        </div>
-      </PhoneContainer>
-    );
-  }
-
-  // 教學模式
   return (
     <PhoneContainer 
-      title="👋 右手撥弦技巧"
+      title="🎼 右手撥弦技巧"
       onVoiceCommand={handleVoiceCommand}
       enableVoice={true}
       showStatusBar={true}
@@ -128,7 +59,7 @@ function PickingTechniquePage({ onNavigate }) {
           </button>
         </div>
         
-        <div className="lesson-content">{/* 動作要點說明欄 */}
+        <div className="lesson-content">
           <div className="key-points-section">
             <h2>💡 動作要點</h2>
             <div className="key-points-grid">
@@ -141,25 +72,6 @@ function PickingTechniquePage({ onNavigate }) {
                 </div>
               ))}
             </div>
-          </div>
-
-          <h2>📝 課程步驟</h2>
-          <div className="steps-list">
-            {lessonData.steps.map((step, index) => (
-              <div key={index} className="step-item">
-                <div className="step-number">{index + 1}</div>
-                <div className="step-text">{step}</div>
-              </div>
-            ))}
-          </div>
-          
-          <div className="lesson-actions">
-            <button 
-              className="practice-button"
-              onClick={handleStartPractice}
-            >
-              🎯 開始姿勢檢測練習
-            </button>
           </div>
         </div>
       </div>
