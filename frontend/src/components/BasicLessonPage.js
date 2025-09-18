@@ -133,11 +133,11 @@ function BasicLessonPage({ onBack, onNavigate }) {
     },
     {
       id: 5,
-      title: '小星星練習',
-      description: '學習彈奏經典兒歌《小星星》',
+      title: '生日快樂練習',
+      description: '學習彈奏經典歌曲《生日快樂》',
       difficulty: '中級',
       duration: '25 分鐘',
-      route: 'song-twinkle-star'
+      route: 'song-happy-birthday'
     }
   ];
 
