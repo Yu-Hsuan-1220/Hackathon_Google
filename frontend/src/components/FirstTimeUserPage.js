@@ -5,98 +5,65 @@ import './FirstTimeUserPage.css';
 function FirstTimeUserPage({ onComplete }) {
   const [userName, setUserName] = useState('');
   const [isListening, setIsListening] = useState(false);
-  const [recognition, setRecognition] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [isLoadingIntro, setIsLoadingIntro] = useState(false);
-  const hasRequestedIntroRef = useRef(false); // 使用 ref 來追蹤請求狀態
+  const hasCalledAPI = useRef(false);
 
   useEffect(() => {
-    // 檢查瀏覽器是否支援語音識別
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
-      const recognitionInstance = new SpeechRecognition();
-      
-      recognitionInstance.continuous = false;
-      recognitionInstance.interimResults = false;
-      recognitionInstance.lang = 'zh-TW'; // 設定為繁體中文
-      
-      recognitionInstance.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        setUserName(transcript);
-        setIsListening(false);
-        setShowConfirm(true);
-      };
-      
-      recognitionInstance.onerror = (event) => {
-        console.error('語音識別錯誤:', event.error);
-        setIsListening(false);
-      };
-      
-      recognitionInstance.onend = () => {
-        setIsListening(false);
-      };
-      
-      setRecognition(recognitionInstance);
+    if (!hasCalledAPI.current) {
+      hasCalledAPI.current = true;
+      callIntroAPI();
     }
   }, []);
 
-  // 使用另一個 useEffect 來處理 API 請求，確保只調用一次
-  useEffect(() => {
-    fetchIntroduction();
-  }, []); // 只在組件首次掛載時執行
-
-  const fetchIntroduction = async () => {
-    // 使用 ref 防止重複請求
-    if (hasRequestedIntroRef.current) {
-      console.log('已經發送過請求，跳過');
-      return;
-    }
+  const callIntroAPI = async () => {
+    const response = await fetch('http://localhost:8000/first_used/intro');
+    const data = await response.json();
     
-    hasRequestedIntroRef.current = true;
-    setIsLoadingIntro(true);
-    console.log('開始發送 API 請求...');
+    const audio = new Audio('/firstused_intro.wav');
+    audio.play();
     
-
-    const response = await fetch('http://localhost:8000/first_used/intro', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      console.log('API 請求成功，準備播放音頻');
-      // 稍微延遲一下再播放，確保音頻文件已生成
-      setTimeout(() => {
-        playIntroAudio();
-      }, 1000);
-    }
-
-    setIsLoadingIntro(false);
-
+    // 音檔播放完後自動啟動語音辨識
+    audio.onended = () => {
+      startVoiceRecognition();
+    };
   };
 
-  const playIntroAudio = () => {
-    const audio = new Audio('/firstused_intro.wav');
-    console.log('開始播放音頻文件: /firstused_intro.wav');
-    audio.play();
+  const startVoiceRecognition = () => {
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'zh-TW';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    setIsListening(true);
+    recognition.start();
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setUserName(transcript);
+      setIsListening(false);
+      setShowConfirm(true);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    // 智能停止收音 - 5秒後自動停止
+    setTimeout(() => {
+      recognition.stop();
+    }, 5000);
   };
 
   const startListening = () => {
-    if (recognition) {
-      setIsListening(true);
-      setShowConfirm(false);
-      recognition.start();
-    } else {
-      alert('您的瀏覽器不支援語音識別功能');
-    }
+    setShowConfirm(false);
+    startVoiceRecognition();
   };
 
   const confirmName = () => {
     if (userName.trim()) {
-      // 將名字存儲到 localStorage 並標記已完成首次設置
+      // 將名字存儲到 localStorage 作為 usr_id，供之後所有 API 使用
       localStorage.setItem('userName', userName.trim());
+      localStorage.setItem('usr_id', userName.trim());
       localStorage.setItem('isFirstTime', 'false');
       localStorage.setItem('hasCompletedNameInput', 'true');
       // 調用父組件的完成回調
@@ -121,12 +88,6 @@ function FirstTimeUserPage({ onComplete }) {
             讓我們開始您的吉他學習之旅！<br />
             請先告訴我們您的名字
           </p>
-          
-          {isLoadingIntro && (
-            <div className="loading-intro">
-              <p>正在載入介紹...</p>
-            </div>
-          )}
         </div>
 
         <div className="voice-input-section">

@@ -14,11 +14,62 @@ function HomePage({ onNavigate }) {
   }, []);
 
   const callIntroAPI = async () => {
-    const response = await fetch(`http://localhost:8000/home/intro`);
-    const data = await response.json();
+    await fetch(`http://localhost:8000/home/intro`);
     
     const audio = new Audio(`/home_intro.wav`);
     audio.play();
+    
+    // 音檔播放完後啟動語音辨識
+    audio.onended = () => {
+      startVoiceRecognition();
+    };
+  };
+
+  const startVoiceRecognition = () => {
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'zh-TW';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.start();
+
+    recognition.onresult = async (event) => {
+      const transcript = event.results[0][0].transcript;
+      await sendActionAPI(transcript);
+    };
+
+    // 智能停止收音 - 3秒後自動停止
+    setTimeout(() => {
+      recognition.stop();
+    }, 3000);
+  };
+
+  const sendActionAPI = async (voiceInput) => {
+    const response = await fetch(`http://localhost:8000/home/action?user_input=${encodeURIComponent(voiceInput)}`, {
+      method: 'POST',
+    });
+    
+    const data = await response.json();
+    const actionId = data.Response;
+    
+    // 根據 id 進行頁面跳轉
+    switch(actionId) {
+      case 1:
+        onNavigate('guitar-lesson');
+        break;
+      case 2:
+        onNavigate('tuner');
+        break;
+      case 3:
+        onNavigate('metronome');
+        break;
+      case 4:
+        onNavigate('song-tutorial');
+        break;
+      case 5:
+        onNavigate('song-practice');
+        break;
+    }
   };
   
   const userName = localStorage.getItem('userName') || '用戶';
@@ -61,33 +112,18 @@ function HomePage({ onNavigate }) {
   ];
 
   const handleVoiceCommand = (command) => {
-    // 處理導航指令
-    if (command.includes('調音器') || command.includes('調音')) {
-      onNavigate('tuner');
-    } else if (command.includes('吉他教學') || command.includes('吉他') || command.includes('教學')) {
-      onNavigate('guitar-lesson');
-    } else if (command.includes('節拍器') || command.includes('節拍')) {
-      onNavigate('metronome');
-    } else if (command.includes('歌曲教學') || (command.includes('歌曲') && command.includes('教學'))) {
-      onNavigate('song-tutorial');
-    } else if (command.includes('歌曲練習') || command.includes('練習')) {
-      onNavigate('song-practice');
-    } else if (command.includes('姿勢檢測') || command.includes('檢測')) {
-      onNavigate('guitar-lesson');
-    }
+    // 簡化的語音指令處理
   };
 
   const handleResetUserData = () => {
-    if (window.confirm('確定要重置所有使用者資料嗎？這將清除您的姓名和學習進度。')) {
-      // 清除所有本地存儲的使用者資料
-      localStorage.removeItem('userName');
-      localStorage.removeItem('isFirstTime');
-      localStorage.removeItem('hasCompletedNameInput');
-      localStorage.removeItem('hasCompletedTuning');
-      
-      // 重新載入頁面以觸發首次使用者流程
-      window.location.reload();
-    }
+    // 清除所有本地存儲的使用者資料
+    localStorage.removeItem('userName');
+    localStorage.removeItem('isFirstTime');
+    localStorage.removeItem('hasCompletedNameInput');
+    localStorage.removeItem('hasCompletedTuning');
+    
+    // 重新載入頁面以觸發首次使用者流程
+    window.location.reload();
   };
 
   return (

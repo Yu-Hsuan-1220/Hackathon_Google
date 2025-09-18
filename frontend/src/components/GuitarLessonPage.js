@@ -1,8 +1,73 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import PhoneContainer from './PhoneContainer';
 import './GuitarLessonPage.css';
 
 function GuitarLessonPage({ onNavigate }) {
+  const hasCalledAPI = useRef(false);
+
+  useEffect(() => {
+    if (!hasCalledAPI.current) {
+      hasCalledAPI.current = true;
+      callIntroAPI();
+    }
+  }, []);
+
+  const callIntroAPI = async () => {
+    await fetch(`http://localhost:8000/menu/intro`);
+    
+    const audio = new Audio(`/menu_intro.wav`);
+    audio.play();
+    
+    // 音檔播放完後啟動語音辨識
+    audio.onended = () => {
+      startVoiceRecognition();
+    };
+  };
+  
+  const startVoiceRecognition = () => {
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'zh-TW';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.start();
+
+    recognition.onresult = async (event) => {
+      const transcript = event.results[0][0].transcript;
+      await sendActionAPI(transcript);
+    };
+
+    // 智能停止收音 - 3秒後自動停止
+    setTimeout(() => {
+      recognition.stop();
+    }, 3000);
+  };
+
+  const sendActionAPI = async (voiceInput) => {
+    const response = await fetch(`http://localhost:8000/menu/action?user_input=${encodeURIComponent(voiceInput)}`, {
+      method: 'POST',
+    });
+    
+    const data = await response.json();
+    const actionId = data.Response;
+    
+    // 根據 id 進行頁面跳轉
+    switch(actionId) {
+      case 1:
+        onNavigate('guitar-grip');
+        break;
+      case 2:
+        onNavigate('chord-practice');
+        break;
+      case 3:
+        onNavigate('picking-technique');
+        break;
+      case 4:
+        onNavigate('song-twinkle-star');
+        break;
+    }
+  };
+
   const lessons = [
     {
       id: 1,
@@ -43,17 +108,7 @@ function GuitarLessonPage({ onNavigate }) {
   };
 
   const handleVoiceCommand = (command) => {
-    if (command === 'navigate-back' || command === 'navigate-home') {
-      onNavigate('home');
-    } else if (command.includes('第一課') || command.includes('第1課') || command.includes('握法')) {
-      onNavigate('guitar-grip');
-    } else if (command.includes('第二課') || command.includes('第2課') || command.includes('和弦')) {
-      onNavigate('chord-practice');
-    } else if (command.includes('第三課') || command.includes('第3課') || command.includes('撥弦')) {
-      onNavigate('picking-technique');
-    } else if (command.includes('第四課') || command.includes('第4課') || command.includes('小星星') || command.includes('歌曲')) {
-      onNavigate('song-twinkle-star');
-    }
+    // 簡化的語音指令處理
   };
 
   return (
