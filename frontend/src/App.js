@@ -82,6 +82,19 @@ const App = () => {
         );
       
       case 'single-note-lesson':
+<<<<<<< HEAD
+=======
+        return (
+          <SingleNoteLessonPage 
+            onNavigate={setCurrentScreen}
+          />
+        );
+      
+      case 'home':
+        return <HomePage onNavigate={(screen) => handleNavigate(screen, 'home')} />;
+      
+      case 'guitar-lesson':
+>>>>>>> b671a7e (單音gg)
         return (
           <SingleNoteLessonPage 
             onNavigate={setCurrentScreen}

@@ -12,6 +12,7 @@ async def post(target_note: str = Form(...), file: UploadFile = File(...)):
     content = await file.read()
     
     # Process the audio using the note check service
+<<<<<<< HEAD
     result = await note_check(target_note, content)
     
     # Transform the result to match frontend expectations
@@ -34,3 +35,13 @@ async def post(target_note: str = Form(...), file: UploadFile = File(...)):
         "target_note": target_note,  # Current note being tested
         "debug_info": debug_info
     }
+=======
+    # The service will handle the TTS feedback directly and return debug info
+    result = await note_check(target_note, content)
+    
+    return {
+        "status": "processing_complete", 
+        "target_note": result.get("target_note", target_note),
+        "debug_info": result
+    }
+>>>>>>> b671a7e (單音gg)
