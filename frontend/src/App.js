@@ -18,24 +18,24 @@ import SongMoonHeartPage from './components/SongMoonHeartPage';
 import './App.css';
 
 const App = () => {
-  const [currentScreen, setCurrentScreen] = useState('home');
   const [poseResult, setPoseResult] = useState(null);
   const [isFirstTime, setIsFirstTime] = useState(true);
   const [navigationSource, setNavigationSource] = useState(null);
 
   useEffect(() => {
-    // 檢查是否為首次使用者
-    const firstTimeFlag = localStorage.getItem('isFirstTime');
-    if (firstTimeFlag === 'false') {
+    // 檢查是否有使用者名稱
+    const userName = localStorage.getItem('userName');
+    if (userName && userName.trim() !== '') {
       setIsFirstTime(false);
+      setCurrentScreen('home');
     } else {
+      setIsFirstTime(true);
       setCurrentScreen('first-time');
     }
   }, []);
 
   const handleFirstTimeComplete = () => {
     setIsFirstTime(false);
-    localStorage.setItem('isFirstTime', 'false');
     setCurrentScreen('home');
   };
 
@@ -48,6 +48,8 @@ const App = () => {
     setPoseResult(null);
     setCurrentScreen('camera');
   };
+
+  const [currentScreen, setCurrentScreen] = useState('first-time');
 
   // 創建智能導航函數，可以跟蹤來源並傳遞數據
   const handleNavigate = (screen, sourceOrData = null) => {
