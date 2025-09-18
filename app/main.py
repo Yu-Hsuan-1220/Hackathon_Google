@@ -9,7 +9,6 @@ import os
 from app.routers import pose_check, menu, home, first_used, tuner, guitar
 
 
-
 app = FastAPI()
 
 
@@ -31,6 +30,7 @@ app.include_router(pose_check.router, prefix="/pose", tags=["Pose Check"])
 app.include_router(first_used.router, prefix="/first_used", tags=["First Used"])
 app.include_router(guitar.router, prefix="/guitar", tags=["Guitar"])
 app.include_router(tuner.router,prefix="/tuner",tags=["Tuner"])
+app.include_router(guitar.router, prefix="/guitar", tags=["Guitar"])
 
 
 if __name__ == "__main__":
