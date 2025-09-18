@@ -15,11 +15,11 @@ function GuitarGripPage({ onNavigate }) {
       },
       {
         title: '左手位置',
-        description: '拇指放在琴頸後方中央，手指自然彎曲，避免碰觸其他弦'
+        description: '拇指放在琴頸後方中央，手指自然彎曲'
       },
       {
         title: '右手姿勢',
-        description: '手臂自然垂下，手腕略微彎曲，手指輕鬆接觸琴弦'
+        description: '手臂環抱琴身自然垂下，手腕略微彎曲，手指輕鬆接觸琴弦'
       },
       {
         title: '身體放鬆',
