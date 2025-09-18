@@ -20,7 +20,7 @@
   display: none;
 }
 
-.lesson-nav {
+.chord-practice-page .chord-lesson-nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -29,7 +29,8 @@
   margin-bottom: 1rem;
 }
 
-.back-button, .home-button {
+.chord-practice-page .chord-back-button, 
+.chord-practice-page .chord-home-button {
   background: #6c757d;
   color: white;
   border: none;
@@ -40,12 +41,13 @@
   transition: all 0.3s ease;
 }
 
-.back-button:hover, .home-button:hover {
+.chord-practice-page .chord-back-button:hover, 
+.chord-practice-page .chord-home-button:hover {
   background: #5a6268;
   transform: translateY(-1px);
 }
 
-.home-button {
+.chord-practice-page .chord-home-button {
   background: #007bff;
 }
 
@@ -53,7 +55,7 @@
   background: #0056b3;
 }
 
-.lesson-content {
+.chord-practice-page .chord-lesson-content {
   background: white;
   border-radius: 16px;
   padding: 1rem;
@@ -61,7 +63,7 @@
   flex: 1;
 }
 
-.lesson-content h2 {
+.chord-practice-page .chord-lesson-content h2 {
   color: #333;
   font-size: 1rem;
   margin: 0 0 0.8rem 0;
@@ -98,8 +100,8 @@
 }
 
 .chord-practice-page .chord-key-point-card {
-  background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
-  border: 1px solid rgba(0, 123, 255, 0.1);
+  background: linear-gradient(135deg, #ff7a00, #ff9500);
+  border: 1px solid rgba(255, 122, 0, 0.1);
   border-radius: 12px;
   padding: 0.8rem;
   transition: all 0.3s ease;
@@ -107,33 +109,32 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  color: white;
 }
 
-.key-point-card:hover {
+.chord-practice-page .chord-key-point-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  border-color: rgba(0, 123, 255, 0.2);
+  border-color: rgba(255, 122, 0, 0.2);
 }
 
-.key-point-header {
+.chord-practice-page .chord-key-point-header {
   margin-bottom: 0.5rem;
 }
 
-.key-point-header h3 {
+.chord-practice-page .chord-key-point-header h3 {
   font-size: 0.9rem;
   font-weight: 700;
-  color: #333;
+  color: white;
   margin: 0;
 }
 
-.key-point-desc {
+.chord-practice-page .chord-key-point-desc {
   font-size: 0.8rem;
-  color: #666;
-  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.9);
   margin: 0;
+  line-height: 1.3;
 }
-
-
 
 /* 步驟列表樣式 */
 .steps-list {
