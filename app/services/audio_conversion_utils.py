@@ -35,7 +35,7 @@ def convert_webm_to_wav(webm_file_path: str) -> str:
             'ffmpeg', 
             '-i', webm_file_path,
             '-acodec', 'pcm_s16le',  # 16-bit PCM
-            '-ar', '44100',          # 44.1 kHz sample rate
+            '-ar', '24000',          # 24 kHz sample rate to match reference files
             '-ac', '1',              # Mono channel
             '-y',                    # Overwrite output file
             wav_file_path
@@ -132,7 +132,7 @@ def convert_audio_to_wav(audio_file_path: str) -> str:
             'ffmpeg', 
             '-i', audio_file_path,
             '-acodec', 'pcm_s16le',
-            '-ar', '44100',
+            '-ar', '24000',
             '-ac', '1',
             '-y',
             wav_file_path
@@ -175,7 +175,7 @@ def convert_audio_bytes_to_wav_bytes(audio_bytes: bytes, source_format: str = "w
                 'ffmpeg', 
                 '-i', temp_input_path,
                 '-acodec', 'pcm_s16le',
-                '-ar', '44100',
+                '-ar', '24000',
                 '-ac', '1',
                 '-y',
                 temp_output_path

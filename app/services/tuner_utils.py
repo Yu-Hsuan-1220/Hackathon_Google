@@ -84,41 +84,104 @@ def note_detect(audio_file):
 
 def get_frequency_from_audio(audio_file):
 	"""
-	Extract the dominant frequency from an audio file
+	Extract the fundamental frequency from an audio file using autocorrelation
 	Returns the frequency in Hz
 	"""
 	#here we are just storing our sound file as a numpy array
 	file_length=audio_file.getnframes() 
 	f_s=audio_file.getframerate() #sampling frequency
 
+	channels = audio_file.getnchannels() #number of channels mono/stereo
+	sample_width = audio_file.getsampwidth() #sample width in bytes
+	
 	sound = np.zeros(file_length) #blank array
 
-	for i in range(file_length) : 
+	for i in range(file_length):
 		wdata=audio_file.readframes(1)
-		data=struct.unpack("<h",wdata)
-		sound[i] = int(data[0])
+		if channels == 1:
+			# Mono audio
+			if sample_width == 1:
+				data=struct.unpack("<B",wdata)
+				sound[i] = int(data[0]) - 128
+			elif sample_width == 2:
+				data=struct.unpack("<h",wdata)
+				sound[i] = int(data[0])
+			elif sample_width == 4:
+				data=struct.unpack("<i",wdata)
+				sound[i] = int(data[0])
+		else:
+			# Stereo audio - take average of channels
+			if sample_width == 1:
+				data=struct.unpack("<BB",wdata)
+				sound[i] = (int(data[0]) + int(data[1])) / 2 - 128
+			elif sample_width == 2:
+				data=struct.unpack("<hh",wdata)
+				sound[i] = (int(data[0]) + int(data[1])) / 2
+			elif sample_width == 4:
+				data=struct.unpack("<ii",wdata)
+				sound[i] = (int(data[0]) + int(data[1])) / 2
 	
-	sound=np.divide(sound,float(2**15)) #scaling it to 0 - 1
-	counter = audio_file.getnchannels() #number of channels mono/sterio
+	# Normalize sound based on sample width
+	if sample_width == 1:
+		sound=np.divide(sound,float(2**7)) #scaling it to -1 to 1
+	elif sample_width == 2:
+		sound=np.divide(sound,float(2**15)) #scaling it to -1 to 1
+	elif sample_width == 4:
+		sound=np.divide(sound,float(2**31)) #scaling it to -1 to 1
 	
-	#fourier transformation from numpy module
-	fourier = np.fft.fft(sound)
-	fourier = np.absolute(fourier)
-	imax=np.argmax(fourier[0:int(file_length/2)]) #index of max element
+	# Use autocorrelation to find fundamental frequency
+	# This is better for musical pitch detection
 	
-	#peak detection
-	i_begin = -1
-	threshold = 0.3 * fourier[imax]
-	for i in range (0,imax+100):
-		if fourier[i] >= threshold:
-			if(i_begin==-1):
-				i_begin = i				
-		if(i_begin!=-1 and fourier[i]<threshold):
-			break
-	i_end = i
-	imax = np.argmax(fourier[0:i_end+100])
+	# Apply window to reduce edge effects
+	if len(sound) > 1024:
+		# Use middle section of audio
+		start = len(sound) // 4
+		end = 3 * len(sound) // 4
+		sound = sound[start:end]
 	
-	freq=(imax*f_s)/(file_length*counter) #formula to convert index into sound frequency
+	# Apply high-pass filter to remove DC component
+	sound = sound - np.mean(sound)
+	
+	# Autocorrelation method
+	autocorr = np.correlate(sound, sound, mode='full')
+	autocorr = autocorr[len(autocorr)//2:]
+	
+	# For guitar tuning, look for periods corresponding to 60-400Hz
+	min_period = int(f_s / 400)  # Max frequency
+	max_period = int(f_s / 60)   # Min frequency
+	
+	if max_period >= len(autocorr):
+		max_period = len(autocorr) - 1
+	
+	# Find the peak in the valid range (skip the first few samples)
+	if min_period < len(autocorr) and max_period > min_period:
+		peak_index = np.argmax(autocorr[min_period:max_period]) + min_period
+		
+		# Parabolic interpolation for better accuracy
+		if peak_index > 0 and peak_index < len(autocorr) - 1:
+			y1, y2, y3 = autocorr[peak_index-1], autocorr[peak_index], autocorr[peak_index+1]
+			x0 = peak_index + (y3 - y1) / (2 * (2*y2 - y1 - y3))
+		else:
+			x0 = peak_index
+		
+		freq = f_s / x0
+	else:
+		# Fallback to FFT method with fundamental frequency bias
+		fourier = np.fft.fft(sound)
+		fourier = np.absolute(fourier)
+		
+		# Focus on fundamental frequency range for guitar
+		freq_resolution = f_s / len(sound)
+		min_bin = int(60 / freq_resolution)
+		max_bin = int(400 / freq_resolution)
+		max_bin = min(max_bin, len(fourier)//2)
+		
+		if min_bin < max_bin:
+			imax = np.argmax(fourier[min_bin:max_bin]) + min_bin
+			freq = (imax * f_s) / len(sound)
+		else:
+			freq = 0
+	
 	return freq
 
 def get_note_frequency(note_name):
@@ -163,7 +226,7 @@ def tune_audio(audio_file, target_note, tolerance_cents=10):
 	# Formula: cents = 1200 * log2(f1/f2)
 	if detected_freq > 0:
 		cents_diff = 1200 * math.log2(detected_freq / target_freq)
-		
+
 	else:
 		return {
 			"error": "Could not detect frequency from audio",
