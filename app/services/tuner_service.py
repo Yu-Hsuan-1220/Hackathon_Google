@@ -206,7 +206,7 @@ async def tune_guitar_string(string_num: str, audio_file_path: str) -> dict:
         
         return {
             "tuning_status": tuning_analysis.get("tuning_status", False),
-            "string_num": tuning_analysis.get("string_num", string_num),
+            "string_num": string_num,
             "tuning_finish": tuning_analysis.get("tuning_finish", False),
             "cents_error": tuning_analysis.get("cents_error", 0),
             "audio_path": full_result.get("audio_path")
