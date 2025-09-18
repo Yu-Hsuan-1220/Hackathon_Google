@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useReducer } from 'react';
+import React, { useState, useEffect, useRef, useReducer } from 'react';
 import PhoneContainer from './PhoneContainer';
 import './TunerPage.css';
 
@@ -65,7 +66,71 @@ function tuningReducer(state, action) {
   }
 }
 
+// 錄音秒數常數
+const RECORD_SECONDS = 4;
+
+// 弦序資料
+const stringData = [
+  { string: 1, note: 'E', frequency: 329.63 },
+  { string: 2, note: 'B', frequency: 246.94 },
+  { string: 3, note: 'G', frequency: 196.00 },
+  { string: 4, note: 'D', frequency: 146.83 },
+  { string: 5, note: 'A', frequency: 110.00 },
+  { string: 6, note: 'E', frequency: 82.41 }
+];
+
+/**
+ * @typedef {Object} TuningResponse
+ * @property {boolean} tuning_status
+ * @property {number} string_num
+ * @property {boolean} tuning_finish
+ * @property {number} cents_error
+ * @property {string} [instruction_url]
+ * @property {string} [instruction_base64]
+ * @property {ArrayBuffer} [instruction_arraybuffer]
+ */
+
+// 狀態管理
+const initialState = {
+  phase: 'idle', // idle → intro → recording → uploading → playing → done
+  currentString: 0, // 0=初始化, 1-6=各弦
+  stringStatus: Array(6).fill('untested'), // untested, correct, retry
+  recordingTime: 0,
+  audioLevel: 0,
+  error: null,
+  isPlayingInstruction: false,
+  centsError: 0 // 新增：存儲音準誤差
+};
+
+function tuningReducer(state, action) {
+  switch (action.type) {
+    case 'SET_PHASE':
+      return { ...state, phase: action.payload };
+    case 'SET_CURRENT_STRING':
+      return { ...state, currentString: action.payload };
+    case 'SET_STRING_STATUS':
+      const newStatus = [...state.stringStatus];
+      newStatus[action.stringIndex] = action.status;
+      return { ...state, stringStatus: newStatus };
+    case 'SET_RECORDING_TIME':
+      return { ...state, recordingTime: action.payload };
+    case 'SET_AUDIO_LEVEL':
+      return { ...state, audioLevel: action.payload };
+    case 'SET_ERROR':
+      return { ...state, error: action.payload };
+    case 'SET_PLAYING_INSTRUCTION':
+      return { ...state, isPlayingInstruction: action.payload };
+    case 'SET_CENTS_ERROR':
+      return { ...state, centsError: action.payload };
+    case 'RESET_ERROR':
+      return { ...state, error: null };
+    default:
+      return state;
+  }
+}
+
 function TunerPage({ onNavigate }) {
+  const [state, dispatch] = useReducer(tuningReducer, initialState);
   const [state, dispatch] = useReducer(tuningReducer, initialState);
   const [userName] = useState(localStorage.getItem('userName') || '用戶');
 
@@ -80,7 +145,9 @@ function TunerPage({ onNavigate }) {
   // 初始化：進入頁面自動送出 string_num=0
   useEffect(() => {
     initializeTuning();
+    initializeTuning();
     return () => {
+      cleanup();
       cleanup();
     };
   }, []);
@@ -255,374 +322,410 @@ function TunerPage({ onNavigate }) {
         audio: {
           channelCount: 1,
           sampleRate: 24000,
+          channelCount: 1,
+          sampleRate: 24000,
           echoCancellation: false,
           autoGainControl: false,
           noiseSuppression: false
         }
+          noiseSuppression: false
+      }
       });
 
-      streamRef.current = stream;
-      audioChunksRef.current = [];
+    streamRef.current = stream;
+    audioChunksRef.current = [];
 
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus',
-        audioBitsPerSecond: 128000
+    const mediaRecorder = new MediaRecorder(stream, {
+      mimeType: 'audio/webm;codecs=opus',
+      audioBitsPerSecond: 24000
+    });
+
+    mediaRecorderRef.current = mediaRecorder;
+
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        audioChunksRef.current.push(event.data);
+      }
+    };
+
+    mediaRecorder.onstop = () => {
+      console.log('🎤 錄音結束');
+      const audioBlob = new Blob(audioChunksRef.current, {
+        type: 'audio/webm;codecs=opus'
       });
 
-      mediaRecorderRef.current = mediaRecorder;
+      console.log('📦 音檔大小:', audioBlob.size, 'bytes');
+      uploadRecording(audioBlob);
+    };
 
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
+    dispatch({ type: 'SET_PHASE', payload: 'recording' });
+    dispatch({ type: 'SET_RECORDING_TIME', payload: 0 });
+
+    mediaRecorder.start();
+    console.log(`🎤 開始錄音 ${RECORD_SECONDS} 秒...`);
+
+    // 錄音計時器
+    let currentTime = 0;
+    recordingTimerRef.current = setInterval(() => {
+      currentTime += 0.1;
+      dispatch({ type: 'SET_RECORDING_TIME', payload: currentTime });
+      if (currentTime >= RECORD_SECONDS) {
+        stopRecording();
+      }
+    }, 100);
+
+    // 音量監測
+    startAudioLevelMonitoring(stream);
+
+  } catch (error) {
+    console.error('錄音失敗:', error);
+    if (error.name === 'NotAllowedError') {
+      dispatch({ type: 'SET_ERROR', payload: '請允許麥克風權限以進行調音' });
+    } else {
+      dispatch({ type: 'SET_ERROR', payload: '無法啟動錄音功能' });
+    }
+    dispatch({ type: 'SET_PHASE', payload: 'idle' });
+  }
+};
+
+const stopRecording = () => {
+  if (recordingTimerRef.current) {
+    clearInterval(recordingTimerRef.current);
+    recordingTimerRef.current = null;
+  }
+
+  if (audioLevelTimerRef.current) {
+    clearInterval(audioLevelTimerRef.current);
+    audioLevelTimerRef.current = null;
+  }
+
+  if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+    mediaRecorderRef.current.stop();
+  }
+
+  if (streamRef.current) {
+    streamRef.current.getTracks().forEach(track => track.stop());
+    streamRef.current = null;
+  }
+};
+
+const startAudioLevelMonitoring = (stream) => {
+  try {
+    const audioContext = new AudioContext();
+    const analyser = audioContext.createAnalyser();
+    const microphone = audioContext.createMediaStreamSource(stream);
+
+    analyser.fftSize = 256;
+    microphone.connect(analyser);
+
+    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+    audioLevelTimerRef.current = setInterval(() => {
+      analyser.getByteFrequencyData(dataArray);
+      const average = dataArray.reduce((sum, value) => sum + value, 0) / dataArray.length;
+      dispatch({ type: 'SET_AUDIO_LEVEL', payload: average });
+    }, 100);
+
+  } catch (error) {
+    console.error('音量監測失敗:', error);
+  }
+};
+
+const uploadRecording = async (audioBlob) => {
+  try {
+    dispatch({ type: 'SET_PHASE', payload: 'uploading' });
+
+    const response = await sendTuningRequest(state.currentString, audioBlob);
+
+    if (response) {
+      console.log('🎯 處理後端回應:', response);
+
+      // 儲存cents_error用於UI顯示
+      if (typeof response.cents_error === 'number') {
+        dispatch({ type: 'SET_CENTS_ERROR', payload: response.cents_error });
+      }
+
+      // 更新弦的狀態
+      const status = response.tuning_status ? 'correct' : 'retry';
+      dispatch({
+        type: 'SET_STRING_STATUS',
+        stringIndex: state.currentString - 1,
+        status
+      });
+
+      dispatch({ type: 'SET_PHASE', payload: 'playing' });
+      await playInstructionAudio(response);
+
+      // 根據結果決定下一步
+      if (response.tuning_finish) {
+        // 調音完成
+        console.log('🎉 調音完成！');
+        dispatch({ type: 'SET_PHASE', payload: 'done' });
+        setTimeout(() => {
+          onNavigate('home');
+        }, 3000);
+      } else if (response.tuning_status) {
+        // 調對了，根據後端返回的string_num決定下一弦
+        // 後端會返回下一弦的號碼，如果已經是最後一弦則保持當前弦
+        const nextString = parseInt(response.string_num);
+        console.log(`✅ 第${state.currentString}弦調好了，下一弦: ${nextString}`);
+        if (nextString > 0 && nextString <= 6) {
+          dispatch({ type: 'SET_CURRENT_STRING', payload: nextString });
         }
-      };
-
-      mediaRecorder.onstop = () => {
-        console.log('🎤 錄音結束');
-        const audioBlob = new Blob(audioChunksRef.current, {
-          type: 'audio/webm;codecs=opus'
-        });
-
-        console.log('📦 音檔大小:', audioBlob.size, 'bytes');
-        uploadRecording(audioBlob);
-      };
-
-      dispatch({ type: 'SET_PHASE', payload: 'recording' });
-      dispatch({ type: 'SET_RECORDING_TIME', payload: 0 });
-
-      mediaRecorder.start();
-      console.log(`🎤 開始錄音 ${RECORD_SECONDS} 秒...`);
-
-      // 錄音計時器
-      let currentTime = 0;
-      recordingTimerRef.current = setInterval(() => {
-        currentTime += 0.1;
-        dispatch({ type: 'SET_RECORDING_TIME', payload: currentTime });
-        if (currentTime >= RECORD_SECONDS) {
-          stopRecording();
-        }
-      }, 100);
-
-      // 音量監測
-      startAudioLevelMonitoring(stream);
-
-    } catch (error) {
-      console.error('錄音失敗:', error);
-      if (error.name === 'NotAllowedError') {
-        dispatch({ type: 'SET_ERROR', payload: '請允許麥克風權限以進行調音' });
+        dispatch({ type: 'SET_PHASE', payload: 'idle' });
       } else {
-        dispatch({ type: 'SET_ERROR', payload: '無法啟動錄音功能' });
+        // 調錯了，後端返回的string_num應該是當前弦，保持不變
+        console.log(`❌ 第${state.currentString}弦需要重新調音`);
+        dispatch({ type: 'SET_PHASE', payload: 'idle' });
       }
-      dispatch({ type: 'SET_PHASE', payload: 'idle' });
-    }
-  };
-
-  const stopRecording = () => {
-    if (recordingTimerRef.current) {
-      clearInterval(recordingTimerRef.current);
-      recordingTimerRef.current = null;
     }
 
-    if (audioLevelTimerRef.current) {
-      clearInterval(audioLevelTimerRef.current);
-      audioLevelTimerRef.current = null;
-    }
+  } catch (error) {
+    console.error('上傳錄音失敗:', error);
+    dispatch({ type: 'SET_ERROR', payload: error.message });
+    dispatch({ type: 'SET_PHASE', payload: 'idle' });
+  }
+};
 
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-      mediaRecorderRef.current.stop();
-    }
+const getDirectionHint = (centsError) => {
+  if (centsError > 0) {
+    return { text: '音太高，請放鬆弦', color: '#FF5722' };
+  } else if (centsError < 0) {
+    return { text: '音太低，請拉緊弦', color: '#FF9800' };
+  }
+  return { text: '音準正確', color: '#4CAF50' };
+  return { text: '音準正確', color: '#4CAF50' };
+};
 
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-      streamRef.current = null;
-    }
-  };
+const getPhaseText = () => {
+  switch (state.phase) {
+    case 'idle':
+      return `請彈第 ${state.currentString} 弦 (${stringData[state.currentString - 1]?.note})`;
+    case 'intro':
+      return '正在初始化調音器...';
+    case 'recording':
+      return `錄音中... ${state.recordingTime.toFixed(1)}/${RECORD_SECONDS}s`;
+    case 'uploading':
+      return '正在分析音準...';
+    case 'playing':
+      return '播放語音指示中...';
+    case 'done':
+      return '調音完成！即將返回主頁...';
+    default:
+      return '準備中...';
+  }
+};
 
-  const startAudioLevelMonitoring = (stream) => {
-    try {
-      const audioContext = new AudioContext();
-      const analyser = audioContext.createAnalyser();
-      const microphone = audioContext.createMediaStreamSource(stream);
+const canStartRecording = () => {
+  return state.phase === 'idle' && !state.isPlayingInstruction && state.currentString > 0;
+};
+const getPhaseText = () => {
+  switch (state.phase) {
+    case 'idle':
+      return `請彈第 ${state.currentString} 弦 (${stringData[state.currentString - 1]?.note})`;
+    case 'intro':
+      return '正在初始化調音器...';
+    case 'recording':
+      return `錄音中... ${state.recordingTime.toFixed(1)}/${RECORD_SECONDS}s`;
+    case 'uploading':
+      return '正在分析音準...';
+    case 'playing':
+      return '播放語音指示中...';
+    case 'done':
+      return '調音完成！即將返回主頁...';
+    default:
+      return '準備中...';
+  }
+};
 
-      analyser.fftSize = 256;
-      microphone.connect(analyser);
+const canStartRecording = () => {
+  return state.phase === 'idle' && !state.isPlayingInstruction && state.currentString > 0;
+};
 
-      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+return (
+  <PhoneContainer>
+    <div className="tuner-container">
+      <div className="tuner-nav">
+        <button
+          className="tuner-back-button"
+          onClick={() => onNavigate('basic-lesson')}
+          title="返回基礎教學"
+        >
+          ← 返回基礎教學
+        </button>
+        <button
+          className="tuner-home-button"
+          onClick={() => onNavigate('home')}
+          title="返回主頁"
+        >
+          🏠 主頁
+        </button>
+      </div>
 
-      audioLevelTimerRef.current = setInterval(() => {
-        analyser.getByteFrequencyData(dataArray);
-        const average = dataArray.reduce((sum, value) => sum + value, 0) / dataArray.length;
-        dispatch({ type: 'SET_AUDIO_LEVEL', payload: average });
-      }, 100);
+      <div className="tuner-header">
 
-    } catch (error) {
-      console.error('音量監測失敗:', error);
-    }
-  };
-
-  const uploadRecording = async (audioBlob) => {
-    try {
-      dispatch({ type: 'SET_PHASE', payload: 'uploading' });
-
-      const response = await sendTuningRequest(state.currentString, audioBlob);
-
-      if (response) {
-        console.log('🎯 處理後端回應:', response);
-
-        // 儲存cents_error用於UI顯示
-        if (typeof response.cents_error === 'number') {
-          dispatch({ type: 'SET_CENTS_ERROR', payload: response.cents_error });
-        }
-
-        // 更新弦的狀態
-        const status = response.tuning_status ? 'correct' : 'retry';
-        dispatch({
-          type: 'SET_STRING_STATUS',
-          stringIndex: state.currentString - 1,
-          status
-        });
-
-        dispatch({ type: 'SET_PHASE', payload: 'playing' });
-        await playInstructionAudio(response);
-
-        // 根據結果決定下一步
-        if (response.tuning_finish) {
-          // 調音完成
-          console.log('🎉 調音完成！');
-          dispatch({ type: 'SET_PHASE', payload: 'done' });
-          setTimeout(() => {
-            onNavigate('home');
-          }, 3000);
-        } else if (response.tuning_status) {
-          // 調對了，根據後端返回的string_num決定下一弦
-          // 後端會返回下一弦的號碼，如果已經是最後一弦則保持當前弦
-          const nextString = parseInt(response.string_num);
-          console.log(`✅ 第${state.currentString}弦調好了，下一弦: ${nextString}`);
-          if (nextString > 0 && nextString <= 6) {
-            dispatch({ type: 'SET_CURRENT_STRING', payload: nextString });
-          }
-          dispatch({ type: 'SET_PHASE', payload: 'idle' });
-        } else {
-          // 調錯了，後端返回的string_num應該是當前弦，保持不變
-          console.log(`❌ 第${state.currentString}弦需要重新調音`);
-          dispatch({ type: 'SET_PHASE', payload: 'idle' });
-        }
-      }
-
-    } catch (error) {
-      console.error('上傳錄音失敗:', error);
-      dispatch({ type: 'SET_ERROR', payload: error.message });
-      dispatch({ type: 'SET_PHASE', payload: 'idle' });
-    }
-  };
-
-  const completeTuning = () => {
-    localStorage.setItem('hasCompletedTuning', 'true');
-    stopListening();
-    onNavigate('basic-lesson');
-  };
-
-  const selectString = (index) => {
-    setCurrentString(index);
-  };
-
-  const skipTuning = () => {
-    localStorage.setItem('hasCompletedTuning', 'true');
-    onNavigate('basic-lesson');
-  };
-
-
-  const getDirectionHint = (centsError) => {
-    if (centsError > 0) {
-      return { text: '音太高，請放鬆弦', color: '#FF5722' };
-    } else if (centsError < 0) {
-      return { text: '音太低，請拉緊弦', color: '#FF9800' };
-    }
-    return { text: '音準正確', color: '#4CAF50' };
-  };
-
-  const getPhaseText = () => {
-    switch (state.phase) {
-      case 'idle':
-        return `請彈第 ${state.currentString} 弦 (${stringData[state.currentString - 1]?.note})`;
-      case 'intro':
-        return '正在初始化調音器...';
-      case 'recording':
-        return `錄音中... ${state.recordingTime.toFixed(1)}/${RECORD_SECONDS}s`;
-      case 'uploading':
-        return '正在分析音準...';
-      case 'playing':
-        return '播放語音指示中...';
-      case 'done':
-        return '調音完成！即將返回主頁...';
-      default:
-        return '準備中...';
-    }
-  };
-
-  const canStartRecording = () => {
-    return state.phase === 'idle' && !state.isPlayingInstruction && state.currentString > 0;
-  };
-
-  return (
-    <PhoneContainer>
-      <div className="tuner-container">
-        <div className="tuner-nav">
-          <button 
-            className="tuner-back-button"
-            onClick={() => onNavigate('basic-lesson')}
-            title="返回基礎教學"
-          >
-            ← 返回基礎教學
-          </button>
-          <button 
-            className="tuner-home-button"
+        <div className="header-top">
+          <button
+            className="back-btn"
             onClick={() => onNavigate('home')}
             title="返回主頁"
           >
-            🏠 主頁
+            ← 返回
           </button>
+          <h1>Hi {userName}！</h1>
         </div>
-        
-        <div className="tuner-header">
+        <p>智能調音器 - 跟著語音指示調音</p>
+        <p>智能調音器 - 跟著語音指示調音</p>
+      </div>
 
-          <div className="header-top">
-            <button
-              className="back-btn"
-              onClick={() => onNavigate('home')}
-              title="返回主頁"
-            >
-              ← 返回
-            </button>
-            <h1>Hi {userName}！</h1>
-          </div>
-          <p>智能調音器 - 跟著語音指示調音</p>
-        </div>
-
-        {/* 弦位選擇顯示 */}
-        <div className="string-selector">
-          {stringData.map((string, index) => (
-            <div
-              key={index}
-              className={`string-button ${state.currentString === string.string ? 'active' : ''
-                } ${state.stringStatus[index] === 'correct' ? 'tuned' : ''}`}
-            >
-              <div className="string-number">{string.string}</div>
-              <div className="string-note">{string.note}</div>
-              {state.stringStatus[index] === 'correct' && (
-                <div className="check-mark">✓</div>
-              )}
-            </div>
-          ))}
+      {/* 弦位選擇顯示 */}
+      {/* 弦位選擇顯示 */}
+      <div className="string-selector">
+        {stringData.map((string, index) => (
+          {
+            stringData.map((string, index) => (
+              <div
+                key={index}
+                className={`string-button ${state.currentString === string.string ? 'active' : ''
+                  } ${state.stringStatus[index] === 'correct' ? 'tuned' : ''}`}
+              >
+                <div className="string-number">{string.string}</div>
+                <div className="string-note">{string.note}</div>
+                {state.stringStatus[index] === 'correct' && (
+                  <div className="check-mark">✓</div>
+                )}
+                {state.stringStatus[index] === 'correct' && (
+                  <div className="check-mark">✓</div>
+                )}
+              </div>
+            ))
+          }
         </div>
 
-        {/* 當前調音狀態顯示 */}
-        <div className="current-tuning">
-          <div className="current-string-info">
-            <h2>當前調音</h2>
-            {state.currentString > 0 && (
-              <>
-                <div className="note-name">
-                  第 {state.currentString} 弦 - {stringData[state.currentString - 1]?.note}
-                </div>
-                <div className="target-freq">
-                  目標頻率: {stringData[state.currentString - 1]?.frequency.toFixed(2)} Hz
-                </div>
-              </>
-            )}
-          </div>
+      {/* 當前調音狀態顯示 */}
+      {/* 當前調音狀態顯示 */}
+      <div className="current-tuning">
+        <div className="current-string-info">
+          <h2>當前調音</h2>
+          {state.currentString > 0 && (
+            <>
+              <div className="note-name">
+                第 {state.currentString} 弦 - {stringData[state.currentString - 1]?.note}
+              </div>
+              <div className="target-freq">
+                目標頻率: {stringData[state.currentString - 1]?.frequency.toFixed(2)} Hz
+              </div>
+            </>
+          )}
+          <h2>當前調音</h2>
+          {state.currentString > 0 && (
+            <>
+              <div className="note-name">
+                第 {state.currentString} 弦 - {stringData[state.currentString - 1]?.note}
+              </div>
+              <div className="target-freq">
+                目標頻率: {stringData[state.currentString - 1]?.frequency.toFixed(2)} Hz
+              </div>
+            </>
+          )}
+        </div>
 
-          <div className="frequency-display">
-            <div className="detected-freq">{getPhaseText()}</div>
+        <div className="frequency-display">
+          <div className="detected-freq">{getPhaseText()}</div>
 
-            {state.phase === 'recording' && (
-              <div className="recording-indicators">
-                <div className="recording-timer">
+          {state.phase === 'recording' && (
+            <div className="recording-indicators">
+              <div className="recording-timer">
+                <div
+                  className="timer-progress"
+                  style={{ width: `${(state.recordingTime / RECORD_SECONDS) * 100}%` }}
+                ></div>
+              </div>
+              <div className="audio-level">
+                音量:
+                <div className="level-bar">
                   <div
-                    className="timer-progress"
-                    style={{ width: `${(state.recordingTime / RECORD_SECONDS) * 100}%` }}
+                    className="level-fill"
+                    style={{ width: `${Math.min(100, state.audioLevel)}%` }}
                   ></div>
                 </div>
-                <div className="audio-level">
-                  音量:
-                  <div className="level-bar">
-                    <div
-                      className="level-fill"
-                      style={{ width: `${Math.min(100, state.audioLevel)}%` }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* 調音提示 */}
-          {state.centsError !== 0 && state.currentString > 0 && state.phase === 'idle' && (
-            <div className="tuning-status">
-              <div
-                style={{ color: getDirectionHint(state.centsError).color }}
-              >
-                {getDirectionHint(state.centsError).text}
-              </div>
-              <div>
-                誤差: {state.centsError > 0 ? '+' : ''}{state.centsError.toFixed(1)} cents
               </div>
             </div>
           )}
         </div>
 
-        {/* 錄音控制 */}
-        <div className="tuning-controls">
-          {canStartRecording() ? (
-            <button
-              className="start-tuning-btn"
-              onClick={startRecording}
+        {/* 調音提示 */}
+        {state.centsError !== 0 && state.currentString > 0 && state.phase === 'idle' && (
+          <div className="tuning-status">
+            <div
+              style={{ color: getDirectionHint(state.centsError).color }}
             >
-              🎤 開始錄音 ({RECORD_SECONDS}秒)
-            </button>
-          ) : (
-            <button
-              className="stop-tuning-btn"
-              disabled
-            >
-              {state.isPlayingInstruction ? '🔊 播放指示中...' :
-                state.phase === 'recording' ? '🎤 錄音中...' :
-                  state.phase === 'uploading' ? '⏳ 分析中...' :
-                    '⏳ 請等待...'}
-            </button>
-          )}
-        </div>
-
-        {/* 錯誤顯示 */}
-        {state.error && (
-          <div className="error-toast">
-            <span className="error-icon">⚠️</span>
-            <span className="error-text">{state.error}</span>
-            <button
-              className="error-close"
-              onClick={() => dispatch({ type: 'RESET_ERROR' })}
-            >
-              ✕
-            </button>
+              {getDirectionHint(state.centsError).text}
+            </div>
+            <div>
+              誤差: {state.centsError > 0 ? '+' : ''}{state.centsError.toFixed(1)} cents
+            </div>
           </div>
         )}
-
-        {/* 整體進度 */}
-        <div className="tuning-progress">
-          <div className="progress-bar">
-            <div
-              className="progress-fill"
-              style={{
-                width: `${(state.stringStatus.filter(s => s === 'correct').length / 6) * 100}%`
-              }}
-            ></div>
-          </div>
-          <div className="progress-info">
-            {state.stringStatus.filter(s => s === 'correct').length}/6 弦已調好
-          </div>
-        </div>
       </div>
-    </PhoneContainer>
+          )}
+    </div>
+
+    {/* 錄音控制 */}
+    <div className="tuning-controls">
+      {canStartRecording() ? (
+        <button
+          className="start-tuning-btn"
+          onClick={startRecording}
+        >
+          🎤 開始錄音 ({RECORD_SECONDS}秒)
+        </button>
+      ) : (
+        <button
+          className="stop-tuning-btn"
+          disabled
+        >
+          {state.isPlayingInstruction ? '🔊 播放指示中...' :
+            state.phase === 'recording' ? '🎤 錄音中...' :
+              state.phase === 'uploading' ? '⏳ 分析中...' :
+                '⏳ 請等待...'}
+        </button>
+      )}
+    </div>
+
+    {/* 錯誤顯示 */}
+    {state.error && (
+      <div className="error-toast">
+        <span className="error-icon">⚠️</span>
+        <span className="error-text">{state.error}</span>
+        <button
+          className="error-close"
+          onClick={() => dispatch({ type: 'RESET_ERROR' })}
+        >
+          ✕
+        </button>
+      </div>
+    )}
+
+    {/* 整體進度 */}
+    <div className="tuning-progress">
+      <div className="progress-bar">
+        <div
+          className="progress-fill"
+          style={{
+            width: `${(state.stringStatus.filter(s => s === 'correct').length / 6) * 100}%`
+          }}
+        ></div>
+      </div>
+      <div className="progress-info">
+        {state.stringStatus.filter(s => s === 'correct').length}/6 弦已調好
+      </div>
+      <div className="progress-info">
+        {state.stringStatus.filter(s => s === 'correct').length}/6 弦已調好
+      </div>
+    </div>
+  </div>
+    </PhoneContainer >
   );
 }
 

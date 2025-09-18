@@ -56,18 +56,6 @@ async def analyze_tuning(string_num: str, wav_file_path: str) -> dict:
         # Get cents difference from the result
         cents_error = tuning_result.get("cents_difference", 0)
         
-        # Add debugging information for octave correction
-        original_freq = tuning_result.get("original_detected_frequency", 0)
-        corrected_freq = tuning_result.get("detected_frequency", 0)
-        target_freq = tuning_result.get("target_frequency", 0)
-        
-        if original_freq != corrected_freq:
-            print(f"DEBUG: Octave correction was applied!")
-            print(f"DEBUG: Original detected: {original_freq:.2f}Hz")
-            print(f"DEBUG: Corrected to: {corrected_freq:.2f}Hz")
-            print(f"DEBUG: Target: {target_freq:.2f}Hz")
-            print(f"DEBUG: Final cents error: {cents_error}")
-        
         # next string to tune (convert string_num to int for math operations)
         string_num_int = int(string_num)
         next_string_num = string_num_int - 1 if tuning_status and string_num_int > 1 else string_num_int
@@ -218,14 +206,13 @@ async def tune_guitar_string(string_num: str, audio_file_path: str) -> dict:
         
         return {
             "tuning_status": tuning_analysis.get("tuning_status", False),
-            "string_num": tuning_analysis.get("string_num", string_num),  # Use the calculated next string number
+            "string_num": string_num,
             "tuning_finish": tuning_analysis.get("tuning_finish", False),
             "cents_error": tuning_analysis.get("cents_error", 0),
             "audio_path": full_result.get("audio_path")
         }
         
     except Exception as e:
-
         print(f"Error in tune_guitar_string: {str(e)}")
         # 當發生錯誤時，提供一個基本的回應和備用音檔
         fallback_audio_path = None
