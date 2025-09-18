@@ -8,29 +8,37 @@ function BasicLessonPage({ onBack, onNavigate }) {
   useEffect(() => {
     if (!hasCalledAPI.current) {
       hasCalledAPI.current = true;
-      callIntroAPI();
+      checkAndPlayIntro();
     }
   }, []);
 
-  const callIntroAPI = async () => {
-    try {
-      await fetch(`http://localhost:8000/menu/intro`);
-    } catch (error) {
-      console.log('API服務器未連接，跳過API調用');
-    }
+
+  const checkAndPlayIntro = () => {
+    const audio = new Audio(`/menu_intro.wav`);
     
-    try {
-      const audio = new Audio(`/menu_intro.wav`);
+    // 檢查音檔是否存在
+    audio.oncanplaythrough = () => {
+      // 音檔存在，直接播放
       audio.play();
-      
-      // 音檔播放完後啟動語音辨識
       audio.onended = () => {
         startVoiceRecognition();
       };
-    } catch (error) {
-      console.log('音檔載入失敗，跳過語音辨識');
-      startVoiceRecognition();
-    }
+    };
+    
+    audio.onerror = async () => {
+      // 音檔不存在，發送API請求
+      await fetch(`http://localhost:8000/menu/intro`);
+      setTimeout(() => {
+        const newAudio = new Audio(`/menu_intro.wav`);
+        newAudio.play();
+        newAudio.onended = () => {
+          startVoiceRecognition();
+        };
+      }, 1000);
+    };
+    
+    audio.load();
+
   };
   
   const startVoiceRecognition = () => {

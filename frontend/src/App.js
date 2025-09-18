@@ -107,6 +107,7 @@ const App = () => {
             result={poseResult}
             onBack={() => handleNavigate('guitar-grip')}
             onRetry={() => handleNavigate('guitar-grip-camera')}
+            onNavigate={setCurrentScreen}
           />
         );
 
@@ -144,14 +145,6 @@ const App = () => {
             onBack={() => setCurrentScreen('home')}
             onNavigate={setCurrentScreen}
             songId={navigationSource === 'basic-lesson' ? 'twinkle-star' : null}
-          />
-        );
-      
-      case 'camera':
-        return (
-          <CameraScreen 
-            onBack={() => setCurrentScreen('home')}
-            onResult={handlePoseResult}  // 確保這裡正確傳遞
           />
         );
       
