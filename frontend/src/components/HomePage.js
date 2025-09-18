@@ -55,7 +55,7 @@ function HomePage({ onNavigate }) {
     // 根據 id 進行頁面跳轉
     switch(actionId) {
       case 1:
-        onNavigate('guitar-lesson');
+        onNavigate('basic-lesson');
         break;
       case 2:
         onNavigate('tuner');
@@ -82,8 +82,8 @@ function HomePage({ onNavigate }) {
       color: '#9B59B6'
     },
     {
-      id: 'guitar-lesson',
-      title: '吉他教學',
+      id: 'basic-lesson',
+      title: '基礎教學',
       description: '學習正確的吉他姿勢和彈奏技巧',
       icon: '🎸',
       color: '#FF6B6B'
