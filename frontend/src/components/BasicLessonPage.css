@@ -1,6 +1,6 @@
 /* 課程列表樣式 */
 .lesson-list {
-  height: 100%;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -8,6 +8,7 @@
   -webkit-overflow-scrolling: touch;
   -ms-overflow-style: none;
   scrollbar-width: none;
+  padding-bottom: 2rem;
 }
 
 .lesson-list::-webkit-scrollbar {
@@ -44,6 +45,9 @@
   grid-auto-rows: minmax(120px, auto);
   gap: 1rem;
   padding: 1rem;
+  padding-bottom: 5rem !important;
+  margin-bottom: 3rem !important;
+  flex: 1;
 }
 
 /* 課程卡片樣式 - emoji和文字重疊在同一格子 */
@@ -177,6 +181,10 @@
     grid-template-columns: 1fr;
     grid-auto-rows: minmax(120px, auto);
     gap: 1rem;
+    padding: 1rem;
+    padding-bottom: 5rem !important;
+    margin-bottom: 3rem !important;
+    flex: 1;
   }
 }
 
@@ -185,6 +193,10 @@
     grid-template-columns: 1fr;
     grid-auto-rows: minmax(120px, auto);
     gap: 1rem;
+    padding: 1rem;
+    padding-bottom: 5rem !important;
+    margin-bottom: 3rem !important;
+    flex: 1;
   }
 }
 
