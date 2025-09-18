@@ -3,8 +3,5 @@ from pydantic import BaseModel
 class IntroResponse(BaseModel):
     Intro: str
 
-class ConfirmedResponse(BaseModel):
-    Confirmed: str
-
 class ActionResponse(BaseModel):
     Action: bool
