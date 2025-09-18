@@ -89,7 +89,7 @@ function HomePage({ onNavigate }) {
     }
   };
   
-  const userName = localStorage.getItem('userName') || '用戶';
+  const userName = localStorage.getItem('userName')?.trim() || '用戶';
   const features = [
     {
       id: 'tuner',
