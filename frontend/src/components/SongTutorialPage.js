@@ -30,29 +30,38 @@ function SongTutorialPage({ onNavigate }) {
 
   const songsList = [
     {
-      id: 'happy-birthday',
-      title: '生日快樂',
-      emoji: '🎂',
+      id: 'twinkle-star',
+      title: '小星星',
+      emoji: '⭐',
       difficulty: '初級',
-      chords: ['C', 'F', 'G', 'Am'],
-      route: 'song-happy-birthday'
-    },
-    {
-      id: 'childhood',
-      title: '童年',
-      emoji: '🌈',
-      difficulty: '中級',
-      chords: ['C', 'Am', 'F', 'G', 'Dm', 'Em'],
-      route: 'song-childhood'
-    },
-    {
-      id: 'moon-heart',
-      title: '月亮代表我的心',
-      emoji: '🌙',
-      difficulty: '高級',
-      chords: ['C', 'Am', 'F', 'G', 'Em', 'Dm', 'A7', 'D7'],
-      route: 'song-moon-heart'
+      chords: ['C', 'F', 'G'],
+      route: 'song-twinkle-star'
     }
+    // 其他歌曲暫時隱藏
+    // {
+    //   id: 'happy-birthday',
+    //   title: '生日快樂',
+    //   emoji: '🎂',
+    //   difficulty: '初級',
+    //   chords: ['C', 'F', 'G', 'Am'],
+    //   route: 'song-happy-birthday'
+    // },
+    // {
+    //   id: 'childhood',
+    //   title: '童年',
+    //   emoji: '🌈',
+    //   difficulty: '中級',
+    //   chords: ['C', 'Am', 'F', 'G', 'Dm', 'Em'],
+    //   route: 'song-childhood'
+    // },
+    // {
+    //   id: 'moon-heart',
+    //   title: '月亮代表我的心',
+    //   emoji: '🌙',
+    //   difficulty: '高級',
+    //   chords: ['C', 'Am', 'F', 'G', 'Em', 'Dm', 'A7', 'D7'],
+    //   route: 'song-moon-heart'
+    // }
   ];
 
   const handleVoiceCommand = (command) => {
