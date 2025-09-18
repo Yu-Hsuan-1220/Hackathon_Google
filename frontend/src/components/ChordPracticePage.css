@@ -70,11 +70,11 @@
 }
 
 /* 動作要點樣式 */
-.key-points-section {
+.chord-practice-page .chord-key-points-section {
   margin-bottom: 1.5rem;
 }
 
-.key-points-grid {
+.chord-practice-page .chord-key-points-grid {
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: repeat(4, 1fr);
@@ -84,20 +84,20 @@
 
 /* 響應式設計 */
 @media (max-width: 768px) {
-  .key-points-grid {
+  .chord-practice-page .chord-key-points-grid {
     grid-template-columns: 1fr;
     grid-template-rows: repeat(4, 1fr);
   }
 }
 
 @media (max-width: 480px) {
-  .key-points-grid {
+  .chord-practice-page .chord-key-points-grid {
     grid-template-columns: 1fr;
     grid-template-rows: repeat(4, 1fr);
   }
 }
 
-.key-point-card {
+.chord-practice-page .chord-key-point-card {
   background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
   border: 1px solid rgba(0, 123, 255, 0.1);
   border-radius: 12px;

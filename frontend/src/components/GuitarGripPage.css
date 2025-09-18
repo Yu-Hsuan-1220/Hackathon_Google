@@ -20,7 +20,7 @@
   display: none;
 }
 
-.lesson-nav {
+.guitar-grip-page .grip-lesson-nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -29,31 +29,25 @@
   margin-bottom: 1rem;
 }
 
-.back-button, .home-button {
-  background: #6c757d;
-  color: white;
-  border: none;
-  padding: 0.4rem 0.8rem;
+.guitar-grip-page .grip-back-button, 
+.guitar-grip-page .grip-home-button {
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  color: #333;
+  padding: 8px 16px;
   border-radius: 20px;
   cursor: pointer;
-  font-size: 0.8rem;
   transition: all 0.3s ease;
+  font-size: 14px;
 }
 
-.back-button:hover, .home-button:hover {
-  background: #5a6268;
-  transform: translateY(-1px);
+.guitar-grip-page .grip-back-button:hover, 
+.guitar-grip-page .grip-home-button:hover {
+  background: #e0e0e0;
+  transform: translateY(-2px);
 }
 
-.home-button {
-  background: #007bff;
-}
-
-.home-button:hover {
-  background: #0056b3;
-}
-
-.lesson-info {
+.guitar-grip-page .grip-lesson-info {
   background: white;
   padding: 1rem;
   border-radius: 16px;
@@ -61,13 +55,14 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-.lesson-meta {
+.guitar-grip-page .grip-lesson-meta {
   display: flex;
   gap: 0.5rem;
   margin-bottom: 0.8rem;
 }
 
-.difficulty, .duration {
+.guitar-grip-page .grip-difficulty, 
+.guitar-grip-page .grip-duration {
   background: #e9ecef;
   color: #495057;
   padding: 0.2rem 0.6rem;
@@ -76,19 +71,19 @@
   font-weight: 600;
 }
 
-.difficulty {
+.guitar-grip-page .grip-difficulty {
   background: #d4edda;
   color: #155724;
 }
 
-.lesson-desc {
+.guitar-grip-page .grip-lesson-desc {
   color: #666;
   line-height: 1.5;
   margin: 0;
   font-size: 0.9rem;
 }
 
-.lesson-content {
+.guitar-grip-page .grip-lesson-content {
   background: white;
   border-radius: 16px;
   padding: 1rem;
@@ -96,7 +91,7 @@
   flex: 1;
 }
 
-.lesson-content h2 {
+.guitar-grip-page .grip-lesson-content h2 {
   color: #333;
   font-size: 1rem;
   margin: 0 0 0.8rem 0;
@@ -104,37 +99,39 @@
   border-bottom: 2px solid #f8f9fa;
 }
 
-/* 動作要點樣式 */
-.key-points-section {
+/* 動作要點樣式 - 橘色框框，四行布局 */
+.guitar-grip-page .grip-key-points-section {
   margin-bottom: 1.5rem;
 }
 
-.key-points-grid {
+.guitar-grip-page .grip-key-points-grid {
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: repeat(4, 1fr);
   gap: 0.8rem;
-  margin-bottom: 1rem;
+  margin: 0 1rem 1rem 1rem; /* 左右間距1rem */
 }
 
 /* 響應式設計 */
 @media (max-width: 768px) {
-  .key-points-grid {
+  .guitar-grip-page .grip-key-points-grid {
     grid-template-columns: 1fr;
     grid-template-rows: repeat(4, 1fr);
+    margin: 0 1rem 1rem 1rem;
   }
 }
 
 @media (max-width: 480px) {
-  .key-points-grid {
+  .guitar-grip-page .grip-key-points-grid {
     grid-template-columns: 1fr;
     grid-template-rows: repeat(4, 1fr);
+    margin: 0 1rem 1rem 1rem;
   }
 }
 
-.key-point-card {
-  background: linear-gradient(135deg, #fff5f5 0%, #ffe8e8 100%);
-  border: 1px solid rgba(255, 107, 107, 0.1);
+.guitar-grip-page .grip-key-point-card {
+  background: linear-gradient(135deg, #fff5f0 0%, #ffe8d6 100%);
+  border: 2px solid #ff8c00; /* 橘色框框 */
   border-radius: 12px;
   padding: 0.8rem;
   transition: all 0.3s ease;
@@ -144,37 +141,36 @@
   justify-content: center;
 }
 
-.key-point-card:hover {
+.guitar-grip-page .grip-key-point-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  border-color: rgba(255, 107, 107, 0.2);
+  box-shadow: 0 4px 15px rgba(255, 140, 0, 0.2);
+  border-color: #ff7f00;
 }
 
-.key-point-header {
+.guitar-grip-page .grip-key-point-header {
   margin-bottom: 0.5rem;
 }
 
-.key-point-header h3 {
+.guitar-grip-page .grip-key-point-header h3 {
   font-size: 0.9rem;
   font-weight: 700;
   color: #333;
   margin: 0;
 }
 
-.key-point-desc {
+.guitar-grip-page .grip-key-point-desc {
   font-size: 0.8rem;
   color: #666;
   line-height: 1.4;
   margin: 0;
 }
 
-
 /* 步驟列表樣式 */
-.steps-list {
+.guitar-grip-page .grip-steps-list {
   margin-bottom: 1.5rem;
 }
 
-.step-item {
+.guitar-grip-page .grip-step-item {
   display: flex;
   align-items: flex-start;
   gap: 0.8rem;
@@ -185,12 +181,12 @@
   transition: all 0.3s ease;
 }
 
-.step-item:hover {
+.guitar-grip-page .grip-step-item:hover {
   background: #e9ecef;
   transform: translateX(4px);
 }
 
-.step-number {
+.guitar-grip-page .grip-step-number {
   background: #007bff;
   color: white;
   width: 24px;
@@ -204,50 +200,48 @@
   flex-shrink: 0;
 }
 
-.step-text {
+.guitar-grip-page .grip-step-text {
   color: #495057;
   font-size: 0.85rem;
   line-height: 1.4;
   flex: 1;
 }
 
-/* 練習按鈕樣式 */
-.lesson-actions {
+/* 練習按鈕樣式 - 5rem寬 2rem高 置中 */
+.guitar-grip-page .grip-lesson-actions {
   text-align: center;
   margin-top: 1.5rem;
 }
 
-.practice-button {
+.guitar-grip-page .grip-practice-button {
   background: linear-gradient(135deg, #28a745, #20c997);
   color: white;
   border: none;
-  padding: 0.8rem 1.5rem;
+  width: 10rem;
+  height: 2.5rem;
   border-radius: 25px;
   cursor: pointer;
   font-size: 0.9rem;
   font-weight: 600;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-}
-/*按鈕大小*/
-.practice-button.large-button {
-  font-size: 1rem;
-  padding: 1.5rem 3rem;
-  border-radius: 35px;
+  display: block;
+  margin: 0 auto;
 }
 
-.practice-button:hover {
+.guitar-grip-page .grip-practice-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
 }
 
-.practice-button:active {
+.guitar-grip-page .grip-practice-button:active {
   transform: translateY(0);
   box-shadow: 0 2px 10px rgba(40, 167, 69, 0.3);
 }
 
 /* 相機和結果內容樣式 */
-.camera-content, .result-content {
+.guitar-grip-page .grip-camera-content, 
+.guitar-grip-page .grip-result-content {
   height: 100%;
   display: flex;
   flex-direction: column;

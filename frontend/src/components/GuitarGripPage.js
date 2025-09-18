@@ -51,39 +51,39 @@ function GuitarGripPage({ onNavigate }) {
       showStatusBar={true}
     >
       <div className="guitar-grip-page">
-        <div className="lesson-nav">
+        <div className="grip-lesson-nav">
           <button 
-            className="back-button"
+            className="grip-back-button"
             onClick={() => onNavigate('guitar-lesson')}
           >
             ← 返回教學選單
           </button>
           <button 
-            className="home-button"
+            className="grip-home-button"
             onClick={() => onNavigate('home')}
           >
             🏠 主頁
           </button>
         </div>
         
-        <div className="lesson-content">
-          <div className="key-points-section">
+        <div className="grip-lesson-content">
+          <div className="grip-key-points-section">
             <h2>💡 動作要點</h2>
-            <div className="key-points-grid">
+            <div className="grip-key-points-grid">
               {lessonData.keyPoints.map((point, index) => (
-                <div key={index} className="key-point-card">
-                  <div className="key-point-header">
+                <div key={index} className="grip-key-point-card">
+                  <div className="grip-key-point-header">
                     <h3>{point.title}</h3>
                   </div>
-                  <p className="key-point-desc">{point.description}</p>
+                  <p className="grip-key-point-desc">{point.description}</p>
                 </div>
               ))}
             </div>
           </div>
           
-          <div className="lesson-actions">
+          <div className="grip-lesson-actions">
             <button 
-              className="practice-button large-button"
+              className="grip-practice-button"
               onClick={handleStartPractice}
             >
               🎯 開始姿勢檢測
