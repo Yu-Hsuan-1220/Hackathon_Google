@@ -5,11 +5,13 @@
   flex-direction: column;
   overflow-y: auto;
   overflow-x: hidden;
-  position: absolute;
   -webkit-overflow-scrolling: touch;
   -ms-overflow-style: none;
   scrollbar-width: none;
-  padding: 0.5rem;
+}
+
+.lesson-list::-webkit-scrollbar {
+  display: none;
 }
 
 
@@ -53,7 +55,7 @@
   cursor: pointer;
   transition: all 0.3s ease;
   padding: 0rem;
-  min-height: 60px;
+  min-height: 80px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -74,29 +76,33 @@
   font-size: 2.5rem;
   z-index: 2;
   opacity: 0.8;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Android Emoji", "EmojiSymbols", sans-serif;
+  line-height: 1;
 }
 
 /* 課程內容區域 */
 .lesson-content {
   position: relative;
   z-index: 1;
-  padding-right: 3rem; /* 為emoji留出空間 */
+  padding-right: 4rem; /* 為emoji留出更多空間 */
+  padding-left: 0.5rem;
 }
 
 
 /*題目大小*/
 .lesson-title-compact {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #333;
   margin: 0 0 0.5rem 0;
-  line-height: 1.2;
+  line-height: 1.3;
+  padding-top: 9px;
 }
 
 .lesson-meta-compact {
   display: flex;
-  gap: 0.3rem;
-  margin-bottom: 0.5rem;
+  gap: 0.5rem;
+  margin-bottom: 0.8rem;
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-start;
@@ -105,9 +111,9 @@
 .difficulty-compact, .duration-compact {
   background: #e9ecef;
   color: #495057;
-  padding: 0.15rem 0.4rem;
-  border-radius: 8px;
-  font-size: 0.6rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 10px;
+  font-size: 0.7rem;
   font-weight: 600;
 }
 
@@ -118,8 +124,8 @@
 
 .lesson-description-compact {
   color: #666;
-  font-size: 0.8rem;
-  line-height: 1.3;
+  font-size: 0.85rem;
+  line-height: 1.4;
   margin: 0;
 }
 
@@ -140,6 +146,31 @@
   border-color: #45B7D1;
 }
 
+.lesson-5:hover {
+  border-color: #F39C12;
+}
+
+/* 為每個課程設置特定的emoji，確保正確顯示 */
+.lesson-1 .lesson-icon::before {
+  content: "🎸";
+}
+
+.lesson-2 .lesson-icon::before {
+  content: "🎼";
+}
+
+.lesson-3 .lesson-icon::before {
+  content: "🎵";
+}
+
+.lesson-4 .lesson-icon::before {
+  content: "🎶";
+}
+
+.lesson-5 .lesson-icon::before {
+  content: "⭐";
+}
+
 /* 媒體查詢 */
 @media (min-width: 480px) {
   .lessons-grid-four-columns {
@@ -154,5 +185,18 @@
     grid-template-columns: 1fr;
     grid-auto-rows: minmax(120px, auto);
     gap: 1rem;
+  }
+}
+
+.progress-text {
+  margin: 0;
+  color: #666;
+  font-size: 0.8rem;
+}
+
+/* 響應式設計 */
+@media (min-width: 768px) {
+  .lessons-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }

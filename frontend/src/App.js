@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import HomePage from './components/HomePage';
-import GuitarLessonPage from './components/GuitarLessonPage';
+import BasicLessonPage from './components/BasicLessonPage';
 import GuitarGripPage from './components/GuitarGripPage';
 import ChordPracticePage from './components/ChordPracticePage';
-import PickingTechniquePage from './components/PickingTechniquePage';
+import SingleNotePage from './components/SingleNotePage';
 import MetronomePage from './components/MetronomePage';
 import SongTutorialPage from './components/SongTutorialPage';
 import SongPracticePage from './components/SongPracticePage';
@@ -36,7 +36,7 @@ const App = () => {
   const handleFirstTimeComplete = () => {
     setIsFirstTime(false);
     localStorage.setItem('isFirstTime', 'false');
-    setCurrentScreen('tuner');
+    setCurrentScreen('home');
   };
 
   const handlePoseResult = (result) => {
@@ -78,11 +78,11 @@ const App = () => {
       case 'home':
         return <HomePage onNavigate={(screen) => handleNavigate(screen, 'home')} />;
       
-      case 'guitar-lesson':
+      case 'basic-lesson':
         return (
-          <GuitarLessonPage 
+          <BasicLessonPage 
             onBack={() => setCurrentScreen('home')}
-            onNavigate={(screen) => handleNavigate(screen, 'guitar-lesson')}
+            onNavigate={(screen) => handleNavigate(screen, 'basic-lesson')}
           />
         );
 
@@ -117,9 +117,9 @@ const App = () => {
           />
         );
 
-      case 'picking-technique':
+      case 'single-note':
         return (
-          <PickingTechniquePage 
+          <SingleNotePage 
             onNavigate={setCurrentScreen}
           />
         );
@@ -143,7 +143,7 @@ const App = () => {
           <SongPracticePage 
             onBack={() => setCurrentScreen('home')}
             onNavigate={setCurrentScreen}
-            songId={navigationSource === 'guitar-lesson' ? 'twinkle-star' : null}
+            songId={navigationSource === 'basic-lesson' ? 'twinkle-star' : null}
           />
         );
       
@@ -155,19 +155,10 @@ const App = () => {
           />
         );
       
-      case 'result':
-        return (
-          <ResultScreen 
-            result={poseResult}
-            onBack={() => setCurrentScreen('home')}
-            onRetry={handleRetryPose}
-          />
-        );
-      
       case 'song-twinkle-star':
         return (
           <SongTwinkleStarPage
-            onBack={() => setCurrentScreen(navigationSource === 'guitar-lesson' ? 'guitar-lesson' : 'song-tutorial')}
+            onBack={() => setCurrentScreen(navigationSource === 'basic-lesson' ? 'basic-lesson' : 'song-tutorial')}
             onHome={() => setCurrentScreen('home')}
           />
         );

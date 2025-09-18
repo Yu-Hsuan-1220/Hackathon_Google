@@ -5,11 +5,14 @@
   flex-direction: column;
   overflow-y: auto;
   overflow-x: hidden;
-  position: absolute;
   -webkit-overflow-scrolling: touch;
   -ms-overflow-style: none;
   scrollbar-width: none;
   padding: 0.5rem;
+}
+
+.lesson-list::-webkit-scrollbar {
+  display: none;
 }
 
 
