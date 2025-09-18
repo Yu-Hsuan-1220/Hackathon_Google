@@ -36,14 +36,14 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
       setState(prev => ({ ...prev, phase: 'playing', isPlayingInstruction: true }));
 
       const audio = instructionAudioRef.current;
-      
+
       // 停止現有播放並重置
       audio.pause();
       audio.currentTime = 0;
-      
+
       // 處理音檔路徑 - 確保正確的前端路徑格式
       let finalAudioPath = audioPath;
-      
+
       // 如果是後端返回的完整路徑，需要轉換
       if (audioPath && audioPath.startsWith('frontend/public/')) {
         finalAudioPath = audioPath.replace('frontend/public/', '/');
@@ -52,13 +52,13 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
       } else if (audioPath && !audioPath.startsWith('/')) {
         finalAudioPath = '/' + audioPath;
       }
-      
+
       console.log('🎵 原始音檔路徑:', audioPath);
       console.log('🎵 處理後路徑:', finalAudioPath);
-      
+
       const handleEnded = () => {
         console.log('✅ 指示音檔播放完成');
-        setState(prev => ({ ...prev, isPlayingInstruction: false }));
+        setState(prev => ({ ...prev, isPlayingInstruction: false, phase: 'idle' }));
         audio.removeEventListener('ended', handleEnded);
         audio.removeEventListener('error', handleError);
         audio.removeEventListener('canplaythrough', handleCanPlay);
@@ -68,9 +68,10 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
       const handleError = (error) => {
         console.error('🔊 語音播放錯誤:', error);
         console.error('錯誤的音檔路徑:', finalAudioPath);
-        setState(prev => ({ 
-          ...prev, 
+        setState(prev => ({
+          ...prev,
           isPlayingInstruction: false,
+          phase: 'idle',  // Reset phase to idle on error too
           error: null // 不顯示音檔播放錯誤，因為這不是關鍵功能
         }));
         audio.removeEventListener('ended', handleEnded);
@@ -88,7 +89,7 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
       audio.addEventListener('ended', handleEnded);
       audio.addEventListener('error', handleError);
       audio.addEventListener('canplaythrough', handleCanPlay);
-      
+
       // 設置音源
       audio.src = finalAudioPath;
       audio.load(); // 強制重新加載
@@ -98,16 +99,33 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
   // 處理後端回應
   const processLessonResponse = useCallback(async (response) => {
     try {
-      const { target_note: nextNote, debug_info } = response;
-      const { success, audio_path } = debug_info || {};
+      console.log('🔍 Processing response:', response);
 
-      // 更新題目結果
+      const { next_note: nextNote, wav_path: audioPath, confidence, tuning_result } = response;
+
+      console.log('🔍 Extracted nextNote:', nextNote);
+
+      // Update state FIRST, before playing audio
+      if (nextNote && nextNote !== '') {
+        console.log('🔍 Updating currentNote from', state.currentNote, 'to', nextNote);
+        setState(prev => {
+          console.log('🔍 setState callback - prev.currentNote:', prev.currentNote, 'new currentNote:', nextNote);
+          return {
+            ...prev,
+            currentNote: nextNote,
+            phase: audioPath ? 'playing' : 'idle'  // Set to playing if we have audio to play
+          };
+        });
+      }
+
+      // Update results only for non-initialization requests
       if (state.currentNote && state.currentNote !== 'AA') {
+        const success = tuning_result === 'success_advance' || tuning_result === 'in_tune';
         setState(prev => {
           const newResults = new Map(prev.questionResults);
           const currentResult = newResults.get(state.currentNote) || { success: false, attempts: 0 };
           newResults.set(state.currentNote, {
-            success: success || currentResult.success, // 一旦成功就保持成功
+            success: success || currentResult.success,
             attempts: currentResult.attempts + 1
           });
 
@@ -122,28 +140,20 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
         });
       }
 
-      // 播放指導語音（如果有）
-      if (audio_path) {
-        await playInstructionAudio(audio_path);
+      // Play instruction audio AFTER state update
+      if (audioPath) {
+        console.log('🔍 Playing audio:', audioPath);
+        await playInstructionAudio(audioPath);
       }
 
-      // 更新下一題或完成狀態
-      if (nextNote && nextNote !== 'AA' && nextNote !== '') {
-        setState(prev => ({
-          ...prev,
-          currentNote: nextNote,
-          phase: prev.answeredNotes.size >= 7 ? 'done' : 'idle'
-        }));
-      } else if (nextNote === '') {
-        // 後端返回空字符串表示完成
+      // Check if lesson is complete
+      if (response.finish) {
         setState(prev => ({ ...prev, phase: 'done' }));
-      } else {
-        setState(prev => ({ ...prev, phase: 'idle' }));
       }
 
       // 檢查是否完成所有題目
       setState(prev => {
-        if (prev.answeredNotes.size >= 7 || nextNote === '') {
+        if (prev.answeredNotes.size >= 7) {
           setTimeout(() => {
             onNavigate('home');
           }, 3000);
@@ -154,8 +164,8 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
 
     } catch (error) {
       console.error('處理回應失敗:', error);
-      setState(prev => ({ 
-        ...prev, 
+      setState(prev => ({
+        ...prev,
         error: '處理回應失敗，請重試',
         phase: 'idle'
       }));
@@ -217,35 +227,44 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
 
       const result = await response.json();
       console.log('📦 收到回應:', result);
-      
+
       await processLessonResponse(result);
 
     } catch (error) {
       console.error('上傳失敗:', error);
-      setState(prev => ({ 
-        ...prev, 
-        error: error.message.includes('fetch') ? 
-          '網路連線失敗，請檢查後端服務是否啟動' : 
+      setState(prev => ({
+        ...prev,
+        error: error.message.includes('fetch') ?
+          '網路連線失敗，請檢查後端服務是否啟動' :
           `請求失敗: ${error.message}`,
         phase: 'idle'
       }));
     }
   }, [processLessonResponse]);
 
-  // 上傳錄音 - 簡化邏輯 (移到前面避免初始化錯誤)
+  // 上傳錄音 - 使用 ref 來避免閉包陷阱
+  const currentNoteRef = useRef('');
+  
+  // 同步 ref 與 state
+  useEffect(() => {
+    currentNoteRef.current = state.currentNote;
+  }, [state.currentNote]);
+
   const uploadRecording = useCallback(async (audioBlob) => {
     try {
       console.log('📤 開始上傳錄音...');
-      await sendLessonRequest(state.currentNote, audioBlob);
+      console.log('🔍 Current note for upload (from ref):', currentNoteRef.current);
+
+      await sendLessonRequest(currentNoteRef.current, audioBlob);
     } catch (error) {
       console.error('上傳錄音失敗:', error);
-      setState(prev => ({ 
-        ...prev, 
+      setState(prev => ({
+        ...prev,
         error: error.message,
         phase: 'idle'
       }));
     }
-  }, [state.currentNote, sendLessonRequest]);
+  }, [sendLessonRequest]);
 
   // 開始錄音 - 完全參考調音器的實現
   const startRecording = useCallback(async () => {
@@ -337,7 +356,7 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
   // 停止錄音 - 參考調音器的實現
   const stopRecording = useCallback(() => {
     console.log('🛑 停止錄音流程開始');
-    
+
     if (recordingTimerRef.current) {
       clearInterval(recordingTimerRef.current);
       recordingTimerRef.current = null;
@@ -369,7 +388,7 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
         0x42, 0xf3, 0x81, 0x08, 0x42, 0x82, 0x84, 0x77, 0x65, 0x62, 0x6d
       ]);
       const dummyBlob = new Blob([webmHeader], { type: 'audio/webm' });
-      
+
       console.log('🎵 初始化單音教學...');
       await sendLessonRequest('AA', dummyBlob);
     };
@@ -379,30 +398,35 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
     }
   }, [state.phase, sendLessonRequest]);
 
+  // Debug: Track currentNote changes
+  useEffect(() => {
+    console.log('🔍 currentNote changed to:', state.currentNote);
+  }, [state.currentNote]);
+
   // 清理資源
   useEffect(() => {
     return () => {
       console.log('🧹 清理組件資源');
-      
+
       if (recordingTimerRef.current) {
         clearInterval(recordingTimerRef.current);
         recordingTimerRef.current = null;
       }
-      
+
       if (audioLevelTimerRef.current) {
         clearInterval(audioLevelTimerRef.current);
         audioLevelTimerRef.current = null;
       }
-      
+
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
         animationFrameRef.current = null;
       }
-      
+
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
-      
+
       if (instructionAudioRef.current) {
         instructionAudioRef.current.pause();
         instructionAudioRef.current.src = '';
@@ -413,15 +437,15 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
   // 渲染進度指示器
   const renderProgress = () => {
     const progressPercentage = (state.answeredNotes.size / 7) * 100;
-    
+
     return (
       <div className="lesson-progress">
         <div className="progress-header">
           <span>進度: {state.answeredNotes.size} / 7</span>
         </div>
         <div className="progress-bar">
-          <div 
-            className="progress-fill" 
+          <div
+            className="progress-fill"
             style={{ width: `${progressPercentage}%` }}
           />
         </div>
@@ -430,9 +454,9 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
             const questionNumber = index + 1;
             const answered = state.answeredNotes.size > index;
             const current = state.answeredNotes.size === index;
-            
+
             return (
-              <div 
+              <div
                 key={questionNumber}
                 className={`question-indicator ${answered ? 'answered' : ''} ${current ? 'current' : ''}`}
               >
@@ -453,8 +477,8 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
       <div className="volume-container">
         <div className="volume-label">音量</div>
         <div className="volume-bar">
-          <div 
-            className="volume-fill" 
+          <div
+            className="volume-fill"
             style={{ width: `${Math.min((state.audioLevel / 128) * 100, 100)}%` }}
           />
         </div>
@@ -524,7 +548,7 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
   // 渲染控制按鈕
   const renderControls = () => {
     const isDisabled = ['recording', 'uploading', 'playing', 'intro', 'done'].includes(state.phase);
-    
+
     if (state.phase === 'done') {
       return null;
     }
@@ -537,10 +561,10 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
           disabled={isDisabled}
         >
           {state.phase === 'recording' ? `錄音中 (${Math.round(state.recordingTime * 10) / 10}s)` :
-           state.phase === 'uploading' ? '分析中...' :
-           state.phase === 'playing' ? '播放中...' :
-           state.phase === 'intro' ? '初始化中...' :
-           `開始錄音 (${RECORD_SECONDS}秒)`}
+            state.phase === 'uploading' ? '分析中...' :
+              state.phase === 'playing' ? '播放中...' :
+                state.phase === 'intro' ? '初始化中...' :
+                  `開始錄音 (${RECORD_SECONDS}秒)`}
         </button>
       </div>
     );
@@ -570,8 +594,8 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
         {state.error && (
           <div className="error-toast">
             <span>{state.error}</span>
-            <button 
-              className="error-close" 
+            <button
+              className="error-close"
               onClick={() => setState(prev => ({ ...prev, error: null }))}
             >
               ✕
