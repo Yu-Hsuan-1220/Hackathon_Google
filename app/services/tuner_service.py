@@ -3,11 +3,14 @@ import os
 import tempfile
 import random
 import asyncio
+import subprocess
+from pathlib import Path
 
 # Import the tuning functions from the parent directory
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../../'))
 from app.services.tuner_utils import get_frequency_from_audio, get_note_frequency, tune_audio
+from app.services.audio_conversion_utils import convert_audio_to_wav
 
 # Guitar string to note mapping
 GUITAR_STRINGS = {
@@ -27,7 +30,7 @@ async def analyze_tuning(string_num: str, wav_file_path: str) -> dict:
     
     Args:
         string_num (str): Guitar string number (1-6)
-        wav_file_path (str): Path to WAV audio file
+        wav_file_path (str): Path to WAV audio file (already converted)
     
     Returns:
         dict: Simplified tuning result with tuning_status, string_num, and tuning_finish
@@ -40,7 +43,7 @@ async def analyze_tuning(string_num: str, wav_file_path: str) -> dict:
         # Get target note for the string
         target_note = GUITAR_STRINGS[string_num]
         
-        # Open and analyze the WAV file
+        # Open and analyze the WAV file (already converted)
         with wave.open(wav_file_path, 'rb') as audio_file:
             tuning_result = tune_audio(audio_file, target_note, tolerance_cents=30)
         
@@ -53,12 +56,15 @@ async def analyze_tuning(string_num: str, wav_file_path: str) -> dict:
         # Get cents difference from the result
         cents_error = tuning_result.get("cents_difference", 0)
         
-        # next string to tune 
-        string_num=string_num-1 if tuning_status==1 and string_num>1 else string_num
+        # next string to tune (convert string_num to int for math operations)
+        string_num_int = int(string_num)
+        next_string_num = string_num_int - 1 if tuning_status and string_num_int > 1 else string_num_int
+        next_string_num_str = str(next_string_num)
+        
         # Return simplified format with cents error
         return {
             "tuning_status": tuning_status,
-            "string_num": string_num,
+            "string_num": next_string_num_str,
             "tuning_finish": tuning_finish,
             "cents_error": cents_error
         }
@@ -112,13 +118,13 @@ async def process_tuning(string_num: str, wav_file_path: str) -> dict:
     
     Args:
         string_num (str): Guitar string number (1-6)
-        wav_file_path (str): Path to input WAV file
+        wav_file_path (str): Path to WAV audio file (already converted)
     
     Returns:
         dict: Complete tuning result with random audio path
     """
     try:
-        # Step 1: Analyze tuning
+        # Step 1: Analyze tuning using the wav file
         print(f"Analyzing tuning for string {string_num}...")
         tuning_analysis = await analyze_tuning(string_num, wav_file_path)
         
@@ -163,19 +169,26 @@ async def process_tuning(string_num: str, wav_file_path: str) -> dict:
         }
 
 # Convenience function for easy import
-async def tune_guitar_string(string_num: str, wav_file_path: str) -> dict:
+async def tune_guitar_string(string_num: str, audio_file_path: str) -> dict:
     """
     Main function to tune a guitar string - returns simplified format
     
     Args:
         string_num (str): Guitar string number (1-6)
-        wav_file_path (str): Path to WAV audio file
+        audio_file_path (str): Path to audio file (webm, wav, etc.)
     
     Returns:
         dict: Simple result with tuning_status, string_num, tuning_finish, and audio_path
     """
+    wav_file_path = None
     try:
-        # Use the tuning process function
+        # Step 1: Convert audio to wav if needed
+        print(f"DEBUG: Original file path: {audio_file_path}")
+        wav_file_path = convert_audio_to_wav(audio_file_path)
+        print(f"DEBUG: Converted file path: {wav_file_path}")
+        print(f"DEBUG: Converted file exists: {os.path.exists(wav_file_path)}")
+        
+        # Step 2: Use the tuning process function with converted wav file
         full_result = await process_tuning(string_num, wav_file_path)
         
         if full_result.get("status") == "error":
@@ -208,6 +221,14 @@ async def tune_guitar_string(string_num: str, wav_file_path: str) -> dict:
             "audio_path": None,
             "error": str(e)
         }
+    finally:
+        # Clean up converted wav file if it was created
+        if wav_file_path and wav_file_path != audio_file_path and os.path.exists(wav_file_path):
+            try:
+                os.remove(wav_file_path)
+                print(f"Cleaned up temporary wav file: {wav_file_path}")
+            except Exception as e:
+                print(f"Warning: Could not clean up temporary file {wav_file_path}: {e}")
 
 # Test function
 async def test_tuning_service():
