@@ -6,7 +6,72 @@ const VoiceControl = ({ onVoiceCommand, isEnabled = true }) => {
   const [isMicrophoneEnabled, setIsMicrophoneEnabled] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [isSupported, setIsSupported] = useState(false);
+  const [isRestarting, setIsRestarting] = useState(false); // 添加重啟狀態追蹤
+  const [savedFileCount, setSavedFileCount] = useState(0); // 追蹤已保存檔案數量
   const recognitionRef = useRef(null);
+
+  // 保存語音識別結果到txt檔案
+  const saveTranscriptToFile = (transcript) => {
+    try {
+      // 創建時間戳
+      const now = new Date();
+      const timestamp = now.toISOString().replace(/[:.]/g, '-').replace('T', '_').split('.')[0];
+      const fileName = `voice_${timestamp}.txt`;
+      
+      // 創建詳細的文件內容
+      const content = `語音識別記錄
+========================
+時間: ${now.toLocaleString('zh-TW', {
+        year: 'numeric',
+        month: '2-digit', 
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      })}
+時間戳: ${timestamp}
+========================
+
+識別內容:
+${transcript}
+
+========================
+檔案資訊:
+- 檔案名稱: ${fileName}
+- 建立時間: ${now.toISOString()}
+- 瀏覽器: ${navigator.userAgent}
+========================
+`;
+      
+      // 創建並下載檔案
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      
+      // 自動下載
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      console.log('💾 語音識別結果已保存到:', fileName);
+      
+      // 更新已保存檔案數量
+      setSavedFileCount(prev => prev + 1);
+      
+      // 顯示保存成功的通知
+      if (typeof window !== 'undefined' && window.alert) {
+        // 可以選擇顯示通知，或者使用更友好的通知方式
+        // alert(`語音已保存為: ${fileName}`);
+      }
+      
+    } catch (error) {
+      console.error('❌ 保存檔案失敗:', error);
+      alert('保存檔案失敗，請檢查瀏覽器下載設定');
+    }
+  };
 
   useEffect(() => {
     // 檢查瀏覽器是否支援語音識別
@@ -32,37 +97,37 @@ const VoiceControl = ({ onVoiceCommand, isEnabled = true }) => {
       recognition.onstart = () => {
         console.log('🎤 語音識別已開始');
         setIsListening(true);
+        setIsRestarting(false); // 成功啟動時重置重啟狀態
       };
 
       recognition.onend = () => {
         console.log('🛑 語音識別已結束');
         setIsListening(false);
+        setIsRestarting(false); // 重置重啟狀態
         
-        // 如果麥克風仍啟用且沒有錯誤，自動重新開始
-        if (isMicrophoneEnabled) {
+        // 只有在麥克風明確啟用且沒有錯誤時才重新啟動
+        // 增加檢查避免無限循環
+        if (isMicrophoneEnabled && recognitionRef.current && !isRestarting) {
           console.log('⚡ 準備重新開始語音識別...');
+          setIsRestarting(true); // 標記正在重啟
           setTimeout(() => {
-            if (isMicrophoneEnabled && recognitionRef.current) {
+            // 再次檢查狀態，避免在用戶關閉麥克風後重啟
+            if (isMicrophoneEnabled && recognitionRef.current && !isListening) {
               try {
                 console.log('🔄 重新開始語音識別');
                 recognitionRef.current.start();
               } catch (error) {
                 console.error('❌ 重新開始失敗:', error);
+                setIsRestarting(false); // 重啟失敗時重置狀態
                 if (error.name === 'InvalidStateError') {
-                  console.log('⏳ 等待更長時間後重試...');
-                  setTimeout(() => {
-                    if (isMicrophoneEnabled && recognitionRef.current) {
-                      try {
-                        recognitionRef.current.start();
-                      } catch (e) {
-                        console.error('❌ 第二次重試也失敗:', e);
-                      }
-                    }
-                  }, 1000);
+                  console.log('⏳ 語音識別仍在運行，跳過重啟');
+                  // 不要再次嘗試重啟，避免循環
                 }
               }
+            } else {
+              setIsRestarting(false); // 條件不滿足時重置狀態
             }
-          }, 500); // 增加延遲時間
+          }, 1000); // 增加延遲時間避免快速循環
         }
       };
 
@@ -93,6 +158,10 @@ const VoiceControl = ({ onVoiceCommand, isEnabled = true }) => {
         // 處理最終結果
         if (finalTranscript && finalTranscript.trim() && onVoiceCommand) {
           console.log('✅ 發送語音指令:', finalTranscript.trim());
+          
+          // 自動保存語音識別結果到檔案
+          saveTranscriptToFile(finalTranscript.trim());
+          
           onVoiceCommand(finalTranscript.trim());
           
           // 延遲清除，讓用戶看到結果
@@ -124,20 +193,18 @@ const VoiceControl = ({ onVoiceCommand, isEnabled = true }) => {
             break;
           case 'network':
             console.error('🌐 網路錯誤，語音識別服務無法連接');
-            // 稍後重試
-            setTimeout(() => {
-              if (isMicrophoneEnabled && recognitionRef.current) {
-                console.log('🔄 網路錯誤後重試...');
-                try {
-                  recognitionRef.current.start();
-                } catch (e) {
-                  console.error('❌ 網路錯誤重試失敗:', e);
-                }
-              }
-            }, 2000);
+            // 網路錯誤時不要立即重試，避免循環
+            setIsMicrophoneEnabled(false);
+            alert('網路錯誤，請檢查網路連接後重新開啟麥克風');
+            break;
+          case 'aborted':
+            console.log('⏹️ 語音識別被中止');
+            // 被中止時不重啟
             break;
           default:
             console.error('❓ 未知錯誤:', event.error);
+            // 未知錯誤時暫停服務，避免循環
+            setIsMicrophoneEnabled(false);
             break;
         }
       };
@@ -164,7 +231,7 @@ const VoiceControl = ({ onVoiceCommand, isEnabled = true }) => {
         recognitionRef.current.stop();
       }
     };
-  }, [isMicrophoneEnabled, onVoiceCommand]);
+  }, [onVoiceCommand]); // 移除 isMicrophoneEnabled 依賴，避免重複初始化
 
   const toggleMicrophone = async () => {
     if (!isSupported || !isEnabled) {
@@ -177,6 +244,7 @@ const VoiceControl = ({ onVoiceCommand, isEnabled = true }) => {
       console.log('🔴 關閉麥克風');
       setIsMicrophoneEnabled(false);
       setIsListening(false);
+      setIsRestarting(false); // 重置重啟狀態
       setTranscript('');
       if (recognitionRef.current) {
         try {
@@ -288,15 +356,9 @@ const VoiceControl = ({ onVoiceCommand, isEnabled = true }) => {
         ) : '⚫ 點擊開啟語音'}
       </div>
       
-      {/* 調試信息 - 開發時可見 */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="debug-info">
-          <small>
-            支援: {isSupported ? '✅' : '❌'} | 
-            啟用: {isEnabled ? '✅' : '❌'} | 
-            麥克風: {isMicrophoneEnabled ? '🟢' : '🔴'} | 
-            監聽: {isListening ? '🎤' : '💤'}
-          </small>
+      {savedFileCount > 0 && (
+        <div className="file-count-display">
+          📁 已保存 {savedFileCount} 個語音檔案
         </div>
       )}
     </div>

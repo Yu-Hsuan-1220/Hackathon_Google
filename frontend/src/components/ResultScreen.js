@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import PhoneContainer from './PhoneContainer';
 import './ResultScreen.css';
 
 const ResultScreen = ({ result, onBack, onRetry }) => {
@@ -12,11 +13,10 @@ const ResultScreen = ({ result, onBack, onRetry }) => {
       
       console.log('🎵 開始獲取音檔...');
       
-      // 使用你後端提供的端點，添加隨機參數避免緩存
+      // 從本地根目錄讀取音檔
       const timestamp = new Date().getTime();
-      const response = await fetch(`http://127.0.0.1:8000/pose_suggestion.wav?t=${timestamp}`, {
+      const response = await fetch(`/pose_suggestion.wav`, {
         method: 'GET',
-        mode: 'cors',
         cache: 'no-cache',
         headers: {
           'Accept': 'audio/wav, audio/*',
@@ -65,7 +65,9 @@ const ResultScreen = ({ result, onBack, onRetry }) => {
     } catch (error) {
       console.error('💥 播放音檔失敗:', error);
       if (error.name === 'TypeError' || error.message.includes('fetch')) {
-        setAudioError('網路連接失敗，請檢查後端服務是否運行在 http://127.0.0.1:8000');
+        setAudioError('網路連接失敗，請檢查後端服務是否運行');
+      } else if (error.message.includes('404')) {
+        setAudioError('音檔尚未生成，可能後端 API 配額已用完');
       } else {
         setAudioError(`無法播放語音: ${error.message}`);
       }
@@ -98,42 +100,57 @@ const ResultScreen = ({ result, onBack, onRetry }) => {
     );
   }
 
-  return (
-    <div className="result-screen">
-      <div className="result-header">
-        <button onClick={onBack} className="back-button">
-          ←
-        </button>
-        <h2>🎸 檢測結果</h2>
-      </div>
+  const handleVoiceCommand = (command) => {
+    console.log('ResultScreen 收到語音指令:', command);
+    
+    if (command.includes('播放') || command.includes('語音')) {
+      playAudio();
+    } else if (command.includes('重新') || command.includes('再試')) {
+      if (onRetry) onRetry();
+    } else if (command.includes('返回') || command.includes('回去')) {
+      if (onBack) onBack();
+    }
+  };
 
-      <div className="result-content">
-        <div className="analysis-section">
-          <h3>姿勢分析結果</h3>
-          
-          {/* 顯示 Gemini 的建議文字 */}
-          <div className="suggestion-text">
-            <h4>AI 分析建議</h4>
+  return (
+    <PhoneContainer 
+      title="姿勢分析結果" 
+      onVoiceCommand={handleVoiceCommand}
+      enableVoice={true}
+    >
+      <div className="result-content-wrapper">
+        <div className="result-main-content">
+          <div className="suggestion-card">
+            <div className="card-header">
+              <span className="result-card-icon">💡</span>
+              <h4 className="result-card-title">改善建議</h4>
+            </div>
             <div className="suggestion-content">
               {result.suggestion || '沒有具體建議'}
             </div>
           </div>
 
-          <div className="audio-controls">
+          <div className="audio-control-card">
             <button 
               onClick={playAudio}
               disabled={isPlayingAudio}
-              className={`audio-button ${isPlayingAudio ? 'playing' : ''}`}
+              className={`audio-play-button ${isPlayingAudio ? 'playing' : ''}`}
             >
-              {isPlayingAudio ? '🔊 播放中...' : '🔊 播放語音建議'}
+              <span className="audio-icon">
+                {isPlayingAudio ? '🔊' : '🎵'}
+              </span>
+              <span className="audio-text">
+                {isPlayingAudio ? '播放中...' : '播放語音建議'}
+              </span>
             </button>
+            
             {audioError && (
-              <div className="audio-error">
-                ⚠️ {audioError}
+              <div className="audio-error-card">
+                <span className="error-icon">⚠️</span>
+                <span className="error-text">{audioError}</span>
                 <button 
                   onClick={playAudio} 
                   className="retry-audio-button"
-                  style={{marginLeft: '10px', padding: '5px 10px', fontSize: '12px'}}
                 >
                   重試
                 </button>
@@ -141,17 +158,25 @@ const ResultScreen = ({ result, onBack, onRetry }) => {
             )}
           </div>
         </div>
-      </div>
 
-      <div className="result-actions">
-        <button onClick={onRetry} className="retry-button">
-          重新拍照
-        </button>
-        <button onClick={onBack} className="home-button">
-          返回課程
-        </button>
+        <div className="result-actions">
+          <button 
+            onClick={onRetry} 
+            className="action-button retry-button"
+          >
+            <span className="button-icon">📷</span>
+            重新拍照
+          </button>
+          <button 
+            onClick={onBack} 
+            className="action-button back-button"
+          >
+            <span className="button-icon">←</span>
+            返回課程
+          </button>
+        </div>
       </div>
-    </div>
+    </PhoneContainer>
   );
 };
 

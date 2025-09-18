@@ -30,3 +30,11 @@ will see 9 vulnerabilities (3 moderate, 6 high)
 ```
 npm start
 ```
+
+## comment
+
+在每一次要念出音檔的時候，需要先把所有 .wav 清乾淨
+可以輸入
+```
+ find . -type f -name "*.wav" -delete
+```
