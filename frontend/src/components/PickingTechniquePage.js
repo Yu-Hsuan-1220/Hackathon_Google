@@ -72,6 +72,15 @@ function PickingTechniquePage({ onNavigate }) {
                 </div>
               ))}
             </div>
+            
+            <div className="lesson-actions">
+              <button 
+                className="practice-button"
+                onClick={() => onNavigate('single-note-lesson')}
+              >
+                🎵 開始單音練習
+              </button>
+            </div>
           </div>
         </div>
       </div>

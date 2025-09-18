@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 
 # local lib
-from app.routers import pose_check, menu, home, first_used,tuner
+from app.routers import pose_check, menu, home, first_used, tuner, string_check
 
 
 app = FastAPI()
@@ -28,6 +28,7 @@ app.include_router(home.router, prefix="/home", tags=["Home"])
 app.include_router(pose_check.router, prefix="/pose", tags=["Pose Check"])
 app.include_router(first_used.router, prefix="/first_used", tags=["First Used"])
 app.include_router(tuner.router, prefix="/tuner", tags=["Tuner"])
+app.include_router(string_check.router, prefix="/simplenote", tags=["Simple Note"])
 
 
 if __name__ == "__main__":
