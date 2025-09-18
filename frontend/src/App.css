@@ -23,6 +23,25 @@ body {
   position: relative;
 }
 
+/* 響應式圖片通用樣式 */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* 防止任何元素超出容器邊界 */
+* {
+  max-width: 100%;
+  word-wrap: break-word;
+}
+
+/* 確保媒體元素不會溢出 */
+video, audio, canvas, svg {
+  max-width: 100%;
+  height: auto;
+}
+
 /* 手機優化 */
 @media (max-width: 768px) {
   body {

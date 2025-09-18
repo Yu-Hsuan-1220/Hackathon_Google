@@ -1,19 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import HomePage from './components/HomePage';
 import GuitarLessonPage from './components/GuitarLessonPage';
+import GuitarGripPage from './components/GuitarGripPage';
+import ChordPracticePage from './components/ChordPracticePage';
+import PickingTechniquePage from './components/PickingTechniquePage';
 import MetronomePage from './components/MetronomePage';
 import SongTutorialPage from './components/SongTutorialPage';
 import SongPracticePage from './components/SongPracticePage';
 import CameraScreen from './components/CameraScreen';
 import ResultScreen from './components/ResultScreen';
+import FirstTimeUserPage from './components/FirstTimeUserPage';
+import TunerPage from './components/TunerPage';
+import SongTwinkleStarPage from './components/SongTwinkleStarPage';
+import SongHappyBirthdayPage from './components/SongHappyBirthdayPage';
+import SongChildhoodPage from './components/SongChildhoodPage';
+import SongMoonHeartPage from './components/SongMoonHeartPage';
 import './App.css';
 
 const App = () => {
   const [currentScreen, setCurrentScreen] = useState('home');
   const [poseResult, setPoseResult] = useState(null);
+  const [isFirstTime, setIsFirstTime] = useState(true);
+  const [navigationSource, setNavigationSource] = useState(null);
+
+  useEffect(() => {
+    // 檢查是否為首次使用者
+    const firstTimeFlag = localStorage.getItem('isFirstTime');
+    if (firstTimeFlag === 'false') {
+      setIsFirstTime(false);
+    } else {
+      setCurrentScreen('first-time');
+    }
+  }, []);
+
+  const handleFirstTimeComplete = () => {
+    setIsFirstTime(false);
+    localStorage.setItem('isFirstTime', 'false');
+    setCurrentScreen('tuner');
+  };
 
   const handlePoseResult = (result) => {
-    console.log('收到姿勢檢測結果:', result);
     setPoseResult(result);
     setCurrentScreen('result');
   };
@@ -23,19 +49,80 @@ const App = () => {
     setCurrentScreen('camera');
   };
 
+  // 創建智能導航函數，可以跟蹤來源並傳遞數據
+  const handleNavigate = (screen, sourceOrData = null) => {
+    // 如果sourceOrData是字符串，則為來源；如果是對象，則為數據
+    if (typeof sourceOrData === 'string') {
+      setNavigationSource(sourceOrData);
+    } else if (typeof sourceOrData === 'object' && sourceOrData !== null) {
+      setPoseResult(sourceOrData);
+      setNavigationSource(currentScreen);
+    } else {
+      setNavigationSource(sourceOrData || currentScreen);
+    }
+    setCurrentScreen(screen);
+  };
+
   const renderScreen = () => {
     switch (currentScreen) {
+      case 'first-time':
+        return <FirstTimeUserPage onComplete={handleFirstTimeComplete} />;
+      
+      case 'tuner':
+        return (
+          <TunerPage 
+            onNavigate={setCurrentScreen}
+          />
+        );
+      
       case 'home':
-        return <HomePage onNavigate={setCurrentScreen} />;
+        return <HomePage onNavigate={(screen) => handleNavigate(screen, 'home')} />;
       
       case 'guitar-lesson':
         return (
           <GuitarLessonPage 
             onBack={() => setCurrentScreen('home')}
+            onNavigate={(screen) => handleNavigate(screen, 'guitar-lesson')}
+          />
+        );
+
+      case 'guitar-grip':
+        return (
+          <GuitarGripPage 
+            onNavigate={handleNavigate}
+          />
+        );
+
+      case 'guitar-grip-camera':
+        return (
+          <CameraScreen 
+            onBack={() => handleNavigate('guitar-grip')}
+            onResult={(result) => handleNavigate('guitar-grip-result', result)}
+          />
+        );
+
+      case 'guitar-grip-result':
+        return (
+          <ResultScreen 
+            result={poseResult}
+            onBack={() => handleNavigate('guitar-grip')}
+            onRetry={() => handleNavigate('guitar-grip-camera')}
+          />
+        );
+
+      case 'chord-practice':
+        return (
+          <ChordPracticePage 
             onNavigate={setCurrentScreen}
           />
         );
-      
+
+      case 'picking-technique':
+        return (
+          <PickingTechniquePage 
+            onNavigate={setCurrentScreen}
+          />
+        );
       case 'metronome':
         return (
           <MetronomePage 
@@ -55,6 +142,8 @@ const App = () => {
         return (
           <SongPracticePage 
             onBack={() => setCurrentScreen('home')}
+            onNavigate={setCurrentScreen}
+            songId={navigationSource === 'guitar-lesson' ? 'twinkle-star' : null}
           />
         );
       
@@ -72,6 +161,38 @@ const App = () => {
             result={poseResult}
             onBack={() => setCurrentScreen('home')}
             onRetry={handleRetryPose}
+          />
+        );
+      
+      case 'song-twinkle-star':
+        return (
+          <SongTwinkleStarPage
+            onBack={() => setCurrentScreen(navigationSource === 'guitar-lesson' ? 'guitar-lesson' : 'song-tutorial')}
+            onHome={() => setCurrentScreen('home')}
+          />
+        );
+      
+      case 'song-happy-birthday':
+        return (
+          <SongHappyBirthdayPage
+            onBack={() => setCurrentScreen('song-tutorial')}
+            onHome={() => setCurrentScreen('home')}
+          />
+        );
+      
+      case 'song-childhood':
+        return (
+          <SongChildhoodPage
+            onBack={() => setCurrentScreen('song-tutorial')}
+            onHome={() => setCurrentScreen('home')}
+          />
+        );
+      
+      case 'song-moon-heart':
+        return (
+          <SongMoonHeartPage
+            onBack={() => setCurrentScreen('song-tutorial')}
+            onHome={() => setCurrentScreen('home')}
           />
         );
       

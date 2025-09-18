@@ -10,20 +10,13 @@ const FeatureCarousel = ({ features, onFeatureSelect }) => {
 
   // 自動輪播功能（可選）
   useEffect(() => {
+    // eslint-disable-next-line no-unused-vars
     const nextSlide = () => {
       if (isTransitioning) return;
       setIsTransitioning(true);
       setCurrentIndex((prev) => (prev + 1) % features.length);
       setTimeout(() => setIsTransitioning(false), 300);
     };
-
-    const interval = setInterval(() => {
-      if (!isTransitioning) {
-        nextSlide();
-      }
-    }, 5000); // 5秒自動切換
-
-    return () => clearInterval(interval);
   }, [currentIndex, isTransitioning, features.length]);
 
   const nextSlide = () => {
@@ -45,6 +38,21 @@ const FeatureCarousel = ({ features, onFeatureSelect }) => {
     setIsTransitioning(true);
     setCurrentIndex(index);
     setTimeout(() => setIsTransitioning(false), 300);
+  };
+
+  // 處理點擊區域滑動
+  const handleAreaClick = (e) => {
+    const rect = carouselRef.current.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const containerWidth = rect.width;
+    
+    // 如果點擊在左半邊，往左滑動
+    if (clickX < containerWidth / 2) {
+      prevSlide();
+    } else {
+      // 如果點擊在右半邊，往右滑動
+      nextSlide();
+    }
   };
 
   // 觸控手勢處理
@@ -118,10 +126,7 @@ const FeatureCarousel = ({ features, onFeatureSelect }) => {
 
   return (
     <div className="feature-carousel">
-      <div className="carousel-header">
-        <h2>🎸 學習功能</h2>
-        <p>滑動或點擊選擇你想要的功能</p>
-      </div>
+
 
       <div 
         className="carousel-container"
@@ -129,22 +134,16 @@ const FeatureCarousel = ({ features, onFeatureSelect }) => {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onClick={handleAreaClick}
       >
-        <button 
-          className="carousel-btn carousel-btn-prev"
-          onClick={prevSlide}
-          disabled={isTransitioning}
-        >
-          ‹
-        </button>
-
         <div className="carousel-track">
           {features.map((feature, index) => (
             <div
               key={feature.id}
               className={`carousel-card ${index === currentIndex ? 'active' : ''}`}
               style={getCardStyle(index)}
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 if (index === currentIndex) {
                   onFeatureSelect(feature.id);
                 } else {
@@ -164,14 +163,6 @@ const FeatureCarousel = ({ features, onFeatureSelect }) => {
             </div>
           ))}
         </div>
-
-        <button 
-          className="carousel-btn carousel-btn-next"
-          onClick={nextSlide}
-          disabled={isTransitioning}
-        >
-          ›
-        </button>
       </div>
 
       {/* 指示器 */}

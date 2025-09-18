@@ -1,184 +1,361 @@
-.camera-screen-container {
-  width: 100%;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #000;
-}
-
-.phone-container {
-  width: 375px;
-  height: 812px;
-  background-color: #000;
-  border-radius: 25px;
-  overflow: hidden;
-  position: relative;
-  box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+/* Phone Container 內的相機容器 */
+.camera-screen-wrapper {
+  height: 100%;
   display: flex;
   flex-direction: column;
-}
-
-.status-bar {
-  height: 44px;
-  background-color: #f8f8f8;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 20px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #000;
-}
-
-.time {
-  font-weight: 600;
-}
-
-.indicators {
-  display: flex;
-  gap: 5px;
-}
-
-.app-header {
-  background-color: #f8f8f8;
-  padding: 15px 20px;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.app-header h1 {
+  overflow: hidden;
   margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #000;
-  text-align: center;
+  padding: 0;
 }
 
-.camera-container {
+/* 相機視頻區域 */
+.camera-view-area {
   flex: 1;
   position: relative;
   background-color: #000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
 }
 
-.camera-video {
+/* Phone內的相機視頻 */
+.phone-camera-video {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.countdown-overlay {
+/* 左下角返回按鈕 */
+.bottom-left-back-button {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.bottom-left-back-button:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.9);
+  transform: translateY(-2px);
+}
+
+.bottom-left-back-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 頂部狀態覆蓋層 */
+.camera-status-overlay {
+  position: absolute;
+  top: 15px;
+  left: 20px;
+  right: 20px;
+  background: rgba(78, 205, 196, 0.9);
+  color: white;
+  border-radius: 20px;
+  padding: 8px 16px;
+  z-index: 5;
+  backdrop-filter: blur(10px);
+  text-align: center;
+}
+
+.status-text {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Phone 內的倒數覆蓋層 */
+.phone-countdown-overlay {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 15;
+}
+
+.phone-countdown-circle {
+  width: 120px;
+  height: 120px;
+  border: 4px solid rgba(78, 205, 196, 0.3);
+  border-top: 4px solid #4ECDC4;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
 }
 
-.countdown-number {
-  font-size: 120px;
+.phone-countdown-number {
+  font-size: 48px;
   font-weight: bold;
-  color: #fff;
-  text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
-  animation: pulse 1s ease-in-out;
+  color: #4ECDC4;
+  text-shadow: 0 0 20px rgba(78, 205, 196, 0.5);
 }
 
-@keyframes pulse {
-  0% { transform: scale(0.8); opacity: 0.5; }
-  50% { transform: scale(1.1); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-.camera-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
-  padding: 40px 20px 20px;
-  text-align: center;
-  color: #fff;
-}
-
-.status-text {
+.phone-countdown-text {
+  color: white;
   font-size: 16px;
   font-weight: 500;
-  margin-bottom: 10px;
-}
-
-.bottom-text {
-  font-size: 14px;
-  opacity: 0.8;
-}
-
-.controls {
-  background-color: #f8f8f8;
-  padding: 20px;
-  display: flex;
-  justify-content: center;
-}
-
-.capture-button {
-  background-color: #007AFF;
-  color: white;
-  border: none;
-  border-radius: 25px;
-  padding: 15px 30px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  min-width: 120px;
-}
-
-.capture-button:hover:not(:disabled) {
-  background-color: #0056b3;
-  transform: translateY(-2px);
-}
-
-.capture-button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.capture-button.disabled {
-  background-color: #ffa500;
-  color: white;
-}
-
-.capture-button:active:not(:disabled) {
-  transform: translateY(1px);
-}
-
-.camera-status {
-  color: #666;
-  font-size: 14px;
-  margin-top: 10px;
+  margin: 0;
   text-align: center;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
-/* Responsive design for smaller screens */
-@media (max-width: 400px) {
-  .phone-container {
-    width: 100vw;
-    height: 100vh;
-    border-radius: 0;
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Phone 內的相機引導框 */
+.phone-camera-guide {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+}
+
+.phone-guide-frame {
+  width: 200px;
+  height: 150px;
+  border: 3px dashed rgba(255, 255, 255, 0.8);
+  border-radius: 15px;
+  background: rgba(78, 205, 196, 0.1);
+  margin-bottom: 15px;
+  animation: pulse-border 2s ease-in-out infinite;
+}
+
+@keyframes pulse-border {
+  0%, 100% { 
+    border-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 0 0 rgba(78, 205, 196, 0.4);
+  }
+  50% { 
+    border-color: rgba(78, 205, 196, 1);
+    box-shadow: 0 0 0 8px rgba(78, 205, 196, 0);
   }
 }
 
-/* Loading state styles */
-.camera-container.loading {
+.phone-guide-text {
+  color: white;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.5);
+  padding: 8px 15px;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+}
+
+/* Phone 內的拍攝處理覆蓋層 */
+.phone-capture-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 15;
+}
+
+.phone-capture-spinner {
+  width: 80px;
+  height: 80px;
+  border: 4px solid rgba(78, 205, 196, 0.3);
+  border-top: 4px solid #4ECDC4;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+.phone-capture-text {
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0;
+  text-align: center;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+/* Phone 內的錯誤覆蓋層 */
+.phone-error-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(231, 76, 60, 0.9);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
-  font-size: 18px;
+  z-index: 20;
+}
+
+.phone-error-content {
+  text-align: center;
+  color: white;
+  padding: 30px;
+  max-width: 280px;
+}
+
+.phone-error-icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 20px;
+}
+
+.phone-error-text {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0 0 25px 0;
+  line-height: 1.4;
+}
+
+.phone-retry-button {
+  background: white;
+  color: #e74c3c;
+  border: none;
+  border-radius: 25px;
+  padding: 12px 25px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.phone-retry-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+/* 舊樣式保留以防其他地方使用，但不會在全螢幕模式中使用 */
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .floating-back-button {
+    top: 15px;
+    left: 15px;
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+  
+  .floating-status {
+    top: 15px;
+    right: 15px;
+    padding: 6px 12px;
+  }
+  
+  .floating-status-text {
+    font-size: 12px;
+  }
+  
+  .guide-frame-fullscreen {
+    width: 300px;
+    height: 220px;
+  }
+  
+  .guide-text-fullscreen {
+    font-size: 16px;
+    padding: 10px 20px;
+  }
+  
+  .countdown-circle {
+    width: 150px;
+    height: 150px;
+    border-width: 6px;
+  }
+  
+  .countdown-number {
+    font-size: 60px;
+  }
+  
+  .countdown-text {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .guide-frame-fullscreen {
+    width: 250px;
+    height: 180px;
+  }
+  
+  .countdown-circle {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .countdown-number {
+    font-size: 48px;
+  }
+  
+  .error-content-large {
+    padding: 40px 20px;
+  }
+  
+  .error-icon-large {
+    font-size: 60px;
+  }
+  
+  .error-text-large {
+    font-size: 18px;
+  }
+}
+
+/* 無障礙和可用性改進 */
+.floating-back-button:focus {
+  outline: 3px solid rgba(78, 205, 196, 0.5);
+  outline-offset: 2px;
+}
+
+.fullscreen-video:focus {
+  outline: 3px solid rgba(78, 205, 196, 0.5);
+}
+
+.retry-button-large:focus {
+  outline: 3px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+}
+
+/* 動畫優化 */
+@media (prefers-reduced-motion: reduce) {
+  .guide-frame-fullscreen {
+    animation: none;
+  }
+  
+  .capture-spinner-large {
+    animation: none;
+  }
+  
+  .countdown-circle {
+    animation: none;
+  }
+  
+  .floating-back-button {
+    transition: none;
+  }
 }

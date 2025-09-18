@@ -87,8 +87,19 @@ function MetronomePage({ onNavigate }) {
   const handleBpmChange = (newBpm) => {
     setBpm(newBpm);
     if (isPlaying) {
-      stopMetronome();
-      setTimeout(() => startMetronome(), 100);
+      // Immediately restart with new BPM
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+      setBeat(0);
+      
+      intervalRef.current = setInterval(() => {
+        setBeat(prevBeat => {
+          const nextBeat = (prevBeat + 1) % timeSignature;
+          playClick(nextBeat === 0); // 第一拍為重音
+          return nextBeat;
+        });
+      }, (60 / newBpm) * 1000);
     }
   };
 
@@ -112,11 +123,51 @@ function MetronomePage({ onNavigate }) {
             className="back-button"
             onClick={() => onNavigate('home')}
           >
-            ←
+            ← 返回
           </button>
         </div>
 
-        <div className="metronome-display">
+        {/* 第一排：滑動條控制 */}
+        <div className="row-1-controls">
+          <h3>速度控制</h3>
+          <div className="bpm-control">
+            <button 
+              className="bpm-btn"
+              onClick={() => handleBpmChange(Math.max(40, bpm - 5))}
+            >
+              -5
+            </button>
+            <button 
+              className="bpm-btn"
+              onClick={() => handleBpmChange(Math.max(40, bpm - 1))}
+            >
+              -1
+            </button>
+            <input 
+              type="range"
+              min="40"
+              max="200"
+              value={bpm}
+              onChange={(e) => handleBpmChange(parseInt(e.target.value))}
+              className="bpm-slider"
+            />
+            <button 
+              className="bpm-btn"
+              onClick={() => handleBpmChange(Math.min(200, bpm + 1))}
+            >
+              +1
+            </button>
+            <button 
+              className="bpm-btn"
+              onClick={() => handleBpmChange(Math.min(200, bpm + 5))}
+            >
+              +5
+            </button>
+          </div>
+        </div>
+
+        {/* 第二排：BPM 顯示 */}
+        <div className="row-2-display">
           <div className="bpm-display">
             <span className="bpm-number">{bpm}</span>
             <span className="bpm-label">BPM</span>
@@ -132,70 +183,32 @@ function MetronomePage({ onNavigate }) {
               </div>
             ))}
           </div>
-        </div>
 
-        <div className="controls">
-          <div className="bpm-control">
-            <button 
-              className="bpm-btn"
-              onClick={() => handleBpmChange(Math.max(40, bpm - 5))}
-            >
-              -5
-            </button>
-            <button 
-              className="bpm-btn"
-              onClick={() => handleBpmChange(Math.max(40, bpm - 1))}
-            >
-              -1
-            </button>
-            
-            <input 
-              type="range"
-              min="40"
-              max="200"
-              value={bpm}
-              onChange={(e) => handleBpmChange(parseInt(e.target.value))}
-              className="bpm-slider"
-            />
-            
-            <button 
-              className="bpm-btn"
-              onClick={() => handleBpmChange(Math.min(200, bpm + 1))}
-            >
-              +1
-            </button>
-            <button 
-              className="bpm-btn"
-              onClick={() => handleBpmChange(Math.min(200, bpm + 5))}
-            >
-              +5
-            </button>
-          </div>
-
-          <div className="play-control">
+          <div className="control-buttons">
             <button 
               className={`play-button ${isPlaying ? 'playing' : ''}`}
               onClick={isPlaying ? stopMetronome : startMetronome}
             >
               {isPlaying ? '⏸️ 停止' : '▶️ 開始'}
             </button>
-          </div>
 
-          <div className="time-signature-control">
-            <label>拍號:</label>
-            <select 
-              value={timeSignature} 
-              onChange={(e) => setTimeSignature(parseInt(e.target.value))}
-              disabled={isPlaying}
-            >
-              <option value={3}>3/4</option>
-              <option value={4}>4/4</option>
-              <option value={6}>6/8</option>
-            </select>
+            <div className="time-signature-control">
+              <label>拍號:</label>
+              <select 
+                value={timeSignature} 
+                onChange={(e) => setTimeSignature(parseInt(e.target.value))}
+                disabled={isPlaying}
+              >
+                <option value={3}>3/4</option>
+                <option value={4}>4/4</option>
+                <option value={6}>6/8</option>
+              </select>
+            </div>
           </div>
         </div>
 
-        <div className="preset-tempos">
+        {/* 第三排：常用速度 */}
+        <div className="row-3-presets">
           <h3>常用速度</h3>
           <div className="preset-grid">
             {presetTempos.map((preset) => (
@@ -206,7 +219,6 @@ function MetronomePage({ onNavigate }) {
               >
                 <div className="preset-name">{preset.name}</div>
                 <div className="preset-bpm">{preset.bpm} BPM</div>
-                <div className="preset-description">{preset.description}</div>
               </div>
             ))}
           </div>

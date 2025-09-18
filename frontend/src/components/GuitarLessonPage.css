@@ -4,14 +4,17 @@
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  padding-left: env(safe-area-inset-left, 0px);
-  padding-right: env(safe-area-inset-right, 0px);
+  overflow-x: hidden;
+  position: absolute;
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  padding: 0.5rem;
 }
 
+
 .lesson-nav {
-  padding: 0.5rem 0;
+  padding: 0.5rem;
   border-bottom: 1px solid #eee;
   margin-bottom: 1rem;
 }
@@ -32,347 +35,124 @@
   transform: translateY(-1px);
 }
 
-.progress-section {
-  background: white;
-  padding: 1rem;
-  border-radius: 16px;
-  margin-bottom: 1rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.progress-section h2 {
-  color: #333;
-  margin-bottom: 0.8rem;
-  font-size: 1.2rem;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 10px;
-  background: #e9ecef;
-  border-radius: 5px;
-  overflow: hidden;
-  margin-bottom: 0.5rem;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #FF6B6B, #4ECDC4);
-  transition: width 0.3s ease;
-}
-
-.lessons-grid {
+/* 四個課程網格佈局 */
+.lessons-grid-four-columns {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0.8rem;
-  flex: 1;
-  padding: 0 0.5rem;
+  grid-auto-rows: minmax(120px, auto);
+  gap: 1rem;
+  padding: 1rem;
 }
 
-.lesson-card {
+/* 課程卡片樣式 - emoji和文字重疊在同一格子 */
+.lesson-card-compact {
+  position: relative;
   background: white;
-  border-radius: 12px;
-  padding: 1rem;
+  border-radius: 18px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   transition: all 0.3s ease;
+  padding: 0rem;
+  min-height: 60px;
   display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  position: relative;
-  min-height: 80px;
-}
-
-.lesson-card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.lesson-thumbnail {
-  font-size: 2rem;
-  flex-shrink: 0;
-  width: 60px;
-  height: 60px;
-  display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
-  background: #f8f9fa;
-  border-radius: 8px;
+  border: 1px solid transparent;
 }
 
-.lesson-info {
-  flex: 1;
+.lesson-card-compact:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  border-color: #FF6B6B;
 }
 
-.lesson-info h3 {
-  color: #333;
-  margin: 0 0 0.4rem 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.lesson-info p {
-  color: #666;
-  margin: 0 0 0.75rem 0;
-  line-height: 1.4;
-  font-size: 0.9rem;
-}
-
-.lesson-meta {
-  display: flex;
-  gap: 1rem;
-}
-
-.difficulty, .duration {
-  background: #f8f9fa;
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  color: #495057;
-  font-weight: 500;
-}
-
-.difficulty {
-  background: #e3f2fd;
-  color: #1976d2;
-}
-
-.lesson-status {
-  font-size: 1.5rem;
+/* Emoji 定位在右上角 */
+.lesson-icon {
   position: absolute;
   top: 1rem;
   right: 1rem;
+  font-size: 2.5rem;
+  z-index: 2;
+  opacity: 0.8;
 }
 
-/* 課程詳情頁面樣式 */
-.lesson-detail {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 3rem;
-  margin-top: 2rem;
-}
-
-.lesson-detail .lesson-info {
-  background: white;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  height: fit-content;
-}
-
-.lesson-detail .lesson-info h1 {
-  color: #333;
-  margin: 1rem 0;
-  font-size: 2rem;
-}
-
-.lesson-detail .lesson-thumbnail {
-  font-size: 4rem;
-  text-align: center;
-  margin-bottom: 1rem;
-}
-
+/* 課程內容區域 */
 .lesson-content {
-  background: white;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 1;
+  padding-right: 3rem; /* 為emoji留出空間 */
 }
 
-.lesson-content h2 {
+
+/*題目大小*/
+.lesson-title-compact {
+  font-size: 1.1rem;
+  font-weight: 700;
   color: #333;
-  margin-bottom: 1.5rem;
-  font-size: 1.5rem;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.2;
 }
 
-.lesson-desc {
-  color: #666;
-  line-height: 1.6;
-  margin-bottom: 1.5rem;
-  margin-left: 42px; /* 與步驟文字對齊 (30px圓圈 + 1rem間距) */
-  font-size: 0.95rem;
-}
-
-.steps-list {
-  margin-bottom: 2rem;
-}
-
-.step-item {
+.lesson-meta-compact {
   display: flex;
-  align-items: flex-start;
-  margin-bottom: 1rem;
-  padding: 1rem;
-  background: #f8f9fa;
-  border-radius: 8px;
-}
-
-.step-number {
-  background: #FF6B6B;
-  color: white;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  margin-right: 1rem;
-  flex-shrink: 0;
-}
-
-.step-text {
-  flex: 1;
-  color: #333;
-  line-height: 1.5;
-}
-
-.lesson-actions {
-  display: flex;
-  gap: 1rem;
+  gap: 0.3rem;
+  margin-bottom: 0.5rem;
   flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
 }
 
-.practice-button, .video-button {
-  padding: 1rem 2rem;
-  border: none;
+.difficulty-compact, .duration-compact {
+  background: #e9ecef;
+  color: #495057;
+  padding: 0.15rem 0.4rem;
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: 0.6rem;
   font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
 }
 
-.practice-button {
-  background: #4ECDC4;
-  color: white;
-  flex: 1;
+.difficulty-compact {
+  background: #d4edda;
+  color: #155724;
 }
 
-.practice-button:hover {
-  background: #45b7aa;
-  transform: scale(1.02);
+.lesson-description-compact {
+  color: #666;
+  font-size: 0.8rem;
+  line-height: 1.3;
+  margin: 0;
 }
 
-.video-button {
-  background: #45B7D1;
-  color: white;
-  flex: 1;
+/* 不同課程的hover效果 */
+.lesson-1:hover {
+  border-color: #9B59B6;
 }
 
-.video-button:hover {
-  background: #3a9bc1;
-  transform: scale(1.02);
-}
-
-@media (max-width: 768px) {
-  .guitar-lesson-page {
-    padding: 1rem;
-  }
-  
-  .lesson-header {
-    flex-direction: column;
-    gap: 1rem;
-    text-align: center;
-  }
-  
-  .lessons-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .lesson-detail {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-  
-  .lesson-actions {
-    flex-direction: column;
-  }
-}
-
-/* 課程步驟樣式 - 橫排顯示 */
-.steps-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.8rem;
-  margin: 1rem 0;
-  padding: 0;
-}
-
-.step-item {
-  display: flex;
-  align-items: center;
-  background: white;
-  border: 2px solid #e9ecef;
-  border-radius: 12px;
-  padding: 0.8rem 1rem;
-  flex: 1;
-  min-width: 200px;
-  max-width: 250px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-}
-
-.step-item:hover {
+.lesson-2:hover {
   border-color: #FF6B6B;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
-.step-number {
-  background: #FF6B6B;
-  color: white;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 0.9rem;
-  margin-right: 0.8rem;
-  flex-shrink: 0;
+.lesson-3:hover {
+  border-color: #4ECDC4;
 }
 
-.step-text {
-  font-size: 0.85rem;
-  color: #333;
-  line-height: 1.4;
-  font-weight: 500;
+.lesson-4:hover {
+  border-color: #45B7D1;
 }
 
-/* 響應式設計 - 在小屏幕上保持橫排但調整大小 */
-@media (max-width: 768px) {
-  .steps-list {
-    gap: 0.6rem;
-  }
-  
-  .step-item {
-    min-width: 150px;
-    max-width: 180px;
-    padding: 0.6rem 0.8rem;
-  }
-  
-  .step-number {
-    width: 24px;
-    height: 24px;
-    font-size: 0.8rem;
-    margin-right: 0.6rem;
-  }
-  
-  .step-text {
-    font-size: 0.8rem;
+/* 媒體查詢 */
+@media (min-width: 480px) {
+  .lessons-grid-four-columns {
+    grid-template-columns: 1fr;
+    grid-auto-rows: minmax(120px, auto);
+    gap: 1rem;
   }
 }
 
-@media (max-width: 480px) {
-  .steps-list {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  
-  .step-item {
-    min-width: unset;
-    max-width: unset;
-    flex: unset;
+@media (min-width: 1024px) {
+  .lessons-grid-four-columns {
+    grid-template-columns: 1fr;
+    grid-auto-rows: minmax(120px, auto);
+    gap: 1rem;
   }
 }

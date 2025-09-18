@@ -1,13 +1,17 @@
 /* FeatureCarousel.css */
 .feature-carousel {
   width: 100%;
+  max-width: 100vw;
   padding: 1rem 0;
   margin-bottom: 1rem;
+  overflow: visible;
+  min-height: 450px;
 }
 
 .carousel-header {
   text-align: center;
   margin-bottom: 1.5rem;
+  padding: 0 1rem;
 }
 
 .carousel-header h2 {
@@ -26,20 +30,25 @@
 /* 輪播容器 */
 .carousel-container {
   position: relative;
-  height: 280px;
+  height: 320px;
   display: flex;
   align-items: center;
   justify-content: center;
   perspective: 1000px;
   perspective-origin: center center;
+  margin-top: 4rem;
   margin-bottom: 1rem;
+  cursor: pointer;
+  width: 100%;
+  max-width: 100%;
+  overflow: visible;
 }
 
 /* 輪播軌道 */
 .carousel-track {
   position: relative;
   width: 100%;
-  height: 220px;
+  height: 240px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -49,7 +58,7 @@
 /* 輪播卡片 */
 .carousel-card {
   position: absolute;
-  width: 180px;
+  width: 160px;
   height: 220px;
   background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
   border-radius: 20px;
@@ -62,6 +71,8 @@
   backface-visibility: hidden;
   border: 2px solid transparent;
   overflow: hidden;
+  min-height: 220px;
+  max-height: 220px;
 }
 
 .carousel-card.active {
@@ -96,7 +107,7 @@
 /* 卡片內容 */
 .card-content {
   height: 100%;
-  padding: 1.5rem 1rem;
+  padding: 1.2rem 0.8rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -107,10 +118,14 @@
 }
 
 .card-icon {
-  font-size: 3rem;
-  margin-bottom: 0.5rem;
+  font-size: 2.8rem;
+  margin-bottom: 0.6rem;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
   animation: float 3s ease-in-out infinite;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @keyframes float {
@@ -121,20 +136,26 @@
 .card-title {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #333;
-  margin-bottom: 0.5rem;
+  color: #a49e9e;
+  margin-bottom: 0.6rem;
   line-height: 1.2;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .card-description {
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   color: #666;
   line-height: 1.4;
   flex-grow: 1;
   display: flex;
   align-items: center;
   text-align: center;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.6rem;
+  min-height: 60px;
+  padding: 0 0.2rem;
 }
 
 .card-accent {
@@ -150,51 +171,13 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* 導航按鈕 */
-.carousel-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 40px;
-  height: 40px;
-  background: rgba(255, 255, 255, 0.9);
-  border: none;
-  border-radius: 50%;
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: #333;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transition: all 0.3s ease;
-  z-index: 20;
-  backdrop-filter: blur(10px);
-}
-
-.carousel-btn:hover {
-  background: rgba(255, 255, 255, 1);
-  transform: translateY(-50%) scale(1.1);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-}
-
-.carousel-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: translateY(-50%) scale(0.9);
-}
-
-.carousel-btn-prev {
-  left: 10px;
-}
-
-.carousel-btn-next {
-  right: 10px;
-}
-
+/* 點擊區域 */
 /* 指示器 */
 .carousel-indicators {
   display: flex;
   justify-content: center;
   gap: 0.5rem;
+  padding-top: rem;
   margin-bottom: 1rem;
 }
 
@@ -290,28 +273,37 @@
 /* 響應式設計 */
 @media (max-width: 480px) {
   .carousel-container {
-    height: 260px;
+    height: 280px;
   }
   
   .carousel-card {
     width: 160px;
-    height: 200px;
+    height: 220px;
+    min-height: 220px;
+    max-height: 220px;
   }
   
   .card-content {
-    padding: 1rem 0.8rem;
+    padding: 1.2rem 0.8rem;
   }
   
   .card-icon {
-    font-size: 2.5rem;
+    font-size: 2.8rem;
+    height: 80px;
   }
   
   .card-title {
-    font-size: 1rem;
+    font-size: 1.1rem;
+    height: 1.5rem;
+    color: #1a1a1a;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   }
   
   .card-description {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
+    min-height: 60px;
+    color: #2c3e50;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
   }
   
   .feature-preview {
@@ -351,10 +343,12 @@
   
   .card-title {
     color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   }
   
   .card-description {
     color: #cbd5e0;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
   }
   
   .current-feature-info {
