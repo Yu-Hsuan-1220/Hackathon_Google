@@ -11,21 +11,35 @@ function FirstTimeUserPage({ onComplete }) {
   useEffect(() => {
     if (!hasCalledAPI.current) {
       hasCalledAPI.current = true;
-      callIntroAPI();
+      checkAndPlayIntro();
     }
   }, []);
 
-  const callIntroAPI = async () => {
-    const response = await fetch('http://localhost:8000/first_used/intro');
-    const data = await response.json();
-    
+  const checkAndPlayIntro = () => {
     const audio = new Audio('/firstused_intro.wav');
-    audio.play();
     
-    // 音檔播放完後自動啟動語音辨識
-    audio.onended = () => {
-      startVoiceRecognition();
+    // 檢查音檔是否存在
+    audio.oncanplaythrough = () => {
+      // 音檔存在，直接播放
+      audio.play();
+      audio.onended = () => {
+        startVoiceRecognition();
+      };
     };
+    
+    audio.onerror = async () => {
+      // 音檔不存在，發送API請求
+      await fetch('http://localhost:8000/first_used/intro');
+      setTimeout(() => {
+        const newAudio = new Audio('/firstused_intro.wav');
+        newAudio.play();
+        newAudio.onended = () => {
+          startVoiceRecognition();
+        };
+      }, 1000);
+    };
+    
+    audio.load();
   };
 
   const startVoiceRecognition = () => {
