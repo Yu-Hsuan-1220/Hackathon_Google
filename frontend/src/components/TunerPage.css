@@ -1,8 +1,8 @@
 .tuner-container {
   padding: 0.8rem;
   height: 100%;
-  background: linear-gradient(135deg, #2E3B4E 0%, #4A5D73 100%);
-  color: white;
+  background: white;
+  color: #333;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
@@ -17,50 +17,62 @@
   display: none;
 }
 
+/* 導航按鈕樣式 */
+.tuner-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 1rem;
+  flex-shrink: 0;
+}
+
+.tuner-back-button, 
+.tuner-home-button {
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  color: #333;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.tuner-back-button:hover, 
+.tuner-home-button:hover {
+  background: #e0e0e0;
+  transform: translateY(-2px);
+}
+
 .tuner-header {
   text-align: center;
   margin-bottom: 15px;
   flex-shrink: 0;
 }
 
-.header-top {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.back-btn {
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: white;
-  padding: 0.4rem 0.8rem;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 0.8rem;
-  transition: all 0.3s ease;
-}
-
-.back-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
 .tuner-header h1 {
   font-size: 20px;
-  padding-left: 2.6rem;
   margin-bottom: 8px;
+  color: #333;
+  text-align: center;
 }
 
 .tuner-header p {
   opacity: 0.8;
   margin-bottom: 10px;
   font-size: 14px;
+  color: #666;
+  text-align: center;
 }
 
 .progress-info {
-  background: rgba(255, 255, 255, 0.1);
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
   padding: 8px 16px;
   border-radius: 20px;
+  color: #333;
   display: inline-block;
   font-size: 14px;
 }
@@ -74,28 +86,31 @@
 }
 
 .string-button {
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: #f8f9fa;
+  border: 2px solid #dee2e6;
   border-radius: 12px;
   padding: 12px 8px;
   text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
+  color: #333;
 }
 
 .string-button:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: #e9ecef;
 }
 
 .string-button.active {
-  background: rgba(33, 150, 243, 0.3);
+  background: rgba(33, 150, 243, 0.1);
   border-color: #2196F3;
+  color: #2196F3;
 }
 
 .string-button.tuned {
-  background: rgba(76, 175, 80, 0.3);
+  background: rgba(76, 175, 80, 0.1);
   border-color: #4CAF50;
+  color: #4CAF50;
 }
 
 .string-number {
@@ -124,11 +139,11 @@
 }
 
 .current-tuning {
-  background: rgba(255, 255, 255, 0.1);
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
   border-radius: 20px;
   padding: 25px;
   margin-bottom: 25px;
-  backdrop-filter: blur(10px);
 }
 
 .current-string-info {
@@ -172,7 +187,8 @@
   font-weight: bold;
   padding: 8px;
   border-radius: 8px;
-  background: rgba(0, 0, 0, 0.2);
+  background: #e9ecef;
+  color: #333;
 }
 
 .tuning-controls {
@@ -217,7 +233,7 @@
 .progress-bar {
   width: 100%;
   height: 8px;
-  background: rgba(255, 255, 255, 0.2);
+  background: #e9ecef;
   border-radius: 4px;
   overflow: hidden;
 }
@@ -237,21 +253,22 @@
 
 .skip-btn, .complete-btn {
   padding: 12px 24px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid #dee2e6;
   border-radius: 25px;
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
+  background: #f8f9fa;
+  color: #333;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
-.skip-btn:hover, .complete-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+.skip-btn:hover {
+  background: #e9ecef;
 }
 
 .complete-btn {
   background: #4CAF50;
   border-color: #4CAF50;
+  color: white;
 }
 
 .complete-btn:hover {
