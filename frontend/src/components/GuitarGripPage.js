@@ -35,7 +35,7 @@ function GuitarGripPage({ onNavigate }) {
 
   const handleVoiceCommand = (command) => {
     if (command === 'navigate-back') {
-      onNavigate('guitar-lesson');
+      onNavigate('basic-lesson');
     } else if (command === 'navigate-home') {
       onNavigate('home');
     } else if (command.includes('開始') || command.includes('檢測') || command.includes('練習')) {
@@ -54,9 +54,9 @@ function GuitarGripPage({ onNavigate }) {
         <div className="grip-lesson-nav">
           <button 
             className="grip-back-button"
-            onClick={() => onNavigate('guitar-lesson')}
+            onClick={() => onNavigate('basic-lesson')}
           >
-            ← 返回教學選單
+            ← 返回基礎教學
           </button>
           <button 
             className="grip-home-button"

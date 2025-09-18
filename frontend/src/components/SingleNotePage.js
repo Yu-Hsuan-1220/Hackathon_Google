@@ -56,60 +56,46 @@ function SingleNotePage({ onNavigate }) {
       showStatusBar={true}
     >
       <div className="single-note-page">
-        <div className="lesson-nav">
+        <div className="single-lesson-nav">
           <button 
-            className="back-button"
+            className="single-back-button"
             onClick={() => onNavigate('basic-lesson')}
           >
             ← 返回基礎教學
           </button>
           <button 
-            className="home-button"
+            className="single-home-button"
             onClick={() => onNavigate('home')}
           >
             🏠 主頁
           </button>
         </div>
         
-        <div className="lesson-content">
-          <div className="lesson-header">
-            <h2>{lessonData.title}</h2>
-            <p className="lesson-description">{lessonData.description}</p>
-            <div className="lesson-meta">
-              <span className="difficulty">難度: {lessonData.difficulty}</span>
-              <span className="duration">時長: {lessonData.duration}</span>
-            </div>
-          </div>
-
-          <div className="key-points-section">
+        <div className="single-lesson-content">
+          <div className="single-key-points-section">
             <h3>💡 練習要點</h3>
-            <div className="key-points-grid">
+            <div className="single-key-points-grid">
               {lessonData.keyPoints.map((point, index) => (
-                <div key={index} className="key-point-card">
-                  <div className="key-point-header">
+                <div key={index} className="single-key-point-card">
+                  <div className="single-key-point-header">
                     <h4>{point.title}</h4>
                   </div>
-                  <p className="key-point-desc">{point.description}</p>
+                  <p className="single-key-point-desc">{point.description}</p>
                 </div>
               ))}
             </div>
           </div>
-
-          <div className="exercises-section">
-            <h3>🎯 練習項目</h3>
-            {lessonData.exercises.map((exercise, index) => (
-              <div key={index} className="exercise-card">
-                <h4>{exercise.title}</h4>
-                <p>{exercise.description}</p>
-                <div className="notes-display">
-                  {exercise.notes.map((note, noteIndex) => (
-                    <span key={noteIndex} className="note-badge">
-                      {note}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
+          
+          <div className="single-practice-actions">
+            <button 
+              className="single-practice-button"
+              onClick={() => {
+                // TODO: 添加導航邏輯
+                console.log('開始單音練習');
+              }}
+            >
+              🎵 開始練習
+            </button>
           </div>
         </div>
       </div>
