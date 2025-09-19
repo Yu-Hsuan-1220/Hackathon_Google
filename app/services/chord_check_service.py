@@ -1,4 +1,3 @@
-
 from chord_extractor.extractors import Chordino
 import os
 import tempfile
@@ -24,25 +23,25 @@ CHORD_STRING_ORDER = {
 # String number to note mapping for each chord
 CHORD_STRING_NOTES = {
     "C": {
-        "5": "C3",  # 5th string for C chord
-        "4": "E3",  # 4th string for C chord  
-        "3": "G3",  # 3rd string for C chord
-        "2": "C4",  # 2nd string for C chord
-        "1": "E4"   # 1st string for C chord
+        "5": "C3",  # 5th string 第3品 for C chord
+        "4": "E3",  # 4th string 第2品 for C chord  
+        "3": "G3",  # 3rd string 开放弦 for C chord
+        "2": "C4",  # 2nd string 第1品 for C chord
+        "1": "E4"   # 1st string 开放弦 for C chord
     },
     "D": {
-        "4": "D4",  # 4th string for D chord
-        "3": "A4",  # 3rd string for D chord
-        "2": "D4",  # 2nd string for D chord
-        "1": "F#4"  # 1st string for D chord
+        "4": "D3",  # 4th string 开放弦 for D chord
+        "3": "A3",  # 3rd string 开放弦 for D chord
+        "2": "D4",  # 2nd string 第3品 for D chord
+        "1": "F#4"  # 1st string 第2品 for D chord
     },
     "G": {
-        "6": "G2",  # 6th string for G chord
-        "5": "B2",  # 5th string for G chord
-        "4": "D3",  # 4th string for G chord
-        "3": "G3",  # 3rd string for G chord
-        "2": "B3",  # 2nd string for G chord
-        "1": "G4"   # 1st string for G chord
+        "6": "G2",  # 6th string 第3品 for G chord
+        "5": "B2",  # 5th string 第2品 for G chord
+        "4": "D3",  # 4th string 开放弦 for G chord
+        "3": "G3",  # 3rd string 开放弦 for G chord
+        "2": "B3",  # 2nd string 开放弦 for G chord
+        "1": "G4"   # 1st string 第3品 for G chord
     }
 }
 
@@ -160,9 +159,10 @@ async def chord_check(target_chord: str, audio_file_content: bytes, whole_chord:
         
         # Handle AA intro case
         if target_chord == "AA":
+            print(f"DEBUG: Processing AA intro case - returning target_chord='C'")
             return {
                 "success": True,
-                "target_chord": "AA", 
+                "target_chord": "C",  # Return first chord in progression
                 "whole_chord": 1,
                 "finish_lesson": False,
                 "audio": get_intro_audio(),
@@ -173,6 +173,7 @@ async def chord_check(target_chord: str, audio_file_content: bytes, whole_chord:
             }
         
         if whole_chord:
+            print(f"DEBUG: Processing whole chord detection for target='{target_chord}'")
             # Whole chord checking using Chordino
             # Write audio content to temporary WebM file first
             with tempfile.NamedTemporaryFile(suffix='.webm', delete=False) as temp_webm_file:
@@ -237,7 +238,7 @@ async def chord_check(target_chord: str, audio_file_content: bytes, whole_chord:
                         "next_string": None
                     }
                 else:
-                    # Incorrect chord played
+                    # Incorrect chord played - stay in whole chord mode, let frontend try again
                     audio_path = get_random_chord_audio(target_chord, "incorrect")
                     
                     return {
@@ -245,11 +246,11 @@ async def chord_check(target_chord: str, audio_file_content: bytes, whole_chord:
                         "target_chord": target_chord,
                         "detected_chords": detected_chords,
                         "is_correct": False,
-                        "whole_chord": 1,
+                        "whole_chord": 1,  # 保持在整個和弦模式
                         "finish_lesson": False,
                         "audio": audio_path,
                         "is_string_correct": None,
-                        "next_string": None
+                        "next_string": None  # 不需要指定下一根弦
                     }
                     
             except Exception as e:
@@ -261,96 +262,16 @@ async def chord_check(target_chord: str, audio_file_content: bytes, whole_chord:
                 raise e
                 
         else:
-            # String checking using note_check
-            if not string:
-                return {
-                    "error": "String parameter required when whole_chord=False",
-                    "success": False
-                }
-            
-            # Validate string number
-            if string not in ["1", "2", "3", "4", "5", "6"]:
-                return {
-                    "error": "String must be a number from 1 to 6",
-                    "success": False
-                }
-            
-            # Get the note for this string and chord combination
-            if target_chord not in CHORD_STRING_NOTES or string not in CHORD_STRING_NOTES[target_chord]:
-                return {
-                    "error": f"String {string} is not used in chord {target_chord}",
-                    "success": False
-                }
-            
-            target_note = CHORD_STRING_NOTES[target_chord][string]
-            
-            # Use existing string check service with the target note
-            string_result = await note_check(target_note, audio_file_content)
-            
-            if "error" in string_result:
-                return {
-                    "error": string_result["error"],
-                    "success": False
-                }
-            
-            # Check if string is played correctly (in tune and confident)
-            # The note_check service returns tuning_result, not is_in_tune
-            tuning_result = string_result.get("tuning_result", "")
-            confidence = string_result.get("confidence", 0)
-            
-            is_string_correct = (
-                tuning_result in ["success_advance", "in_tune"] and 
-                confidence >= 0.7
-            )
-            
-            print(f"DEBUG: String check result - tuning_result: {tuning_result}, confidence: {confidence}, is_correct: {is_string_correct}")
-            
-            # Get next string to practice
-            next_string = get_next_string_for_chord(target_chord, string)
-            
-            if is_string_correct:
-                if next_string:
-                    # String played correctly, move to next string
-                    audio_path = string_result.get("wav_path") or get_random_string_chord_audio()
-                    return {
-                        "success": True,
-                        "target_chord": target_chord,
-                        "is_string_correct": True,
-                        "whole_chord": 0,  # Stay in string mode
-                        "finish_lesson": False,
-                        "audio": audio_path,
-                        "is_correct": None,
-                        "detected_chords": [],
-                        "next_string": next_string
-                    }
-                else:
-                    # All strings completed, switch to whole chord mode
-                    audio_path = string_result.get("wav_path") or get_random_string_chord_audio()
-                    return {
-                        "success": True,
-                        "target_chord": target_chord,
-                        "is_string_correct": True,
-                        "whole_chord": 1,  # Switch to chord mode
-                        "finish_lesson": False,
-                        "audio": audio_path,
-                        "is_correct": None,
-                        "detected_chords": [],
-                        "next_string": None
-                    }
-            else:
-                # String not played correctly, stay on current string
-                audio_path = string_result.get("wav_path") or get_random_string_chord_audio()
-                return {
-                    "success": True,
-                    "target_chord": target_chord,
-                    "is_string_correct": False,
-                    "whole_chord": 0,  # Stay in string mode
-                    "finish_lesson": False,
-                    "audio": audio_path,
-                    "is_correct": None,
-                    "detected_chords": [],
-                    "next_string": string  # Stay on current string
-                }
+            # String checking mode - 根據新需求，這種模式不再使用
+            # 直接返回錯誤，讓前端重新用整個和弦模式
+            print(f"DEBUG: String mode is deprecated. Returning error to force whole chord mode.")
+            return {
+                "error": "String mode is no longer supported. Please use whole chord mode.",
+                "success": False,
+                "target_chord": target_chord,
+                "whole_chord": 1,  # 強制返回整個和弦模式
+                "finish_lesson": False
+            }
                 
     except Exception as e:
         print(f"Error in chord_check: {e}")

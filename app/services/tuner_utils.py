@@ -227,47 +227,16 @@ def tune_audio(audio_file, target_note, tolerance_cents=10):
 			"detected_frequency": detected_freq
 		}
 	
-	if detected_freq <= 0:
+	# Calculate the difference in cents
+	# Formula: cents = 1200 * log2(f1/f2)
+	if detected_freq > 0:
+		cents_diff = 1200 * math.log2(detected_freq / target_freq)
+	else:
 		return {
 			"error": "Could not detect frequency from audio",
 			"detected_frequency": detected_freq,
 			"target_frequency": target_freq
 		}
-	
-	# OCTAVE CORRECTION: Handle harmonic detection issues
-	# Check if the detected frequency is a harmonic (2x, 4x) or sub-harmonic (0.5x, 0.25x) of target
-	corrected_freq = detected_freq
-	
-	# Calculate initial cents difference
-	initial_cents = 1200 * math.log2(detected_freq / target_freq)
-	
-	# Try octave corrections to find the closest match
-	best_cents = initial_cents
-	best_freq = detected_freq
-	
-	# Test different octave relationships
-	test_frequencies = [
-		detected_freq * 0.25,  # 2 octaves down
-		detected_freq * 0.5,   # 1 octave down  
-		detected_freq,         # original
-		detected_freq * 2,     # 1 octave up
-		detected_freq * 4      # 2 octaves up
-	]
-	
-	for test_freq in test_frequencies:
-		if test_freq > 0:
-			test_cents = 1200 * math.log2(test_freq / target_freq)
-			if abs(test_cents) < abs(best_cents):
-				best_cents = test_cents
-				best_freq = test_freq
-	
-	# Use the corrected frequency
-	corrected_freq = best_freq
-	cents_diff = best_cents
-	
-	# If we made an octave correction, log it for debugging
-	if abs(corrected_freq - detected_freq) > 0.1:
-		print(f"OCTAVE CORRECTION: {detected_freq:.1f}Hz -> {corrected_freq:.1f}Hz (cents: {initial_cents:.1f} -> {cents_diff:.1f})")
 	
 	# Determine if it's in tune, too high, or too low
 	if abs(cents_diff) <= tolerance_cents:
@@ -280,12 +249,10 @@ def tune_audio(audio_file, target_note, tolerance_cents=10):
 	return {
 		"target_note": target_note,
 		"target_frequency": target_freq,
-		"detected_frequency": corrected_freq,  # Return the corrected frequency
-		"raw_detected_frequency": detected_freq,  # Also return the raw detection for debugging
+		"detected_frequency": detected_freq,
 		"cents_difference": round(cents_diff, 1),
 		"tuning_status": tuning_status,
-		"tolerance_cents": tolerance_cents,
-		"octave_corrected": abs(corrected_freq - detected_freq) > 0.1
+		"tolerance_cents": tolerance_cents
 	}
 
 if __name__ == "__main__":

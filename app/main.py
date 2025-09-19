@@ -6,6 +6,10 @@ import os
 
 # local lib
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+from app.routers import pose_check, menu, home, first_used, tuner, string_check, chord
+>>>>>>> 491903c (final)
 
 from app.routers import pose_check, menu, home, first_used,tuner
 =======
@@ -45,7 +49,11 @@ app.include_router(string_check.router, prefix="/simplenote", tags=["Simple Note
 =======
 app.include_router(tuner.router, prefix="/tuner", tags=["Tuner"])
 app.include_router(string_check.router, prefix="/simplenote", tags=["Simple Note"])
+<<<<<<< HEAD
 >>>>>>> b671a7e (單音gg)
+=======
+app.include_router(chord.router, prefix="/chord", tags=["Chord"])
+>>>>>>> 491903c (final)
 
 
 if __name__ == "__main__":

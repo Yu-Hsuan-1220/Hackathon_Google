@@ -3,7 +3,8 @@ import HomePage from './components/HomePage';
 import BasicLessonPage from './components/BasicLessonPage';
 import GuitarGripPage from './components/GuitarGripPage';
 import ChordPracticePage from './components/ChordPracticePage';
-import SingleNotePage from './components/SingleNotePage';
+import ChordLessonPage from './components/ChordLessonPage';
+import PickingTechniquePage from './components/PickingTechniquePage';
 import MetronomePage from './components/MetronomePage';
 import SongTutorialPage from './components/SongTutorialPage';
 import SongPracticePage from './components/SongPracticePage';
@@ -74,23 +75,29 @@ const App = () => {
       case 'first-time':
         return <FirstTimeUserPage onComplete={handleFirstTimeComplete} />;
 
+
       case 'tuner':
         return (
+          <TunerPage
           <TunerPage
             onNavigate={setCurrentScreen}
           />
         );
 
+
       case 'single-note-lesson':
 
         return (
+          <SingleNoteLessonPage
           <SingleNoteLessonPage
             onNavigate={setCurrentScreen}
           />
         );
 
+
       case 'home':
         return <HomePage onNavigate={(screen) => handleNavigate(screen, 'home')} />;
+
 
       case 'guitar-lesson':
 
@@ -105,7 +112,7 @@ const App = () => {
 
       case 'basic-lesson':
         return (
-          <BasicLessonPage
+          <GuitarLessonPage
             onBack={() => setCurrentScreen('home')}
             onNavigate={(screen) => handleNavigate(screen, 'basic-lesson')}
           />
@@ -114,12 +121,14 @@ const App = () => {
       case 'guitar-grip':
         return (
           <GuitarGripPage
+          <GuitarGripPage
             onNavigate={handleNavigate}
           />
         );
 
       case 'guitar-grip-camera':
         return (
+          <CameraScreen
           <CameraScreen
             onBack={() => handleNavigate('guitar-grip')}
             onResult={(result) => handleNavigate('guitar-grip-result', result)}
@@ -128,6 +137,7 @@ const App = () => {
 
       case 'guitar-grip-result':
         return (
+          <ResultScreen
           <ResultScreen
             result={poseResult}
             onBack={() => handleNavigate('guitar-grip')}
@@ -139,39 +149,70 @@ const App = () => {
       case 'chord-practice':
         return (
           <ChordPracticePage
+          <ChordPracticePage
             onNavigate={setCurrentScreen}
           />
         );
 
-      case 'single-note':
+      case 'chord-lesson':
         return (
-          <SingleNotePage
+          <ChordLessonPage
+            onNavigate={setCurrentScreen}
+          />
+        );
+
+      case 'picking-technique':
+        return (
+          <PickingTechniquePage
             onNavigate={setCurrentScreen}
           />
         );
       case 'metronome':
         return (
           <MetronomePage
+          <MetronomePage
             onNavigate={setCurrentScreen}
           />
         );
 
+
       case 'song-tutorial':
         return (
+          <SongTutorialPage
           <SongTutorialPage
             onBack={() => setCurrentScreen('home')}
             onNavigate={setCurrentScreen}
           />
         );
 
+
       case 'song-practice':
         return (
           <SongPracticePage
+          <SongPracticePage
             onBack={() => setCurrentScreen('home')}
             onNavigate={setCurrentScreen}
-            songId={navigationSource === 'basic-lesson' ? 'twinkle-star' : null}
+            songId={navigationSource === 'guitar-lesson' ? 'twinkle-star' : null}
           />
         );
+
+      case 'camera':
+        return (
+          <CameraScreen
+            onBack={() => setCurrentScreen('home')}
+            onResult={handlePoseResult}  // 確保這裡正確傳遞
+          />
+        );
+
+      case 'result':
+        return (
+          <ResultScreen
+            result={poseResult}
+            onBack={() => setCurrentScreen('home')}
+            onRetry={handleRetryPose}
+          />
+        );
+
 
       case 'song-twinkle-star':
         return (
@@ -181,6 +222,7 @@ const App = () => {
           />
         );
 
+
       case 'song-happy-birthday':
         return (
           <SongHappyBirthdayPage
@@ -188,6 +230,7 @@ const App = () => {
             onHome={() => setCurrentScreen('home')}
           />
         );
+
 
       case 'song-childhood':
         return (
@@ -197,6 +240,7 @@ const App = () => {
           />
         );
 
+
       case 'song-moon-heart':
         return (
           <SongMoonHeartPage
@@ -204,6 +248,7 @@ const App = () => {
             onHome={() => setCurrentScreen('home')}
           />
         );
+
 
       default:
         return <HomePage onNavigate={setCurrentScreen} />;
