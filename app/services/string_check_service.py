@@ -332,7 +332,9 @@ async def note_check(target_note: str, audio_file_content: bytes):
                 "tuning_result": tuning_result,
                 # Additional debugging information
                 "detected_frequency": float(round(detected_frequency, 2)),
-                "target_frequency": float(round(target_frequency, 2))
+                "target_frequency": float(round(target_frequency, 2)),
+                "raw_detected_frequency": result.get("raw_detected_frequency", detected_frequency),
+                "octave_corrected": result.get("octave_corrected", False)
             }
             
         except Exception as e:
