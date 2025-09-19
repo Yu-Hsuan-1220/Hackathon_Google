@@ -4,36 +4,77 @@ import './BasicLessonPage.css';
 
 function BasicLessonPage({ onBack, onNavigate }) {
   const hasCalledAPI = useRef(false);
+  const currentAudio = useRef(null);
+
+  const deleteAudioFile = async (filename) => {
+    try {
+      await fetch(`http://localhost:8000/home/delete?filename=${encodeURIComponent(filename)}`, {
+        method: 'POST',
+      });
+    } catch (error) {
+      console.error('刪除音檔失敗:', error);
+    }
+  };
 
   useEffect(() => {
     if (!hasCalledAPI.current) {
       hasCalledAPI.current = true;
       checkAndPlayIntro();
     }
+
+    return () => {
+      if (currentAudio.current) {
+        currentAudio.current.pause();
+        currentAudio.current.currentTime = 0;
+        currentAudio.current = null;
+      }
+    };
   }, []);
 
 
   const checkAndPlayIntro = () => {
     const audio = new Audio(`/menu_intro.wav`);
+    currentAudio.current = audio;
     
     audio.oncanplaythrough = () => {
-      // 音檔已存在，直接播放
-      audio.play();
-      audio.onended = () => {
-        startVoiceRecognition();
-      };
+      audio.play().catch(console.error);
+    };
+    
+    audio.onended = () => {
+      currentAudio.current = null;
+      deleteAudioFile('menu_intro.wav');
+      startVoiceRecognition();
     };
     
     audio.onerror = async () => {
-      // 音檔不存在，調用 API 生成音檔
-      await fetch(`http://localhost:8000/menu/intro`);
-      setTimeout(() => {
+      const userName = localStorage.getItem('userName') || '用戶';
+      await fetch(`http://localhost:8000/menu/intro?username=${encodeURIComponent(userName)}`);
+      
+      // 輪詢檢查音檔是否已生成
+      const checkAudioReady = () => {
         const newAudio = new Audio(`/menu_intro.wav`);
-        newAudio.play();
+        currentAudio.current = newAudio;
+        
+        newAudio.oncanplaythrough = () => {
+          newAudio.play().catch(console.error);
+        };
+        
         newAudio.onended = () => {
+          currentAudio.current = null;
+          deleteAudioFile('menu_intro.wav');
           startVoiceRecognition();
         };
-      }, 1000);
+        
+        newAudio.onerror = () => {
+          // 如果音檔還沒準備好，500ms 後重試
+          setTimeout(checkAudioReady, 500);
+        };
+        
+        newAudio.load();
+      };
+      
+      // 等待 1 秒後開始檢查
+      setTimeout(checkAudioReady, 1000);
     };
     
     audio.load();

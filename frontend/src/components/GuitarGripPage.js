@@ -6,6 +6,16 @@ function GuitarGripPage({ onNavigate }) {
   const hasCalledAPI = useRef(false);
   const currentAudio = useRef(null);
 
+  const deleteAudioFile = async (filename) => {
+    try {
+      await fetch(`http://localhost:8000/home/delete?filename=${encodeURIComponent(filename)}`, {
+        method: 'POST',
+      });
+    } catch (error) {
+      console.error('刪除音檔失敗:', error);
+    }
+  };
+
   useEffect(() => {
     if (!hasCalledAPI.current) {
       hasCalledAPI.current = true;
@@ -31,6 +41,7 @@ function GuitarGripPage({ onNavigate }) {
       audio.play().catch(console.error);
       audio.onended = () => {
         currentAudio.current = null;
+        deleteAudioFile('guitar_grip.wav');
         startVoiceRecognition();
       };
     };
@@ -43,6 +54,7 @@ function GuitarGripPage({ onNavigate }) {
         newAudio.play().catch(console.error);
         newAudio.onended = () => {
           currentAudio.current = null;
+          deleteAudioFile('guitar_grip.wav');
           startVoiceRecognition();
         };
       }, 1000);
