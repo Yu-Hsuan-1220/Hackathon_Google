@@ -56,6 +56,18 @@ async def analyze_tuning(string_num: str, wav_file_path: str) -> dict:
         # Get cents difference from the result
         cents_error = tuning_result.get("cents_difference", 0)
         
+        # Add debugging information for octave correction
+        original_freq = tuning_result.get("original_detected_frequency", 0)
+        corrected_freq = tuning_result.get("detected_frequency", 0)
+        target_freq = tuning_result.get("target_frequency", 0)
+        
+        if original_freq != corrected_freq:
+            print(f"DEBUG: Octave correction was applied!")
+            print(f"DEBUG: Original detected: {original_freq:.2f}Hz")
+            print(f"DEBUG: Corrected to: {corrected_freq:.2f}Hz")
+            print(f"DEBUG: Target: {target_freq:.2f}Hz")
+            print(f"DEBUG: Final cents error: {cents_error}")
+        
         # next string to tune (convert string_num to int for math operations)
         string_num_int = int(string_num)
         next_string_num = string_num_int - 1 if tuning_status and string_num_int > 1 else string_num_int
