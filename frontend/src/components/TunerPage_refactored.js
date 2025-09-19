@@ -102,14 +102,8 @@ function TunerPage({ onNavigate }) {
       dispatch({ type: 'SET_PHASE', payload: 'intro' });
       dispatch({ type: 'RESET_ERROR' });
       
-      // 創建一個最小的有效WebM音檔以符合 API 要求
-      // 使用最基本的WebM EBML結構
-      const webmHeader = new Uint8Array([
-        0x1a, 0x45, 0xdf, 0xa3, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1f,
-        0x42, 0x86, 0x81, 0x01, 0x42, 0xf7, 0x81, 0x01, 0x42, 0xf2, 0x81, 0x04,
-        0x42, 0xf3, 0x81, 0x08, 0x42, 0x82, 0x84, 0x77, 0x65, 0x62, 0x6d
-      ]);
-      const emptyBlob = new Blob([webmHeader], { type: 'audio/webm' });
+      // 創建空白音檔以符合 API 要求
+      const emptyBlob = new Blob([new ArrayBuffer(1024)], { type: 'audio/webm;codecs=opus' });
       
       console.log('🎵 初始化調音器...');
       const response = await sendTuningRequest(0, emptyBlob);
@@ -141,11 +135,7 @@ function TunerPage({ onNavigate }) {
       formData.append('string_num', String(stringNum));
       formData.append('file', audioBlob, `string-${stringNum}.webm`);
       
-      console.log(`📡 發送調音請求 - 弦號: ${stringNum}, 音檔大小: ${audioBlob.size} bytes`);
-      console.log('📋 FormData內容:');
-      for (let [key, value] of formData.entries()) {
-        console.log(`  ${key}:`, value);
-      }
+      console.log(`📡 發送調音請求 - 弦號: ${stringNum}`);
       
       const response = await fetch('http://127.0.0.1:8000/tuner/tuner', {
         method: 'POST',
@@ -154,23 +144,12 @@ function TunerPage({ onNavigate }) {
         body: formData
       });
       
-      console.log(`📡 回應狀態: ${response.status} ${response.statusText}`);
-      
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ API回應錯誤:', response.status, errorText);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
       console.log('📦 收到回應:', data);
-      
-      // 驗證回應格式
-      if (!data.hasOwnProperty('tuning_status') || !data.hasOwnProperty('string_num')) {
-        console.error('❌ 回應格式錯誤:', data);
-        throw new Error('後端回應格式錯誤');
-      }
-      
       return data;
       
     } catch (error) {
@@ -190,18 +169,12 @@ function TunerPage({ onNavigate }) {
       let audioPath = response.audio_path;
       
       if (!audioPath) {
-        console.warn('⚠️ 後端沒有返回音檔路徑，跳過播放');
-        dispatch({ type: 'SET_PLAYING_INSTRUCTION', payload: false });
-        return;
+        throw new Error('沒有找到音檔路徑');
       }
       
       // 轉換後端路徑為前端可用路徑
-      // 後端返回: "frontend/public/audio/tuner/xxx.wav" -> 前端使用: "/audio/tuner/xxx.wav"
-      if (audioPath.startsWith('frontend/public/')) {
-        audioPath = audioPath.replace('frontend/public/', '/');
-      } else if (audioPath.startsWith('audio/')) {
-        audioPath = '/' + audioPath;
-      } else if (!audioPath.startsWith('/')) {
+      // 後端返回: "audio/tuner/xxx.wav" -> 前端使用: "/audio/tuner/xxx.wav"
+      if (!audioPath.startsWith('/')) {
         audioPath = '/' + audioPath;
       }
       
@@ -212,37 +185,26 @@ function TunerPage({ onNavigate }) {
       
       console.log('▶️ 播放指示音檔');
       
-      // 設置播放完成回調
-      const handleAudioEnd = () => {
+      audio.onended = () => {
         console.log('✅ 指示音檔播放完成');
         dispatch({ type: 'SET_PLAYING_INSTRUCTION', payload: false });
         currentAudioRef.current = null;
       };
       
-      // 設置錯誤處理
-      const handleAudioError = (e) => {
+      audio.onerror = (e) => {
         console.error('🔊 音檔播放錯誤:', e);
         console.error('錯誤的音檔路徑:', audioPath);
         dispatch({ type: 'SET_PLAYING_INSTRUCTION', payload: false });
+        dispatch({ type: 'SET_ERROR', payload: '音檔播放失敗' });
         currentAudioRef.current = null;
-        // 不顯示錯誤給用戶，因為這不是關鍵功能
       };
       
-      audio.onended = handleAudioEnd;
-      audio.onerror = handleAudioError;
-      
-      // 嘗試播放音檔
-      try {
-        await audio.play();
-      } catch (playError) {
-        console.error('🔊 音檔播放失敗:', playError);
-        handleAudioError(playError);
-      }
+      await audio.play();
       
     } catch (error) {
       console.error('播放指示音檔失敗:', error);
       dispatch({ type: 'SET_PLAYING_INSTRUCTION', payload: false });
-      // 不向用戶顯示錯誤，因為音檔播放失敗不影響核心功能
+      dispatch({ type: 'SET_ERROR', payload: '無法播放語音指示' });
     }
   };
 
@@ -367,8 +329,6 @@ function TunerPage({ onNavigate }) {
       const response = await sendTuningRequest(state.currentString, audioBlob);
       
       if (response) {
-        console.log('🎯 處理後端回應:', response);
-        
         // 儲存cents_error用於UI顯示
         if (typeof response.cents_error === 'number') {
           dispatch({ type: 'SET_CENTS_ERROR', payload: response.cents_error });
@@ -388,23 +348,20 @@ function TunerPage({ onNavigate }) {
         // 根據結果決定下一步
         if (response.tuning_finish) {
           // 調音完成
-          console.log('🎉 調音完成！');
           dispatch({ type: 'SET_PHASE', payload: 'done' });
           setTimeout(() => {
             onNavigate('home');
           }, 3000);
         } else if (response.tuning_status) {
           // 調對了，根據後端返回的string_num決定下一弦
-          // 後端會返回下一弦的號碼，如果已經是最後一弦則保持當前弦
+          // 後端會返回下一弦的號碼 (從6到1)
           const nextString = parseInt(response.string_num);
-          console.log(`✅ 第${state.currentString}弦調好了，下一弦: ${nextString}`);
-          if (nextString > 0 && nextString <= 6) {
+          if (nextString > 0 && nextString <= 6 && nextString !== state.currentString) {
             dispatch({ type: 'SET_CURRENT_STRING', payload: nextString });
           }
           dispatch({ type: 'SET_PHASE', payload: 'idle' });
         } else {
-          // 調錯了，後端返回的string_num應該是當前弦，保持不變
-          console.log(`❌ 第${state.currentString}弦需要重新調音`);
+          // 調錯了，停留同一弦
           dispatch({ type: 'SET_PHASE', payload: 'idle' });
         }
       }
@@ -463,9 +420,12 @@ function TunerPage({ onNavigate }) {
             <h1>Hi {userName}！</h1>
           </div>
           <p>智能調音器 - 跟著語音指示調音</p>
+          <div className="progress-info">
+            請彈 {state.currentString} 弦 ({stringData[state.currentString - 1]?.note || 'E'})
+          </div>
         </div>
 
-        {/* 弦位選擇顯示 */}
+        {/* 弦位選擇器 */}
         <div className="string-selector">
           {stringData.map((string, index) => (
             <div
@@ -477,66 +437,61 @@ function TunerPage({ onNavigate }) {
               <div className="string-number">{string.string}</div>
               <div className="string-note">{string.note}</div>
               {state.stringStatus[index] === 'correct' && (
-                <div className="check-mark">✓</div>
+                <span className="check-mark">✓</span>
               )}
             </div>
           ))}
         </div>
 
-        {/* 當前調音狀態顯示 */}
+        {/* 當前調音狀態 */}
         <div className="current-tuning">
           <div className="current-string-info">
-            <h2>當前調音</h2>
-            {state.currentString > 0 && (
-              <>
-                <div className="note-name">
-                  第 {state.currentString} 弦 - {stringData[state.currentString - 1]?.note}
-                </div>
-                <div className="target-freq">
-                  目標頻率: {stringData[state.currentString - 1]?.frequency.toFixed(2)} Hz
-                </div>
-              </>
-            )}
+            <h2>調彈第 {state.currentString} 弦</h2>
+            <div className="note-name">
+              {stringData[state.currentString - 1]?.note || 'E'}
+            </div>
+            <div className="target-freq">
+              目標頻率: {stringData[state.currentString - 1]?.frequency || 82.41} Hz
+            </div>
           </div>
           
           <div className="frequency-display">
-            <div className="detected-freq">{getPhaseText()}</div>
-            
-            {state.phase === 'recording' && (
-              <div className="recording-indicators">
-                <div className="recording-timer">
-                  <div 
-                    className="timer-progress"
-                    style={{ width: `${(state.recordingTime / RECORD_SECONDS) * 100}%` }}
-                  ></div>
-                </div>
-                <div className="audio-level">
-                  音量: 
-                  <div className="level-bar">
-                    <div 
-                      className="level-fill"
-                      style={{ width: `${Math.min(100, state.audioLevel)}%` }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            )}
+            <div className="detected-freq">
+              {state.phase === 'recording' && `音量: ${Math.round(state.audioLevel)}%`}
+              {state.centsError !== 0 && state.phase === 'idle' && (
+                `誤差: ${state.centsError > 0 ? '+' : ''}${state.centsError.toFixed(1)} cents`
+              )}
+            </div>
           </div>
           
-          {/* 調音提示 */}
-          {state.centsError !== 0 && state.currentString > 0 && state.phase === 'idle' && (
-            <div className="tuning-status">
-              <div 
-                style={{ color: getDirectionHint(state.centsError).color }}
-              >
-                {getDirectionHint(state.centsError).text}
-              </div>
-              <div>
-                誤差: {state.centsError > 0 ? '+' : ''}{state.centsError.toFixed(1)} cents
-              </div>
-            </div>
-          )}
+          <div className="tuning-status">
+            {getPhaseText()}
+          </div>
         </div>
+
+        {/* 調音提示 */}
+        {state.centsError !== 0 && state.currentString > 0 && state.phase === 'idle' && (
+          <div className="frequency-display">
+            <div 
+              className="detected-freq"
+              style={{ color: getDirectionHint(state.centsError).color }}
+            >
+              {getDirectionHint(state.centsError).text}
+            </div>
+          </div>
+        )}
+
+        {/* 錄音進度條 */}
+        {state.phase === 'recording' && (
+          <div className="tuning-progress">
+            <div className="progress-bar">
+              <div 
+                className="progress-fill"
+                style={{ width: `${(state.recordingTime / RECORD_SECONDS) * 100}%` }}
+              ></div>
+            </div>
+          </div>
+        )}
 
         {/* 錄音控制 */}
         <div className="tuning-controls">
@@ -562,14 +517,16 @@ function TunerPage({ onNavigate }) {
 
         {/* 錯誤顯示 */}
         {state.error && (
-          <div className="error-toast">
-            <span className="error-icon">⚠️</span>
-            <span className="error-text">{state.error}</span>
+          <div className="frequency-display" style={{ background: 'rgba(244, 67, 54, 0.2)', padding: '10px', borderRadius: '8px' }}>
+            <div className="detected-freq" style={{ color: '#f44336' }}>
+              ⚠️ {state.error}
+            </div>
             <button 
-              className="error-close"
+              className="start-tuning-btn"
+              style={{ marginTop: '8px', fontSize: '12px', padding: '6px 12px' }}
               onClick={() => dispatch({ type: 'RESET_ERROR' })}
             >
-              ✕
+              關閉
             </button>
           </div>
         )}
@@ -584,9 +541,29 @@ function TunerPage({ onNavigate }) {
               }}
             ></div>
           </div>
-          <div className="progress-info">
-            {state.stringStatus.filter(s => s === 'correct').length}/6 弦已調好
+          <div className="frequency-display">
+            <div className="detected-freq">
+              {state.stringStatus.filter(s => s === 'correct').length}/6 弦已調好
+            </div>
           </div>
+        </div>
+
+        {/* 底部按鈕 */}
+        <div className="tuner-footer">
+          <button 
+            className="skip-btn"
+            onClick={() => onNavigate('home')}
+          >
+            跳過調音
+          </button>
+          {state.stringStatus.filter(s => s === 'correct').length === 6 && (
+            <button 
+              className="complete-btn"
+              onClick={() => onNavigate('home')}
+            >
+              完成調音
+            </button>
+          )}
         </div>
       </div>
     </PhoneContainer>

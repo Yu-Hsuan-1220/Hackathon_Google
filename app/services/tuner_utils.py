@@ -57,7 +57,7 @@ def note_detect(audio_file):
 	i_end = i
 	imax = np.argmax(fourier[0:i_end+100])
 	
-	freq=(imax*f_s)/file_length #FIXED: formula to convert index into sound frequency
+	freq=(imax*f_s)/(file_length*counter) #formula to convert index into sound frequency
 	
 	#frequency database
 	note=0
@@ -90,93 +90,35 @@ def get_frequency_from_audio(audio_file):
 	#here we are just storing our sound file as a numpy array
 	file_length=audio_file.getnframes() 
 	f_s=audio_file.getframerate() #sampling frequency
-	channels = audio_file.getnchannels() #number of channels mono/stereo
-	sample_width = audio_file.getsampwidth() #bytes per sample
+
+	sound = np.zeros(file_length) #blank array
+
+	for i in range(file_length) : 
+		wdata=audio_file.readframes(1)
+		data=struct.unpack("<h",wdata)
+		sound[i] = int(data[0])
 	
-	# Read all frames at once for better performance and compatibility
-	frames = audio_file.readframes(file_length)
+	sound=np.divide(sound,float(2**15)) #scaling it to 0 - 1
+	counter = audio_file.getnchannels() #number of channels mono/sterio
 	
-	# Handle different bit depths
-	if sample_width == 1:  # 8-bit
-		sound = np.frombuffer(frames, dtype=np.uint8).astype(np.float32)
-		sound = (sound - 128) / 128.0  # Convert to -1 to 1 range
-	elif sample_width == 2:  # 16-bit
-		sound = np.frombuffer(frames, dtype=np.int16).astype(np.float32)
-		sound = sound / 32768.0  # Convert to -1 to 1 range
-	elif sample_width == 4:  # 32-bit
-		sound = np.frombuffer(frames, dtype=np.int32).astype(np.float32)
-		sound = sound / 2147483648.0  # Convert to -1 to 1 range
-	else:
-		raise ValueError(f"Unsupported sample width: {sample_width} bytes")
-	
-	# If stereo, convert to mono by taking the average
-	if channels == 2:
-		sound = sound.reshape(-1, 2).mean(axis=1)
-	elif channels > 2:
-		sound = sound.reshape(-1, channels).mean(axis=1)
-		
 	#fourier transformation from numpy module
 	fourier = np.fft.fft(sound)
 	fourier = np.absolute(fourier)
+	imax=np.argmax(fourier[0:int(file_length/2)]) #index of max element
 	
-	# Only look at the first half of the spectrum (Nyquist frequency)
-	half_length = len(sound) // 2
-	fourier_half = fourier[:half_length]
-	
-	# Find the fundamental frequency (not just the loudest peak)
-	# Apply a window to reduce noise
-	window_size = max(10, len(fourier_half) // 1000)
-	if window_size < len(fourier_half):
-		# Smooth the spectrum to find more stable peaks
-		smoothed = np.convolve(fourier_half, np.ones(window_size)/window_size, mode='same')
-	else:
-		smoothed = fourier_half
-	
-	imax = np.argmax(smoothed)
-	
-	# Verify this is a reasonable frequency for guitar (80-1500 Hz range)
-	freq_candidate = (imax * f_s) / len(sound)
-	
-	# If the main peak is outside guitar range, look for harmonics
-	if freq_candidate < 60 or freq_candidate > 1500:
-		# Look for peaks in the guitar frequency range (80-1500 Hz)
-		freq_min_idx = int(60 * len(sound) / f_s)
-		freq_max_idx = int(1500 * len(sound) / f_s)
-		freq_max_idx = min(freq_max_idx, half_length - 1)
-		
-		if freq_min_idx < freq_max_idx:
-			guitar_range = smoothed[freq_min_idx:freq_max_idx]
-			if len(guitar_range) > 0:
-				local_max = np.argmax(guitar_range)
-				imax = freq_min_idx + local_max
-	
-	#peak detection (refined)
+	#peak detection
 	i_begin = -1
-	threshold = 0.2 * fourier[imax]  # Lower threshold for better detection
-	search_range = min(imax + 50, len(fourier))
-	
-	for i in range(max(0, imax-50), search_range):
+	threshold = 0.3 * fourier[imax]
+	for i in range (0,imax+100):
 		if fourier[i] >= threshold:
-			if i_begin == -1:
+			if(i_begin==-1):
 				i_begin = i				
-		if i_begin != -1 and fourier[i] < threshold:
+		if(i_begin!=-1 and fourier[i]<threshold):
 			break
+	i_end = i
+	imax = np.argmax(fourier[0:i_end+100])
 	
-	if i_begin != -1:
-		i_end = i
-		peak_range = min(i_end + 50, len(fourier))
-		local_spectrum = fourier[i_begin:peak_range]
-		if len(local_spectrum) > 0:
-			local_max = np.argmax(local_spectrum)
-			imax = i_begin + local_max
-	
-	# FIXED: Correct frequency calculation formula
-	freq = (imax * f_s) / len(sound)  # Removed division by channels
-	
-	# Debug information
-	print(f"DEBUG - Audio properties: sample_rate={f_s}, length={len(sound)}, channels={channels}")
-	print(f"DEBUG - FFT: imax={imax}, freq={freq:.2f} Hz")
-	
+	freq=(imax*f_s)/(file_length*counter) #formula to convert index into sound frequency
 	return freq
 
 def get_note_frequency(note_name):
@@ -222,9 +164,6 @@ def tune_audio(audio_file, target_note, tolerance_cents=10):
 	if detected_freq > 0:
 		cents_diff = 1200 * math.log2(detected_freq / target_freq)
 		
-		# Debug information
-		print(f"DEBUG - Tuning: target={target_note} ({target_freq:.2f} Hz), detected={detected_freq:.2f} Hz")
-		print(f"DEBUG - Cents calculation: 1200 * log2({detected_freq:.2f}/{target_freq:.2f}) = {cents_diff:.1f}")
 	else:
 		return {
 			"error": "Could not detect frequency from audio",

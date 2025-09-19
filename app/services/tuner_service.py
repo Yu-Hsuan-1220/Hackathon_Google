@@ -213,6 +213,20 @@ async def tune_guitar_string(string_num: str, audio_file_path: str) -> dict:
         }
         
     except Exception as e:
+
+        print(f"Error in tune_guitar_string: {str(e)}")
+        # 當發生錯誤時，提供一個基本的回應和備用音檔
+        fallback_audio_path = None
+        try:
+            # 嘗試提供一個備用音檔路徑
+            if string_num in ["1", "2", "3", "4", "5", "6"]:
+                # 默認提供"需要重新調音"的音檔
+                fallback_audio_path = f"frontend/public/audio/tuner/string{string_num}_too_low/feedback.wav"
+                if not os.path.exists(fallback_audio_path.replace("frontend/public/", "")):
+                    fallback_audio_path = "frontend/public/audio/tuner/tuner_intro.wav"
+        except:
+            fallback_audio_path = "frontend/public/audio/tuner/tuner_intro.wav"
+            
         return {
             "tuning_status": False,
             "string_num": string_num,
@@ -248,4 +262,3 @@ async def test_tuning_service():
 if __name__ == "__main__":
     # Run test
     asyncio.run(test_tuning_service())
-
