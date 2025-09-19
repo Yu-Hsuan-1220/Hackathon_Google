@@ -5,20 +5,32 @@ import './HomePage.css';
 
 function HomePage({ onNavigate }) {
   const hasCalledAPI = useRef(false);
+  const currentAudio = useRef(null);
 
   useEffect(() => {
     if (!hasCalledAPI.current) {
       hasCalledAPI.current = true;
       checkAndPlayIntro();
     }
+
+    // 清理音頻
+    return () => {
+      if (currentAudio.current) {
+        currentAudio.current.pause();
+        currentAudio.current.currentTime = 0;
+        currentAudio.current = null;
+      }
+    };
   }, []);
 
   const checkAndPlayIntro = () => {
     const audio = new Audio(`/home_intro.wav`);
+    currentAudio.current = audio;
     
     audio.oncanplaythrough = () => {
-      audio.play();
+      audio.play().catch(console.error);
       audio.onended = () => {
+        currentAudio.current = null;
         startVoiceRecognition();
       };
     };
@@ -27,8 +39,10 @@ function HomePage({ onNavigate }) {
       await fetch(`http://localhost:8000/home/intro`);
       setTimeout(() => {
         const newAudio = new Audio(`/home_intro.wav`);
-        newAudio.play();
+        currentAudio.current = newAudio;
+        newAudio.play().catch(console.error);
         newAudio.onended = () => {
+          currentAudio.current = null;
           startVoiceRecognition();
         };
       }, 1000);
@@ -84,7 +98,7 @@ function HomePage({ onNavigate }) {
     }
   };
   
-  const userName = localStorage.getItem('userName')?.trim() || '用戶';
+  const userName = localStorage.getItem('userName')?.trim() || localStorage.getItem('usr_id')?.trim() || '用戶';
   const features = [
     {
       id: 'tuner',
@@ -124,7 +138,7 @@ function HomePage({ onNavigate }) {
   ];
 
   const handleVoiceCommand = (command) => {
-    // 簡化的語音指令處理
+    // 語音指令由 API 處理
   };
 
   const handleResetUserData = () => {

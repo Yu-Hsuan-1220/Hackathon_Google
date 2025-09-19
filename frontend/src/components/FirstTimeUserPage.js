@@ -7,10 +7,18 @@ function FirstTimeUserPage({ onComplete }) {
   const [isListening, setIsListening] = useState(false);
   const [step, setStep] = useState('intro'); // intro, name, confirm, action
   const hasCalledAPI = useRef(false);
+  const currentAudio = useRef(null);
 
   const handleSkip = () => {
-    localStorage.setItem('userName', '訪客');
-    localStorage.setItem('usr_id', '訪客');
+    // 停止當前播放的音頻
+    if (currentAudio.current) {
+      currentAudio.current.pause();
+      currentAudio.current.currentTime = 0;
+      currentAudio.current = null;
+    }
+    const guestName = '訪客';
+    localStorage.setItem('userName', guestName);
+    localStorage.setItem('usr_id', guestName);
     onComplete();
   };
 
@@ -19,16 +27,28 @@ function FirstTimeUserPage({ onComplete }) {
       hasCalledAPI.current = true;
       playIntro();
     }
+
+    // 清理音頻
+    return () => {
+      if (currentAudio.current) {
+        currentAudio.current.pause();
+        currentAudio.current.currentTime = 0;
+        currentAudio.current = null;
+      }
+    };
   }, []);
 
   // 播放 intro 音檔
   const playIntro = () => {
     const audio = new Audio('/firstused_intro.wav');
+    currentAudio.current = audio;
     
     audio.oncanplaythrough = () => {
-      // 音檔存在，直接播放
-      audio.play();
+      setTimeout(() => {
+        audio.play().catch(console.error);
+      }, 1000);
       audio.onended = () => {
+        currentAudio.current = null;
         setStep('name');
         startVoiceRecognition((name) => {
           setUserName(name);
@@ -39,12 +59,13 @@ function FirstTimeUserPage({ onComplete }) {
     };
     
     audio.onerror = async () => {
-      // 音檔不存在，發送API請求
       await fetch('http://localhost:8000/first_used/intro');
       setTimeout(() => {
         const newAudio = new Audio('/firstused_intro.wav');
-        newAudio.play();
+        currentAudio.current = newAudio;
+        newAudio.play().catch(console.error);
         newAudio.onended = () => {
+          currentAudio.current = null;
           setStep('name');
           startVoiceRecognition((name) => {
             setUserName(name);
@@ -79,25 +100,30 @@ function FirstTimeUserPage({ onComplete }) {
       setIsListening(false);
     };
     setTimeout(() => {
-      if (recognition) {
-        recognition.stop();
-        setIsListening(false);
-      }
+      recognition.stop();
     }, 8000);
   };
 
   // 發送名字到 first_used/confirmed
   const sendConfirmAPI = async (name) => {
     await fetch(`http://localhost:8000/first_used/confirmed?user_name=${encodeURIComponent(name)}`);
+    // 立即保存用戶名稱，不等待後續 API 確認
+    localStorage.setItem('userName', name.trim());
+    localStorage.setItem('usr_id', name.trim());
     playConfirmAudio();
   };
 
   // 播放確認語音，語音輸入是否確認
   const playConfirmAudio = () => {
     setTimeout(() => {
+      if (currentAudio.current) {
+        currentAudio.current.pause();
+      }
       const audio = new Audio('/firstused_confirmed.wav');
-      audio.play();
+      currentAudio.current = audio;
+      audio.play().catch(console.error);
       audio.onended = () => {
+        currentAudio.current = null;
         setStep('action');
         setTimeout(() => {
           startVoiceRecognition((confirmText) => {
@@ -114,10 +140,22 @@ function FirstTimeUserPage({ onComplete }) {
     const data = await response.json();
     
     if (data.Response === true) {
+      // 停止當前播放的音頻
+      if (currentAudio.current) {
+        currentAudio.current.pause();
+        currentAudio.current.currentTime = 0;
+        currentAudio.current = null;
+      }
+      // API 確認成功，保存用戶名稱
       localStorage.setItem('userName', userName.trim());
       localStorage.setItem('usr_id', userName.trim());
       onComplete();
     } else {
+      // API 確認失敗，重新開始流程但仍保存用戶名稱以防萬一
+      if (userName.trim()) {
+        localStorage.setItem('userName', userName.trim());
+        localStorage.setItem('usr_id', userName.trim());
+      }
       setStep('name');
       startVoiceRecognition((name) => {
         setUserName(name);
