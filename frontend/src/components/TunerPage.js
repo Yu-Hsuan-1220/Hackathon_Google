@@ -416,22 +416,6 @@ function TunerPage({ onNavigate }) {
     }
   };
 
-  const completeTuning = () => {
-    localStorage.setItem('hasCompletedTuning', 'true');
-    stopListening();
-    onNavigate('basic-lesson');
-  };
-
-  const selectString = (index) => {
-    setCurrentString(index);
-  };
-
-  const skipTuning = () => {
-    localStorage.setItem('hasCompletedTuning', 'true');
-    onNavigate('basic-lesson');
-  };
-
-
   const getDirectionHint = (centsError) => {
     if (centsError > 0) {
       return { text: '音太高，請放鬆弦', color: '#FF5722' };
