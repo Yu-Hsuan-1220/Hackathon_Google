@@ -479,7 +479,7 @@ const ChordLessonPage = ({ onNavigate }) => {
                             <div
                                 key={chord}
                                 className={`chord-indicator ${state.completedChords.has(chord) ? 'completed' :
-                                        state.currentChord === chord ? 'current' : 'pending'
+                                    state.currentChord === chord ? 'current' : 'pending'
                                     }`}
                             >
                                 {chord}

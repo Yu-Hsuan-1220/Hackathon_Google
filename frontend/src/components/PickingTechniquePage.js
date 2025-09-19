@@ -37,7 +37,7 @@ function PickingTechniquePage({ onNavigate }) {
   };
 
   return (
-    <PhoneContainer 
+    <PhoneContainer
       title="🎼 右手撥弦技巧"
       onVoiceCommand={handleVoiceCommand}
       enableVoice={true}
@@ -45,20 +45,20 @@ function PickingTechniquePage({ onNavigate }) {
     >
       <div className="picking-technique-page">
         <div className="lesson-nav">
-          <button 
+          <button
             className="back-button"
             onClick={() => onNavigate('guitar-lesson')}
           >
             ← 返回教學選單
           </button>
-          <button 
+          <button
             className="home-button"
             onClick={() => onNavigate('home')}
           >
             🏠 主頁
           </button>
         </div>
-        
+
         <div className="lesson-content">
           <div className="key-points-section">
             <h2>💡 動作要點</h2>
@@ -72,9 +72,9 @@ function PickingTechniquePage({ onNavigate }) {
                 </div>
               ))}
             </div>
-            
+
             <div className="lesson-actions">
-              <button 
+              <button
                 className="practice-button"
                 onClick={() => onNavigate('single-note-lesson')}
               >

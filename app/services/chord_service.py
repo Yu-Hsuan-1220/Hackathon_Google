@@ -4,11 +4,7 @@ from ..services.chord_check_service import chord_check
 import logging
 
 router = APIRouter()
-<<<<<<< HEAD
-logger = logging.getLogger(__name__)
-=======
 logger = logging.getLogger(_name_)
->>>>>>> 491903c (final)
 
 @router.post("/chord-check")
 async def check_chord_endpoint(
@@ -145,9 +141,4 @@ async def get_chord_info(chord: str):
     return {
         "chord": chord,
         "info": chord_info[chord]
-<<<<<<< HEAD
     }
-
-=======
-    }
->>>>>>> 491903c (final)

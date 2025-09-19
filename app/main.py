@@ -5,19 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 
 # local lib
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
 from app.routers import pose_check, menu, home, first_used, tuner, string_check, chord
->>>>>>> 491903c (final)
 
-from app.routers import pose_check, menu, home, first_used,tuner
-=======
-from app.routers import pose_check, menu, home, first_used, tuner, string_check
->>>>>>> b671a7e (單音gg)
-
-
-from app.routers import pose_check, menu, home, first_used, tuner, string_check, guitar
 
 app = FastAPI()
 
@@ -38,22 +27,9 @@ app.include_router(menu.router, prefix="/menu", tags=["Menu"])
 app.include_router(home.router, prefix="/home", tags=["Home"])
 app.include_router(pose_check.router, prefix="/pose", tags=["Pose Check"])
 app.include_router(first_used.router, prefix="/first_used", tags=["First Used"])
-<<<<<<< HEAD
-
-app.include_router(guitar.router, prefix="/guitar", tags=["Guitar"])
-app.include_router(tuner.router,prefix="/tuner",tags=["Tuner"])
-app.include_router(string_check.router, prefix="/simplenote", tags=["Simple Note"])
-
-
-
-=======
 app.include_router(tuner.router, prefix="/tuner", tags=["Tuner"])
 app.include_router(string_check.router, prefix="/simplenote", tags=["Simple Note"])
-<<<<<<< HEAD
->>>>>>> b671a7e (單音gg)
-=======
 app.include_router(chord.router, prefix="/chord", tags=["Chord"])
->>>>>>> 491903c (final)
 
 
 if __name__ == "__main__":

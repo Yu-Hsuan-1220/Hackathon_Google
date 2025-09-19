@@ -36,7 +36,6 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
       setState(prev => ({ ...prev, phase: 'playing', isPlayingInstruction: true }));
 
       const audio = instructionAudioRef.current;
-<<<<<<< HEAD
 
       // 停止現有播放並重置
       audio.pause();
@@ -45,16 +44,6 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
       // 處理音檔路徑 - 確保正確的前端路徑格式
       let finalAudioPath = audioPath;
 
-=======
-      
-      // 停止現有播放並重置
-      audio.pause();
-      audio.currentTime = 0;
-      
-      // 處理音檔路徑 - 確保正確的前端路徑格式
-      let finalAudioPath = audioPath;
-      
->>>>>>> b671a7e (單音gg)
       // 如果是後端返回的完整路徑，需要轉換
       if (audioPath && audioPath.startsWith('frontend/public/')) {
         finalAudioPath = audioPath.replace('frontend/public/', '/');
@@ -63,7 +52,6 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
       } else if (audioPath && !audioPath.startsWith('/')) {
         finalAudioPath = '/' + audioPath;
       }
-<<<<<<< HEAD
 
       console.log('🎵 原始音檔路徑:', audioPath);
       console.log('🎵 處理後路徑:', finalAudioPath);
@@ -71,15 +59,6 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
       const handleEnded = () => {
         console.log('✅ 指示音檔播放完成');
         setState(prev => ({ ...prev, isPlayingInstruction: false, phase: 'idle' }));
-=======
-      
-      console.log('🎵 原始音檔路徑:', audioPath);
-      console.log('🎵 處理後路徑:', finalAudioPath);
-      
-      const handleEnded = () => {
-        console.log('✅ 指示音檔播放完成');
-        setState(prev => ({ ...prev, isPlayingInstruction: false }));
->>>>>>> b671a7e (單音gg)
         audio.removeEventListener('ended', handleEnded);
         audio.removeEventListener('error', handleError);
         audio.removeEventListener('canplaythrough', handleCanPlay);
@@ -89,16 +68,10 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
       const handleError = (error) => {
         console.error('🔊 語音播放錯誤:', error);
         console.error('錯誤的音檔路徑:', finalAudioPath);
-<<<<<<< HEAD
         setState(prev => ({
           ...prev,
           isPlayingInstruction: false,
           phase: 'idle',  // Reset phase to idle on error too
-=======
-        setState(prev => ({ 
-          ...prev, 
-          isPlayingInstruction: false,
->>>>>>> b671a7e (單音gg)
           error: null // 不顯示音檔播放錯誤，因為這不是關鍵功能
         }));
         audio.removeEventListener('ended', handleEnded);
@@ -116,11 +89,7 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
       audio.addEventListener('ended', handleEnded);
       audio.addEventListener('error', handleError);
       audio.addEventListener('canplaythrough', handleCanPlay);
-<<<<<<< HEAD
 
-=======
-      
->>>>>>> b671a7e (單音gg)
       // 設置音源
       audio.src = finalAudioPath;
       audio.load(); // 強制重新加載
@@ -130,7 +99,6 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
   // 處理後端回應
   const processLessonResponse = useCallback(async (response) => {
     try {
-<<<<<<< HEAD
       console.log('🔍 Processing response:', response);
 
       // 從後端回應中正確提取數據
@@ -164,33 +132,18 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
       // Update results only for non-initialization requests
       if (state.currentNote && state.currentNote !== 'AA' && state.currentNote !== '') {
         console.log('🔍 Updating results for note:', state.currentNote);
-=======
-      const { target_note: nextNote, debug_info } = response;
-      const { success, audio_path } = debug_info || {};
-
-      // 更新題目結果
-      if (state.currentNote && state.currentNote !== 'AA') {
->>>>>>> b671a7e (單音gg)
         setState(prev => {
           const newResults = new Map(prev.questionResults);
           const currentResult = newResults.get(state.currentNote) || { success: false, attempts: 0 };
           newResults.set(state.currentNote, {
-<<<<<<< HEAD
             success: isSuccess || currentResult.success,
-=======
-            success: success || currentResult.success, // 一旦成功就保持成功
->>>>>>> b671a7e (單音gg)
             attempts: currentResult.attempts + 1
           });
 
           const newAnsweredNotes = new Set(prev.answeredNotes);
-<<<<<<< HEAD
           if (isSuccess) {
             newAnsweredNotes.add(state.currentNote);
           }
-=======
-          newAnsweredNotes.add(state.currentNote);
->>>>>>> b671a7e (單音gg)
 
           return {
             ...prev,
@@ -200,7 +153,6 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
         });
       }
 
-<<<<<<< HEAD
       // Play instruction audio AFTER state update
       if (audioPath) {
         console.log('🔍 Playing audio:', audioPath);
@@ -223,42 +175,6 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
       console.error('處理回應失敗:', error);
       setState(prev => ({
         ...prev,
-=======
-      // 播放指導語音（如果有）
-      if (audio_path) {
-        await playInstructionAudio(audio_path);
-      }
-
-      // 更新下一題或完成狀態
-      if (nextNote && nextNote !== 'AA' && nextNote !== '') {
-        setState(prev => ({
-          ...prev,
-          currentNote: nextNote,
-          phase: prev.answeredNotes.size >= 7 ? 'done' : 'idle'
-        }));
-      } else if (nextNote === '') {
-        // 後端返回空字符串表示完成
-        setState(prev => ({ ...prev, phase: 'done' }));
-      } else {
-        setState(prev => ({ ...prev, phase: 'idle' }));
-      }
-
-      // 檢查是否完成所有題目
-      setState(prev => {
-        if (prev.answeredNotes.size >= 7 || nextNote === '') {
-          setTimeout(() => {
-            onNavigate('home');
-          }, 3000);
-          return { ...prev, phase: 'done' };
-        }
-        return prev;
-      });
-
-    } catch (error) {
-      console.error('處理回應失敗:', error);
-      setState(prev => ({ 
-        ...prev, 
->>>>>>> b671a7e (單音gg)
         error: '處理回應失敗，請重試',
         phase: 'idle'
       }));
@@ -320,36 +236,24 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
 
       const result = await response.json();
       console.log('📦 收到回應:', result);
-<<<<<<< HEAD
 
-=======
-      
->>>>>>> b671a7e (單音gg)
       await processLessonResponse(result);
 
     } catch (error) {
       console.error('上傳失敗:', error);
-<<<<<<< HEAD
       setState(prev => ({
         ...prev,
         error: error.message.includes('fetch') ?
           '網路連線失敗，請檢查後端服務是否啟動' :
-=======
-      setState(prev => ({ 
-        ...prev, 
-        error: error.message.includes('fetch') ? 
-          '網路連線失敗，請檢查後端服務是否啟動' : 
->>>>>>> b671a7e (單音gg)
           `請求失敗: ${error.message}`,
         phase: 'idle'
       }));
     }
   }, [processLessonResponse]);
 
-<<<<<<< HEAD
   // 上傳錄音 - 使用 ref 來避免閉包陷阱
   const currentNoteRef = useRef('');
-  
+
   // 同步 ref 與 state
   useEffect(() => {
     currentNoteRef.current = state.currentNote;
@@ -365,26 +269,11 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
       console.error('上傳錄音失敗:', error);
       setState(prev => ({
         ...prev,
-=======
-  // 上傳錄音 - 簡化邏輯 (移到前面避免初始化錯誤)
-  const uploadRecording = useCallback(async (audioBlob) => {
-    try {
-      console.log('📤 開始上傳錄音...');
-      await sendLessonRequest(state.currentNote, audioBlob);
-    } catch (error) {
-      console.error('上傳錄音失敗:', error);
-      setState(prev => ({ 
-        ...prev, 
->>>>>>> b671a7e (單音gg)
         error: error.message,
         phase: 'idle'
       }));
     }
-<<<<<<< HEAD
   }, [sendLessonRequest]);
-=======
-  }, [state.currentNote, sendLessonRequest]);
->>>>>>> b671a7e (單音gg)
 
   // 開始錄音 - 完全參考調音器的實現
   const startRecording = useCallback(async () => {
@@ -395,11 +284,7 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           channelCount: 1,
-<<<<<<< HEAD
           sampleRate: 44100,           // 提升採樣率以提高頻率檢測精度
-=======
-          sampleRate: 24000,
->>>>>>> b671a7e (單音gg)
           echoCancellation: false,
           autoGainControl: false,
           noiseSuppression: false
@@ -480,11 +365,7 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
   // 停止錄音 - 參考調音器的實現
   const stopRecording = useCallback(() => {
     console.log('🛑 停止錄音流程開始');
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> b671a7e (單音gg)
     if (recordingTimerRef.current) {
       clearInterval(recordingTimerRef.current);
       recordingTimerRef.current = null;
@@ -516,11 +397,7 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
         0x42, 0xf3, 0x81, 0x08, 0x42, 0x82, 0x84, 0x77, 0x65, 0x62, 0x6d
       ]);
       const dummyBlob = new Blob([webmHeader], { type: 'audio/webm' });
-<<<<<<< HEAD
 
-=======
-      
->>>>>>> b671a7e (單音gg)
       console.log('🎵 初始化單音教學...');
       await sendLessonRequest('AA', dummyBlob);
     };
@@ -530,58 +407,35 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
     }
   }, [state.phase, sendLessonRequest]);
 
-<<<<<<< HEAD
   // Debug: Track currentNote changes
   useEffect(() => {
     console.log('🔍 currentNote changed to:', state.currentNote);
   }, [state.currentNote]);
 
-=======
->>>>>>> b671a7e (單音gg)
   // 清理資源
   useEffect(() => {
     return () => {
       console.log('🧹 清理組件資源');
-<<<<<<< HEAD
 
-=======
-      
->>>>>>> b671a7e (單音gg)
       if (recordingTimerRef.current) {
         clearInterval(recordingTimerRef.current);
         recordingTimerRef.current = null;
       }
-<<<<<<< HEAD
 
-=======
-      
->>>>>>> b671a7e (單音gg)
       if (audioLevelTimerRef.current) {
         clearInterval(audioLevelTimerRef.current);
         audioLevelTimerRef.current = null;
       }
-<<<<<<< HEAD
 
-=======
-      
->>>>>>> b671a7e (單音gg)
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
         animationFrameRef.current = null;
       }
-<<<<<<< HEAD
 
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
 
-=======
-      
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-      }
-      
->>>>>>> b671a7e (單音gg)
       if (instructionAudioRef.current) {
         instructionAudioRef.current.pause();
         instructionAudioRef.current.src = '';
@@ -592,24 +446,15 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
   // 渲染進度指示器
   const renderProgress = () => {
     const progressPercentage = (state.answeredNotes.size / 7) * 100;
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> b671a7e (單音gg)
     return (
       <div className="lesson-progress">
         <div className="progress-header">
           <span>進度: {state.answeredNotes.size} / 7</span>
         </div>
         <div className="progress-bar">
-<<<<<<< HEAD
           <div
             className="progress-fill"
-=======
-          <div 
-            className="progress-fill" 
->>>>>>> b671a7e (單音gg)
             style={{ width: `${progressPercentage}%` }}
           />
         </div>
@@ -618,15 +463,9 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
             const questionNumber = index + 1;
             const answered = state.answeredNotes.size > index;
             const current = state.answeredNotes.size === index;
-<<<<<<< HEAD
 
             return (
               <div
-=======
-            
-            return (
-              <div 
->>>>>>> b671a7e (單音gg)
                 key={questionNumber}
                 className={`question-indicator ${answered ? 'answered' : ''} ${current ? 'current' : ''}`}
               >
@@ -647,13 +486,8 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
       <div className="volume-container">
         <div className="volume-label">音量</div>
         <div className="volume-bar">
-<<<<<<< HEAD
           <div
             className="volume-fill"
-=======
-          <div 
-            className="volume-fill" 
->>>>>>> b671a7e (單音gg)
             style={{ width: `${Math.min((state.audioLevel / 128) * 100, 100)}%` }}
           />
         </div>
@@ -723,11 +557,7 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
   // 渲染控制按鈕
   const renderControls = () => {
     const isDisabled = ['recording', 'uploading', 'playing', 'intro', 'done'].includes(state.phase);
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> b671a7e (單音gg)
     if (state.phase === 'done') {
       return null;
     }
@@ -740,17 +570,10 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
           disabled={isDisabled}
         >
           {state.phase === 'recording' ? `錄音中 (${Math.round(state.recordingTime * 10) / 10}s)` :
-<<<<<<< HEAD
             state.phase === 'uploading' ? '分析中...' :
               state.phase === 'playing' ? '播放中...' :
                 state.phase === 'intro' ? '初始化中...' :
                   `開始錄音 (${RECORD_SECONDS}秒)`}
-=======
-           state.phase === 'uploading' ? '分析中...' :
-           state.phase === 'playing' ? '播放中...' :
-           state.phase === 'intro' ? '初始化中...' :
-           `開始錄音 (${RECORD_SECONDS}秒)`}
->>>>>>> b671a7e (單音gg)
         </button>
       </div>
     );
@@ -780,13 +603,8 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
         {state.error && (
           <div className="error-toast">
             <span>{state.error}</span>
-<<<<<<< HEAD
             <button
               className="error-close"
-=======
-            <button 
-              className="error-close" 
->>>>>>> b671a7e (單音gg)
               onClick={() => setState(prev => ({ ...prev, error: null }))}
             >
               ✕

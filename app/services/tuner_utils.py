@@ -149,9 +149,7 @@ def get_frequency_from_audio(audio_file):
 	#min_period = int(f_s / 800)  # Max frequency
 	#max_period = int(f_s / 50)   # Min frequency
 	min_period = int(f_s / 800)  # Max frequency
->>>>>>> b2ddf84 (single note and tuner fix)
 	max_period = int(f_s / 60)   # Min frequency
-	
 
 	if max_period >= len(autocorr):
 		max_period = len(autocorr) - 1
