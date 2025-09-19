@@ -16,9 +16,8 @@ function BasicLessonPage({ onBack, onNavigate }) {
   const checkAndPlayIntro = () => {
     const audio = new Audio(`/menu_intro.wav`);
     
-    // 檢查音檔是否存在
     audio.oncanplaythrough = () => {
-      // 音檔存在，直接播放
+      // 音檔已存在，直接播放
       audio.play();
       audio.onended = () => {
         startVoiceRecognition();
@@ -26,7 +25,7 @@ function BasicLessonPage({ onBack, onNavigate }) {
     };
     
     audio.onerror = async () => {
-      // 音檔不存在，發送API請求
+      // 音檔不存在，調用 API 生成音檔
       await fetch(`http://localhost:8000/menu/intro`);
       setTimeout(() => {
         const newAudio = new Audio(`/menu_intro.wav`);
@@ -38,63 +37,54 @@ function BasicLessonPage({ onBack, onNavigate }) {
     };
     
     audio.load();
-
   };
   
   const startVoiceRecognition = () => {
-    try {
-      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-      recognition.lang = 'zh-TW';
-      recognition.continuous = false;
-      recognition.interimResults = false;
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'zh-TW';
+    recognition.continuous = false;
+    recognition.interimResults = false;
 
-      recognition.start();
+    recognition.start();
 
-      recognition.onresult = async (event) => {
-        const transcript = event.results[0][0].transcript;
-        await sendActionAPI(transcript);
-      };
+    recognition.onresult = async (event) => {
+      const transcript = event.results[0][0].transcript;
+      await sendActionAPI(transcript);
+    };
 
-      // 智能停止收音 - 3秒後自動停止
-      setTimeout(() => {
-        recognition.stop();
-      }, 3000);
-    } catch (error) {
-      console.log('語音辨識不支持');
-    }
+    // 智能停止收音 - 3秒後自動停止
+    setTimeout(() => {
+      recognition.stop();
+    }, 3000);
   };
 
   const sendActionAPI = async (voiceInput) => {
-    try {
-      const response = await fetch(`http://localhost:8000/menu/action?user_input=${encodeURIComponent(voiceInput)}`, {
-        method: 'POST',
-      });
-      
-      const data = await response.json();
-      const actionId = data.Response;
-      
-      // 根據 id 進行頁面跳轉
-      switch(actionId) {
-        case 1:
-          onNavigate('guitar-grip');
-          break;
-        case 2:
-          onNavigate('tuner');
-          break;
-        case 3:
-          onNavigate('single-note');
-          break;
-        case 4:
-          onNavigate('chord-practice');
-          break;
-        case 5:
-          onNavigate('song-twinkle-star');
-          break;
-        default:
-          break;
-      }
-    } catch (error) {
-      console.log('API調用失敗');
+    const response = await fetch(`http://localhost:8000/menu/action?user_input=${encodeURIComponent(voiceInput)}`, {
+      method: 'POST',
+    });
+    
+    const data = await response.json();
+    const actionId = data.Response;
+    
+    // 根據 id 進行頁面跳轉
+    switch(actionId) {
+      case 1:
+        onNavigate('guitar-grip');
+        break;
+      case 2:
+        onNavigate('tuner');
+        break;
+      case 3:
+        onNavigate('single-note');
+        break;
+      case 4:
+        onNavigate('chord-practice');
+        break;
+      case 5:
+        onNavigate('song-twinkle-star');
+        break;
+      default:
+        break;
     }
   };
 

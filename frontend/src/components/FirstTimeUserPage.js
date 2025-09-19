@@ -8,6 +8,12 @@ function FirstTimeUserPage({ onComplete }) {
   const [step, setStep] = useState('intro'); // intro, name, confirm, action
   const hasCalledAPI = useRef(false);
 
+  const handleSkip = () => {
+    localStorage.setItem('userName', '訪客');
+    localStorage.setItem('usr_id', '訪客');
+    onComplete();
+  };
+
   useEffect(() => {
     if (!hasCalledAPI.current) {
       hasCalledAPI.current = true;
@@ -16,10 +22,11 @@ function FirstTimeUserPage({ onComplete }) {
   }, []);
 
   // 播放 intro 音檔
-  const playIntro = async () => {
-    await fetch('http://localhost:8000/first_used/intro');
-    setTimeout(() => {
-      const audio = new Audio('/firstused_intro.wav');
+  const playIntro = () => {
+    const audio = new Audio('/firstused_intro.wav');
+    
+    audio.oncanplaythrough = () => {
+      // 音檔存在，直接播放
       audio.play();
       audio.onended = () => {
         setStep('name');
@@ -29,7 +36,26 @@ function FirstTimeUserPage({ onComplete }) {
           sendConfirmAPI(name);
         });
       };
-    }, 1000);
+    };
+    
+    audio.onerror = async () => {
+      // 音檔不存在，發送API請求
+      await fetch('http://localhost:8000/first_used/intro');
+      setTimeout(() => {
+        const newAudio = new Audio('/firstused_intro.wav');
+        newAudio.play();
+        newAudio.onended = () => {
+          setStep('name');
+          startVoiceRecognition((name) => {
+            setUserName(name);
+            setStep('confirm');
+            sendConfirmAPI(name);
+          });
+        };
+      }, 1000);
+    };
+    
+    audio.load();
   };
 
   const startVoiceRecognition = (callback) => {
@@ -110,6 +136,9 @@ function FirstTimeUserPage({ onComplete }) {
             讓我們開始您的吉他學習之旅！<br />
             請先告訴我們您的名字
           </p>
+          <button onClick={handleSkip} className="skip-button">
+            跳過設定
+          </button>
         </div>
         <div className="voice-input-section">
           {step === 'name' && (

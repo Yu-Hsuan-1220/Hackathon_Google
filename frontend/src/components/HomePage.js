@@ -13,15 +13,28 @@ function HomePage({ onNavigate }) {
     }
   }, []);
 
-  const checkAndPlayIntro = async () => {
-    await fetch(`http://localhost:8000/home/intro`);
-    setTimeout(() => {
-      const audio = new Audio(`/home_intro.wav`);
+  const checkAndPlayIntro = () => {
+    const audio = new Audio(`/home_intro.wav`);
+    
+    audio.oncanplaythrough = () => {
       audio.play();
       audio.onended = () => {
         startVoiceRecognition();
       };
-    }, 1000);
+    };
+    
+    audio.onerror = async () => {
+      await fetch(`http://localhost:8000/home/intro`);
+      setTimeout(() => {
+        const newAudio = new Audio(`/home_intro.wav`);
+        newAudio.play();
+        newAudio.onended = () => {
+          startVoiceRecognition();
+        };
+      }, 1000);
+    };
+    
+    audio.load();
   };
 
   const startVoiceRecognition = () => {

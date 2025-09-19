@@ -109,7 +109,7 @@ const App = () => {
             result={poseResult}
             onBack={() => handleNavigate('guitar-grip')}
             onRetry={() => handleNavigate('guitar-grip-camera')}
-            onNavigate={setCurrentScreen}
+            onNavigateToBasicLesson={() => setCurrentScreen('basic-lesson')}
           />
         );
 

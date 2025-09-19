@@ -4,47 +4,51 @@ import './CameraScreen.css';
 
 const CameraScreen = ({ onBack, onResult }) => {
   const [isCapturing, setIsCapturing] = useState(false);
-  const [error, setError] = useState('');
-  const [isCameraReady, setIsCameraReady] = useState(false);
   const [statusMessage, setStatusMessage] = useState('正在載入...');
-  const [countdown, setCountdown] = useState(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
-  const countdownTimer = useRef(null);
-  const captureTimer = useRef(null);
   const hasCalledIntro = useRef(false);
 
   // 播放相機介紹音檔
-  const playIntro = async () => {
-    await fetch('http://localhost:8000/pose/intro');
-    setTimeout(() => {
-      const audio = new Audio('/pose_intro.wav');
+  const playIntro = () => {
+    const audio = new Audio('/pose_intro.wav');
+    
+    audio.oncanplaythrough = () => {
+      // 音檔已存在，直接播放
       audio.play();
       audio.onended = () => {
         startCamera();
       };
-    }, 1000);
+    };
+    
+    audio.onerror = async () => {
+      // 音檔不存在，調用 API 生成音檔
+      await fetch('http://localhost:8000/pose/intro');
+      setTimeout(() => {
+        const newAudio = new Audio('/pose_intro.wav');
+        newAudio.play();
+        newAudio.onended = () => {
+          startCamera();
+        };
+      }, 1000);
+    };
+    
+    audio.load();
   };
 
   const startCamera = async () => {
     setStatusMessage('正在啟動相機...');
     const stream = await navigator.mediaDevices.getUserMedia({
-      video: { 
-        facingMode: 'user',
-        width: { ideal: 1920 },
-        height: { ideal: 1080 }
-      },
+      video: { facingMode: 'user' },
       audio: false
     });
     
     if (videoRef.current) {
       videoRef.current.srcObject = stream;
       streamRef.current = stream;
-      setIsCameraReady(true);
       setStatusMessage('相機就緒，3秒後自動拍照...');
       
-      // 相機就緒後3秒自動拍照
       setTimeout(() => {
         capturePhoto();
       }, 3000);
@@ -59,7 +63,6 @@ const CameraScreen = ({ onBack, onResult }) => {
     setIsCapturing(true);
     setStatusMessage('正在拍照...');
 
-    
     const canvas = canvasRef.current;
     const video = videoRef.current;
     const context = canvas.getContext('2d');
@@ -68,22 +71,14 @@ const CameraScreen = ({ onBack, onResult }) => {
     canvas.height = video.videoHeight;
     context.drawImage(video, 0, 0);
     
-    canvas.toBlob(async (blob) => {
+    canvas.toBlob((blob) => {
       const formData = new FormData();
       formData.append('file', blob, 'photo.jpg');
       
-      setStatusMessage('正在分析姿勢...');
-      
-      const response = await fetch('http://localhost:8000/pose/check_pose', {
-        method: 'POST',
-        body: formData
-      });
-      
-      const result = await response.json();
-      setStatusMessage('分析完成！');
+      setStatusMessage('拍照完成！');
       
       if (onResult) {
-        onResult(result);
+        onResult({ photoData: formData });
       }
       
       setIsCapturing(false);
@@ -96,14 +91,6 @@ const CameraScreen = ({ onBack, onResult }) => {
       playIntro();
     }
     return () => {
-      // 清理定時器
-      if (countdownTimer.current) {
-        clearInterval(countdownTimer.current);
-      }
-      if (captureTimer.current) {
-        clearTimeout(captureTimer.current);
-      }
-      // 清理相機串流
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
@@ -148,15 +135,7 @@ const CameraScreen = ({ onBack, onResult }) => {
             <p className="status-text">{statusMessage}</p>
           </div>
           
-          {/* 倒數顯示 */}
-          {countdown !== null && (
-            <div className="phone-countdown-overlay">
-              <div className="phone-countdown-circle">
-                <span className="phone-countdown-number">{countdown}</span>
-              </div>
-              <p className="phone-countdown-text">請保持姿勢</p>
-            </div>
-          )}
+
           
 
           
@@ -164,26 +143,7 @@ const CameraScreen = ({ onBack, onResult }) => {
           {isCapturing && (
             <div className="phone-capture-overlay">
               <div className="phone-capture-spinner"></div>
-              <p className="phone-capture-text">正在分析姿勢...</p>
-            </div>
-          )}
-          
-          {/* 錯誤覆蓋層 */}
-          {error && (
-            <div className="phone-error-overlay">
-              <div className="phone-error-content">
-                <span className="phone-error-icon">⚠️</span>
-                <p className="phone-error-text">{error}</p>
-                <button 
-                  className="phone-retry-button" 
-                  onClick={() => {
-                    setError('');
-                    startCamera();
-                  }}
-                >
-                  重試
-                </button>
-              </div>
+              <p className="phone-capture-text">正在拍照...</p>
             </div>
           )}
         </div>
