@@ -6,42 +6,48 @@ const CameraScreen = ({ onBack, onResult }) => {
   const [isCapturing, setIsCapturing] = useState(false);
   const [error, setError] = useState('');
   const [isCameraReady, setIsCameraReady] = useState(false);
-  const [statusMessage, setStatusMessage] = useState('正在啟動相機...');
+  const [statusMessage, setStatusMessage] = useState('正在載入...');
   const [countdown, setCountdown] = useState(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
   const countdownTimer = useRef(null);
   const captureTimer = useRef(null);
+  const hasCalledIntro = useRef(false);
+
+  // 播放相機介紹音檔
+  const playIntro = async () => {
+    await fetch('http://localhost:8000/pose/intro');
+    setTimeout(() => {
+      const audio = new Audio('/pose_intro.wav');
+      audio.play();
+      audio.onended = () => {
+        startCamera();
+      };
+    }, 1000);
+  };
 
   const startCamera = async () => {
-    try {
-      setStatusMessage('正在啟動相機...');
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { 
-          facingMode: 'user',
-          width: { ideal: 1920 },
-          height: { ideal: 1080 }
-        },
-        audio: false
-      });
+    setStatusMessage('正在啟動相機...');
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { 
+        facingMode: 'user',
+        width: { ideal: 1920 },
+        height: { ideal: 1080 }
+      },
+      audio: false
+    });
+    
+    if (videoRef.current) {
+      videoRef.current.srcObject = stream;
+      streamRef.current = stream;
+      setIsCameraReady(true);
+      setStatusMessage('相機就緒，3秒後自動拍照...');
       
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        streamRef.current = stream;
-        setIsCameraReady(true);
-        setStatusMessage('相機就緒，3秒後自動拍照...');
-        setError('');
-        
-        // 相機就緒後3秒自動拍照
-        setTimeout(() => {
-          capturePhoto();
-        }, 3000);
-      }
-    } catch (err) {
-      console.error('Camera error:', err);
-      setError('無法啟動相機，請檢查權限設定');
-      setStatusMessage('相機啟動失敗');
+      // 相機就緒後3秒自動拍照
+      setTimeout(() => {
+        capturePhoto();
+      }, 3000);
     }
   };
 
@@ -52,79 +58,43 @@ const CameraScreen = ({ onBack, onResult }) => {
     
     setIsCapturing(true);
     setStatusMessage('正在拍照...');
-    setError('');
 
-    // 說"已拍照"
-    if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance('已拍照');
-      utterance.lang = 'zh-TW';
-      utterance.rate = 1.0;
-      utterance.pitch = 1.0;
-      window.speechSynthesis.speak(utterance);
-    }
     
-    try {
-      const canvas = canvasRef.current;
-      const video = videoRef.current;
-      const context = canvas.getContext('2d');
+    const canvas = canvasRef.current;
+    const video = videoRef.current;
+    const context = canvas.getContext('2d');
+    
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    context.drawImage(video, 0, 0);
+    
+    canvas.toBlob(async (blob) => {
+      const formData = new FormData();
+      formData.append('file', blob, 'photo.jpg');
       
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      context.drawImage(video, 0, 0);
+      setStatusMessage('正在分析姿勢...');
       
-      canvas.toBlob(async (blob) => {
-        const formData = new FormData();
-        formData.append('file', blob, 'photo.jpg');
-        
-        try {
-          setStatusMessage('正在分析姿勢...');
-          
-          // 修正 API 端點路徑，確保符合 CORS 協議
-          const response = await fetch('http://127.0.0.1:8000/pose/check_pose', {
-            method: 'POST',
-            mode: 'cors',
-            headers: {
-              'Accept': 'application/json',
-            },
-            body: formData
-          });
-          
-          if (!response.ok) {
-            if (response.status === 500) {
-              throw new Error('後端服務暫時無法使用，可能是 API 配額已用完');
-            }
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          
-          const result = await response.json();
-          setStatusMessage('分析完成！');
-          
-          if (onResult) {
-            onResult(result);
-          }
-        } catch (err) {
-          console.error('分析錯誤:', err);
-          if (err.message.includes('配額')) {
-            setError('後端 API 配額已用完，請稍後再試');
-          } else {
-            setError('姿勢分析失敗，請重試');
-          }
-          setStatusMessage('分析失敗');
-        }
-        
-        setIsCapturing(false);
-      }, 'image/jpeg', 0.8);
+      const response = await fetch('http://localhost:8000/pose/check_pose', {
+        method: 'POST',
+        body: formData
+      });
       
-    } catch (error) {
-      console.error('拍照錯誤:', error);
-      setError('拍照失敗，請重試');
-      setStatusMessage('拍照失敗');
+      const result = await response.json();
+      setStatusMessage('分析完成！');
+      
+      if (onResult) {
+        onResult(result);
+      }
+      
       setIsCapturing(false);
-    }
+    }, 'image/jpeg', 0.8);
   };
 
   useEffect(() => {
-    startCamera();
+    if (!hasCalledIntro.current) {
+      hasCalledIntro.current = true;
+      playIntro();
+    }
     return () => {
       // 清理定時器
       if (countdownTimer.current) {

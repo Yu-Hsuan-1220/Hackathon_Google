@@ -13,33 +13,15 @@ function HomePage({ onNavigate }) {
     }
   }, []);
 
-  const checkAndPlayIntro = () => {
-    const audio = new Audio(`/home_intro.wav`);
-    
-    // 檢查音檔是否存在
-    audio.oncanplaythrough = () => {
-      // 音檔存在，直接播放
-      setTimeout(() => {
-      }, 1000);
+  const checkAndPlayIntro = async () => {
+    await fetch(`http://localhost:8000/home/intro`);
+    setTimeout(() => {
+      const audio = new Audio(`/home_intro.wav`);
       audio.play();
       audio.onended = () => {
         startVoiceRecognition();
       };
-    };
-    
-    audio.onerror = async () => {
-      // 音檔不存在，發送API請求
-      await fetch(`http://localhost:8000/home/intro`);
-      setTimeout(() => {
-        const newAudio = new Audio(`/home_intro.wav`);
-        newAudio.play();
-        newAudio.onended = () => {
-          startVoiceRecognition();
-        };
-      }, 1000);
-    };
-    
-    audio.load();
+    }, 1000);
   };
 
   const startVoiceRecognition = () => {
