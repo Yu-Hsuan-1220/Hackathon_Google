@@ -73,40 +73,39 @@ const App = () => {
     switch (currentScreen) {
       case 'first-time':
         return <FirstTimeUserPage onComplete={handleFirstTimeComplete} />;
-      
+
       case 'tuner':
         return (
-          <TunerPage 
+          <TunerPage
             onNavigate={setCurrentScreen}
           />
         );
-      
+
       case 'single-note-lesson':
-<<<<<<< HEAD
-=======
+
         return (
-          <SingleNoteLessonPage 
+          <SingleNoteLessonPage
             onNavigate={setCurrentScreen}
           />
         );
-      
+
       case 'home':
         return <HomePage onNavigate={(screen) => handleNavigate(screen, 'home')} />;
-      
+
       case 'guitar-lesson':
->>>>>>> b671a7e (單音gg)
+
         return (
-          <SingleNoteLessonPage 
+          <SingleNoteLessonPage
             onNavigate={setCurrentScreen}
           />
         );
-      
+
       case 'home':
         return <HomePage userName={userName} onNavigate={(screen) => handleNavigate(screen, 'home')} />;
-      
+
       case 'basic-lesson':
         return (
-          <BasicLessonPage 
+          <BasicLessonPage
             onBack={() => setCurrentScreen('home')}
             onNavigate={(screen) => handleNavigate(screen, 'basic-lesson')}
           />
@@ -114,14 +113,14 @@ const App = () => {
 
       case 'guitar-grip':
         return (
-          <GuitarGripPage 
+          <GuitarGripPage
             onNavigate={handleNavigate}
           />
         );
 
       case 'guitar-grip-camera':
         return (
-          <CameraScreen 
+          <CameraScreen
             onBack={() => handleNavigate('guitar-grip')}
             onResult={(result) => handleNavigate('guitar-grip-result', result)}
           />
@@ -129,7 +128,7 @@ const App = () => {
 
       case 'guitar-grip-result':
         return (
-          <ResultScreen 
+          <ResultScreen
             result={poseResult}
             onBack={() => handleNavigate('guitar-grip')}
             onRetry={() => handleNavigate('guitar-grip-camera')}
@@ -139,41 +138,41 @@ const App = () => {
 
       case 'chord-practice':
         return (
-          <ChordPracticePage 
+          <ChordPracticePage
             onNavigate={setCurrentScreen}
           />
         );
 
       case 'single-note':
         return (
-          <SingleNotePage 
+          <SingleNotePage
             onNavigate={setCurrentScreen}
           />
         );
       case 'metronome':
         return (
-          <MetronomePage 
+          <MetronomePage
             onNavigate={setCurrentScreen}
           />
         );
-      
+
       case 'song-tutorial':
         return (
-          <SongTutorialPage 
+          <SongTutorialPage
             onBack={() => setCurrentScreen('home')}
             onNavigate={setCurrentScreen}
           />
         );
-      
+
       case 'song-practice':
         return (
-          <SongPracticePage 
+          <SongPracticePage
             onBack={() => setCurrentScreen('home')}
             onNavigate={setCurrentScreen}
             songId={navigationSource === 'basic-lesson' ? 'twinkle-star' : null}
           />
         );
-      
+
       case 'song-twinkle-star':
         return (
           <SongTwinkleStarPage
@@ -181,7 +180,7 @@ const App = () => {
             onHome={() => setCurrentScreen('home')}
           />
         );
-      
+
       case 'song-happy-birthday':
         return (
           <SongHappyBirthdayPage
@@ -189,7 +188,7 @@ const App = () => {
             onHome={() => setCurrentScreen('home')}
           />
         );
-      
+
       case 'song-childhood':
         return (
           <SongChildhoodPage
@@ -197,7 +196,7 @@ const App = () => {
             onHome={() => setCurrentScreen('home')}
           />
         );
-      
+
       case 'song-moon-heart':
         return (
           <SongMoonHeartPage
@@ -205,7 +204,7 @@ const App = () => {
             onHome={() => setCurrentScreen('home')}
           />
         );
-      
+
       default:
         return <HomePage onNavigate={setCurrentScreen} />;
     }
