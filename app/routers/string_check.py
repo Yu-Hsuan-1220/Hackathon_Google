@@ -34,6 +34,7 @@ async def post(target_note: str = Form(...), file: UploadFile = File(...)):
         "status": "processing_complete", 
         "target_note": target_note,  # Current note being tested
         "debug_info": debug_info
+<<<<<<< HEAD
     }
 =======
     # The service will handle the TTS feedback directly and return debug info
@@ -45,3 +46,6 @@ async def post(target_note: str = Form(...), file: UploadFile = File(...)):
         "debug_info": result
     }
 >>>>>>> b671a7e (單音gg)
+=======
+    }
+>>>>>>> b2ddf84 (single note and tuner fix)
