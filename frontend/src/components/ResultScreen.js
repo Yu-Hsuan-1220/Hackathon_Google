@@ -1,113 +1,93 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import PhoneContainer from './PhoneContainer';
 import './ResultScreen.css';
 
-const ResultScreen = ({ result, onBack, onRetry }) => {
+const ResultScreen = ({ result, onBack, onRetry, onNavigateToBasicLesson }) => {
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
-  const [audioError, setAudioError] = useState('');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [apiResult, setApiResult] = useState(null);
+  const [shouldNavigate, setShouldNavigate] = useState(false);
+  const hasAnalyzed = useRef(false);
+  const shouldNavigateRef = useRef(false);
 
   const playAudio = async () => {
-    try {
-      setIsPlayingAudio(true);
-      setAudioError('');
-      
-      console.log('🎵 開始獲取音檔...');
-      
-      // 從本地根目錄讀取音檔
-      const timestamp = new Date().getTime();
-      const response = await fetch(`/pose_suggestion.wav`, {
-        method: 'GET',
-        cache: 'no-cache',
-        headers: {
-          'Accept': 'audio/wav, audio/*',
-          'Cache-Control': 'no-cache'
-        }
-      });
-      
-      console.log('📡 音檔請求狀態:', response.status);
-      
-      if (response.ok) {
-        const audioBlob = await response.blob();
-        console.log('✅ 音檔獲取成功，大小:', audioBlob.size, 'bytes');
-        
-        if (audioBlob.size > 0) {
-          const audioUrl = URL.createObjectURL(audioBlob);
-          const audio = new Audio(audioUrl);
-          
-          audio.onloadeddata = () => {
-            console.log('🎵 音檔載入完成');
-          };
-          
-          audio.onended = () => {
-            console.log('✅ 音檔播放結束');
-            setIsPlayingAudio(false);
-            URL.revokeObjectURL(audioUrl);
-          };
-          
-          audio.onerror = (e) => {
-            console.error('💥 音檔播放錯誤:', e);
-            setAudioError('音檔播放失敗');
-            setIsPlayingAudio(false);
-            URL.revokeObjectURL(audioUrl);
-          };
-          
-          await audio.play();
-          console.log('▶️ 開始播放音檔');
-          
-        } else {
-          throw new Error('音檔檔案為空');
-        }
-      } else {
-        const errorText = await response.text();
-        throw new Error(`無法獲取音檔: ${response.status} - ${errorText}`);
-      }
-      
-    } catch (error) {
-      console.error('💥 播放音檔失敗:', error);
-      if (error.name === 'TypeError' || error.message.includes('fetch')) {
-        setAudioError('網路連接失敗，請檢查後端服務是否運行');
-      } else if (error.message.includes('404')) {
-        setAudioError('音檔尚未生成，可能後端 API 配額已用完');
-      } else {
-        setAudioError(`無法播放語音: ${error.message}`);
-      }
+    setIsPlayingAudio(true);
+    
+    const response = await fetch(`/pose_suggestion.wav`, {
+      method: 'GET',
+      cache: 'no-cache'
+    });
+    
+    const audioBlob = await response.blob();
+    const audioUrl = URL.createObjectURL(audioBlob);
+    const audio = new Audio(audioUrl);
+    
+    audio.onended = () => {
       setIsPlayingAudio(false);
+      URL.revokeObjectURL(audioUrl);
+      setTimeout(() => {
+        handleNavigation();
+      }, 1000);
+    };
+    
+    audio.play();
+  };
+
+  // 進行姿勢分析的 API 調用
+  const analyzePose = async (photoData) => {
+    setIsAnalyzing(true);
+    
+    const response = await fetch('http://localhost:8000/pose/check_pose', {
+      method: 'POST',
+      body: photoData
+    });
+    
+    const apiResult = await response.json();
+    setApiResult(apiResult);
+    setShouldNavigate(apiResult.next_state);
+    setIsAnalyzing(false);
+    
+    // 儲存 next_state 到 ref 以確保在導航時能正確取得
+    shouldNavigateRef.current = apiResult.next_state;
+    
+    // 自動播放語音建議
+    setTimeout(() => {
+      playAudio();
+    }, 2000);
+  };
+
+  // 根據 API next_state 結果進行導航
+  const handleNavigation = () => {
+    const nextState = shouldNavigateRef.current;
+    if (nextState) {
+      onNavigateToBasicLesson();
+    } else {
+      if (onRetry) onRetry();
     }
   };
 
-  // 自動播放語音建議
+  // 自動進行姿勢分析
   useEffect(() => {
-    if (result && result.suggestion) {
-      // 延遲 2 秒播放，確保音檔已生成
-      const timer = setTimeout(() => {
-        playAudio();
-      }, 2000);
-      
-      return () => clearTimeout(timer);
+    if (result && result.photoData && !hasAnalyzed.current) {
+      hasAnalyzed.current = true;
+      analyzePose(result.photoData);
     }
   }, [result]);
 
-  if (!result) {
+  if (isAnalyzing) {
     return (
-      <div className="result-screen">
-        <div className="error-message">
-          沒有檢測結果
+      <PhoneContainer title="分析中..." enableVoice={false}>
+        <div className="result-content-wrapper">
+          <div className="analyzing-content">
+            <h3>正在分析你的姿勢...</h3>
+          </div>
         </div>
-        <button onClick={onBack} className="back-button">
-          返回
-        </button>
-      </div>
+      </PhoneContainer>
     );
   }
 
   const handleVoiceCommand = (command) => {
-    console.log('ResultScreen 收到語音指令:', command);
-    
-    if (command.includes('播放') || command.includes('語音')) {
-      playAudio();
-    } else if (command.includes('重新') || command.includes('再試')) {
-      if (onRetry) onRetry();
-    } else if (command.includes('返回') || command.includes('回去')) {
+    if (command.includes('返回') || command.includes('回去')) {
       if (onBack) onBack();
     }
   };
@@ -116,7 +96,7 @@ const ResultScreen = ({ result, onBack, onRetry }) => {
     <PhoneContainer 
       title="姿勢分析結果" 
       onVoiceCommand={handleVoiceCommand}
-      enableVoice={true}
+      enableVoice={false}
     >
       <div className="result-content-wrapper">
         <div className="result-main-content">
@@ -126,47 +106,14 @@ const ResultScreen = ({ result, onBack, onRetry }) => {
               <h4 className="result-card-title">改善建議</h4>
             </div>
             <div className="suggestion-content">
-              {result.suggestion || '沒有具體建議'}
+              {apiResult?.suggestion || '正在分析中...'}
             </div>
           </div>
 
-          <div className="audio-control-card">
-            <button 
-              onClick={playAudio}
-              disabled={isPlayingAudio}
-              className={`audio-play-button ${isPlayingAudio ? 'playing' : ''}`}
-            >
-              <span className="audio-icon">
-                {isPlayingAudio ? '🔊' : '🎵'}
-              </span>
-              <span className="audio-text">
-                {isPlayingAudio ? '播放中...' : '播放語音建議'}
-              </span>
-            </button>
-            
-            {audioError && (
-              <div className="audio-error-card">
-                <span className="error-icon">⚠️</span>
-                <span className="error-text">{audioError}</span>
-                <button 
-                  onClick={playAudio} 
-                  className="retry-audio-button"
-                >
-                  重試
-                </button>
-              </div>
-            )}
-          </div>
+
         </div>
 
         <div className="result-actions">
-          <button 
-            onClick={onRetry} 
-            className="action-button retry-button"
-          >
-            <span className="button-icon">📷</span>
-            重新拍照
-          </button>
           <button 
             onClick={onBack} 
             className="action-button back-button"

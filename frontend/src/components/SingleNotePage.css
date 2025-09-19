@@ -1,5 +1,5 @@
-/* 基本和弦練習頁面樣式 */
-.chord-practice-page {
+/* 單音練習頁面樣式 */
+.single-note-page {
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -16,11 +16,11 @@
 }
 
 /* 隱藏滾動條 */
-.chord-practice-page::-webkit-scrollbar {
+.single-note-page::-webkit-scrollbar {
   display: none;
 }
 
-.chord-practice-page .chord-lesson-nav {
+.single-note-page .single-lesson-nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -29,8 +29,8 @@
   margin-bottom: 1rem;
 }
 
-.chord-practice-page .chord-back-button, 
-.chord-practice-page .chord-home-button {
+.single-note-page .single-back-button, 
+.single-note-page .single-home-button {
   background: #f0f0f0;
   border: 1px solid #ddd;
   color: #333;
@@ -41,36 +41,36 @@
   font-size: 14px;
 }
 
-.chord-practice-page .chord-back-button:hover, 
-.chord-practice-page .chord-home-button:hover {
+.single-note-page .single-back-button:hover, 
+.single-note-page .single-home-button:hover {
   background: #e0e0e0;
   transform: translateY(-2px);
 }
 
-.chord-practice-page .chord-lesson-content {
+.single-note-page .single-lesson-content {
   flex: 1;
   padding: 0 0.5rem;
 }
 
 /* 練習要點區域 */
-.chord-practice-page .chord-key-points-section {
+.single-note-page .single-key-points-section {
   margin-bottom: 2rem;
 }
 
-.chord-practice-page .chord-key-points-section h3 {
+.single-note-page .single-key-points-section h3 {
   color: #333;
   margin-bottom: 1rem;
   font-size: 1.2rem;
 }
 
-.chord-practice-page .chord-key-points-grid {
+.single-note-page .single-key-points-grid {
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: repeat(4, 1fr);
   gap: 1rem;
 }
 
-.chord-practice-page .chord-key-point-card {
+.single-note-page .single-key-point-card {
   background: linear-gradient(135deg, #fff5f0 0%, #ffe8d6 100%);
   border: 2px solid #ff8c00;
   border-radius: 12px;
@@ -83,18 +83,18 @@
   justify-content: center;
 }
 
-.chord-practice-page .chord-key-point-card:hover {
+.single-note-page .single-key-point-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(255, 140, 0, 0.2);
 }
 
-.chord-practice-page .chord-key-point-header h4 {
+.single-note-page .single-key-point-header h4 {
   margin: 0 0 0.5rem 0;
   color: #333;
   font-size: 1rem;
 }
 
-.chord-practice-page .chord-key-point-desc {
+.single-note-page .single-key-point-desc {
   margin: 0;
   color: #666;
   font-size: 0.9rem;
@@ -102,12 +102,12 @@
 }
 
 /* 練習操作區域 */
-.chord-practice-page .chord-practice-actions {
+.single-note-page .single-practice-actions {
   margin-top: 2rem;
   text-align: center;
 }
 
-.chord-practice-page .chord-practice-button {
+.single-note-page .single-practice-button {
   background: linear-gradient(135deg, #28a745, #20c997);
   color: white;
   border: none;
@@ -123,24 +123,24 @@
   margin: 0 auto;
 }
 
-.chord-practice-page .chord-practice-button:hover {
+.single-note-page .single-practice-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
 }
 
-.chord-practice-page .chord-practice-button:active {
+.single-note-page .single-practice-button:active {
   transform: translateY(0);
   box-shadow: 0 2px 10px rgba(40, 167, 69, 0.3);
 }
 
 /* 響應式設計 */
 @media (min-width: 768px) {
-  .chord-practice-page .chord-key-points-grid {
+  .single-note-page .single-key-points-grid {
     grid-template-columns: 1fr;
     grid-template-rows: repeat(4, 1fr);
   }
   
-  .chord-practice-page .chord-lesson-meta {
+  .single-note-page .single-lesson-meta {
     gap: 2rem;
   }
 }

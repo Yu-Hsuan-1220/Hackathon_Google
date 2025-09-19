@@ -18,30 +18,8 @@ const VoiceControl = ({ onVoiceCommand, isEnabled = true }) => {
       const timestamp = now.toISOString().replace(/[:.]/g, '-').replace('T', '_').split('.')[0];
       const fileName = `voice_${timestamp}.txt`;
       
-      // 創建詳細的文件內容
-      const content = `語音識別記錄
-========================
-時間: ${now.toLocaleString('zh-TW', {
-        year: 'numeric',
-        month: '2-digit', 
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      })}
-時間戳: ${timestamp}
-========================
-
-識別內容:
-${transcript}
-
-========================
-檔案資訊:
-- 檔案名稱: ${fileName}
-- 建立時間: ${now.toISOString()}
-- 瀏覽器: ${navigator.userAgent}
-========================
-`;
+      // 簡化的文件內容 - 只保存識別內容
+      const content = transcript;
       
       // 創建並下載檔案
       const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
@@ -57,16 +35,7 @@ ${transcript}
       window.URL.revokeObjectURL(url);
       
       console.log('💾 語音識別結果已保存到:', fileName);
-      
-      // 更新已保存檔案數量
-      setSavedFileCount(prev => prev + 1);
-      
-      // 顯示保存成功的通知
-      if (typeof window !== 'undefined' && window.alert) {
-        // 可以選擇顯示通知，或者使用更友好的通知方式
-        // alert(`語音已保存為: ${fileName}`);
-      }
-      
+    
     } catch (error) {
       console.error('❌ 保存檔案失敗:', error);
       alert('保存檔案失敗，請檢查瀏覽器下載設定');

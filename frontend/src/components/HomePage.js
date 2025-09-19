@@ -3,26 +3,52 @@ import PhoneContainer from './PhoneContainer';
 import FeatureCarousel from './FeatureCarousel';
 import './HomePage.css';
 
-function HomePage({ onNavigate }) {
+function HomePage({ onNavigate, userName }) {
   const hasCalledAPI = useRef(false);
+  const currentAudio = useRef(null);
 
   useEffect(() => {
     if (!hasCalledAPI.current) {
       hasCalledAPI.current = true;
-      callIntroAPI();
+      checkAndPlayIntro();
     }
+
+    // 清理音頻
+    return () => {
+      if (currentAudio.current) {
+        currentAudio.current.pause();
+        currentAudio.current.currentTime = 0;
+        currentAudio.current = null;
+      }
+    };
   }, []);
 
-  const callIntroAPI = async () => {
-    await fetch(`http://localhost:8000/home/intro`);
-    
+  const checkAndPlayIntro = () => {
     const audio = new Audio(`/home_intro.wav`);
-    audio.play();
+    currentAudio.current = audio;
     
-    // 音檔播放完後啟動語音辨識
-    audio.onended = () => {
-      startVoiceRecognition();
+    audio.oncanplaythrough = () => {
+      audio.play().catch(console.error);
+      audio.onended = () => {
+        currentAudio.current = null;
+        startVoiceRecognition();
+      };
     };
+    
+    audio.onerror = async () => {
+      await fetch(`http://localhost:8000/home/intro`);
+      setTimeout(() => {
+        const newAudio = new Audio(`/home_intro.wav`);
+        currentAudio.current = newAudio;
+        newAudio.play().catch(console.error);
+        newAudio.onended = () => {
+          currentAudio.current = null;
+          startVoiceRecognition();
+        };
+      }, 1000);
+    };
+    
+    audio.load();
   };
 
   const startVoiceRecognition = () => {
@@ -55,7 +81,7 @@ function HomePage({ onNavigate }) {
     // 根據 id 進行頁面跳轉
     switch(actionId) {
       case 1:
-        onNavigate('guitar-lesson');
+        onNavigate('basic-lesson');
         break;
       case 2:
         onNavigate('tuner');
@@ -72,7 +98,6 @@ function HomePage({ onNavigate }) {
     }
   };
   
-  const userName = localStorage.getItem('userName') || '用戶';
   const features = [
     {
       id: 'tuner',
@@ -82,8 +107,8 @@ function HomePage({ onNavigate }) {
       color: '#9B59B6'
     },
     {
-      id: 'guitar-lesson',
-      title: '吉他教學',
+      id: 'basic-lesson',
+      title: '基礎教學',
       description: '學習正確的吉他姿勢和彈奏技巧',
       icon: '🎸',
       color: '#FF6B6B'
@@ -112,7 +137,7 @@ function HomePage({ onNavigate }) {
   ];
 
   const handleVoiceCommand = (command) => {
-    // 簡化的語音指令處理
+    // 語音指令由 API 處理
   };
 
   const handleResetUserData = () => {
@@ -128,7 +153,7 @@ function HomePage({ onNavigate }) {
 
   return (
     <PhoneContainer 
-      title={`🎸 歡迎回來，${userName}！`}
+      title={`🎸 歡迎回來，${userName || '用戶'}！`}
       onVoiceCommand={handleVoiceCommand}
       enableVoice={true}
       showStatusBar={true}

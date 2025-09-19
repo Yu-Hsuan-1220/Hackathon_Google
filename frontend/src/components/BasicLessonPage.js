@@ -1,27 +1,42 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import PhoneContainer from './PhoneContainer';
-import './GuitarLessonPage.css';
+import './BasicLessonPage.css';
 
-function GuitarLessonPage({ onNavigate }) {
+function BasicLessonPage({ onBack, onNavigate }) {
   const hasCalledAPI = useRef(false);
 
   useEffect(() => {
     if (!hasCalledAPI.current) {
       hasCalledAPI.current = true;
-      callIntroAPI();
+      checkAndPlayIntro();
     }
   }, []);
 
-  const callIntroAPI = async () => {
-    await fetch(`http://localhost:8000/menu/intro`);
-    
+
+  const checkAndPlayIntro = () => {
     const audio = new Audio(`/menu_intro.wav`);
-    audio.play();
     
-    // 音檔播放完後啟動語音辨識
-    audio.onended = () => {
-      startVoiceRecognition();
+    audio.oncanplaythrough = () => {
+      // 音檔已存在，直接播放
+      audio.play();
+      audio.onended = () => {
+        startVoiceRecognition();
+      };
     };
+    
+    audio.onerror = async () => {
+      // 音檔不存在，調用 API 生成音檔
+      await fetch(`http://localhost:8000/menu/intro`);
+      setTimeout(() => {
+        const newAudio = new Audio(`/menu_intro.wav`);
+        newAudio.play();
+        newAudio.onended = () => {
+          startVoiceRecognition();
+        };
+      }, 1000);
+    };
+    
+    audio.load();
   };
   
   const startVoiceRecognition = () => {
@@ -57,13 +72,18 @@ function GuitarLessonPage({ onNavigate }) {
         onNavigate('guitar-grip');
         break;
       case 2:
-        onNavigate('chord-practice');
+        onNavigate('tuner');
         break;
       case 3:
-        onNavigate('picking-technique');
+        onNavigate('single-note');
         break;
       case 4:
+        onNavigate('chord-practice');
+        break;
+      case 5:
         onNavigate('song-twinkle-star');
+        break;
+      default:
         break;
     }
   };
@@ -79,27 +99,35 @@ function GuitarLessonPage({ onNavigate }) {
     },
     {
       id: 2,
+      title: '調音器',
+      description: '學習如何正確調音，確保吉他音準',
+      difficulty: '初級',
+      duration: '5 分鐘',
+      route: 'tuner'
+    },
+    {
+      id: 3,
+      title: '單音練習',
+      description: '掌握正確的撥弦手法和節拍',
+      difficulty: '中級',
+      duration: '20 分鐘',
+      route: 'single-note'
+    },
+    {
+      id: 4,
       title: '基本和弦練習',
       description: '學習 C、G、D 等基本和弦的按法',
-      difficulty: '初級',
+      difficulty: '中級',
       duration: '15 分鐘',
       route: 'chord-practice'
     },
     {
-      id: 3,
-      title: '右手撥弦技巧',
-      description: '掌握正確的撥弦手法和節拍',
-      difficulty: '中級',
-      duration: '20 分鐘',
-      route: 'picking-technique'
-    },
-    {
-      id: 4,
-      title: '小星星練習',
-      description: '學習彈奏經典兒歌《小星星》',
+      id: 5,
+      title: '生日快樂練習',
+      description: '學習彈奏經典歌曲《生日快樂》',
       difficulty: '中級',
       duration: '25 分鐘',
-      route: 'song-twinkle-star'
+      route: 'song-happy-birthday'
     }
   ];
 
@@ -113,7 +141,7 @@ function GuitarLessonPage({ onNavigate }) {
 
   return (
     <PhoneContainer 
-      title="🎸 吉他教學"
+      title="📚 基礎教學"
       onVoiceCommand={handleVoiceCommand}
       enableVoice={true}
       showStatusBar={true}
@@ -122,21 +150,14 @@ function GuitarLessonPage({ onNavigate }) {
         <div className="lesson-nav">
           <button 
             className="back-button"
-            onClick={() => onNavigate('home')}
+            onClick={onBack}
           >
             ← 返回主頁
           </button>
         </div>
 
-        <div className="lessons-grid-four-columns">{lessons.map((lesson) => {
-            // 為每個課程添加對應的emoji
-            const lessonEmojis = {
-              1: '🎸',
-              2: '🎵', 
-              3: '🎼',
-              4: '⭐'
-            };
-            
+        <div className="lessons-grid-four-columns">
+          {lessons.map((lesson) => {
             return (
               <div
                 key={lesson.id}
@@ -144,7 +165,7 @@ function GuitarLessonPage({ onNavigate }) {
                 onClick={() => handleLessonSelect(lesson)}
               >
                 <div className="lesson-icon">
-                  {lessonEmojis[lesson.id]}
+                  {/* Emoji 由 CSS 控制顯示 */}
                 </div>
                 <div className="lesson-content">
                   <h3 className="lesson-title-compact">{lesson.title}</h3>
@@ -163,4 +184,4 @@ function GuitarLessonPage({ onNavigate }) {
   );
 }
 
-export default GuitarLessonPage;
+export default BasicLessonPage;

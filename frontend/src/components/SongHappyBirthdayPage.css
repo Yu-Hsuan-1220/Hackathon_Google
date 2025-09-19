@@ -85,8 +85,17 @@
 .song-page {
   padding: 20px;
   background: #ffffff;
-  min-height: 100vh;
+  height: 100vh;
   color: #333333;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.song-page::-webkit-scrollbar {
+  display: none;
 }
 
 .song-nav {

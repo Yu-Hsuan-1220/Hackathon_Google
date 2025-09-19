@@ -30,7 +30,7 @@ function ChordPracticePage({ onNavigate }) {
 
   const handleVoiceCommand = (command) => {
     if (command === 'navigate-back') {
-      onNavigate('guitar-lesson');
+      onNavigate('basic-lesson');
     } else if (command === 'navigate-home') {
       onNavigate('home');
     }
@@ -44,34 +44,46 @@ function ChordPracticePage({ onNavigate }) {
       showStatusBar={true}
     >
       <div className="chord-practice-page">
-        <div className="lesson-nav">
+        <div className="chord-lesson-nav">
           <button 
-            className="back-button"
-            onClick={() => onNavigate('guitar-lesson')}
+            className="chord-back-button"
+            onClick={() => onNavigate('basic-lesson')}
           >
-            ← 返回教學選單
+            ← 返回基礎教學
           </button>
           <button 
-            className="home-button"
+            className="chord-home-button"
             onClick={() => onNavigate('home')}
           >
             🏠 主頁
           </button>
         </div>
         
-        <div className="lesson-content">
-          <div className="key-points-section">
-            <h2>💡 動作要點</h2>
-            <div className="key-points-grid">
+        <div className="chord-lesson-content">
+          <div className="chord-key-points-section">
+            <h3>💡 練習要點</h3>
+            <div className="chord-key-points-grid">
               {lessonData.keyPoints.map((point, index) => (
-                <div key={index} className="key-point-card">
-                  <div className="key-point-header">
-                    <h3>{point.title}</h3>
+                <div key={index} className="chord-key-point-card">
+                  <div className="chord-key-point-header">
+                    <h4>{point.title}</h4>
                   </div>
-                  <p className="key-point-desc">{point.description}</p>
+                  <p className="chord-key-point-desc">{point.description}</p>
                 </div>
               ))}
             </div>
+          </div>
+          
+          <div className="chord-practice-actions">
+            <button 
+              className="chord-practice-button"
+              onClick={() => {
+                // TODO: 添加導航邏輯
+                console.log('開始和弦練習');
+              }}
+            >
+              🎸 開始練習
+            </button>
           </div>
         </div>
       </div>

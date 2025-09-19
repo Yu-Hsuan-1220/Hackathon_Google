@@ -1,8 +1,91 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import PhoneContainer from './PhoneContainer';
 import './GuitarGripPage.css';
 
 function GuitarGripPage({ onNavigate }) {
+  const hasCalledAPI = useRef(false);
+  const currentAudio = useRef(null);
+
+  useEffect(() => {
+    if (!hasCalledAPI.current) {
+      hasCalledAPI.current = true;
+      checkAndPlayIntro();
+    }
+
+    // 清理音頻
+    return () => {
+      if (currentAudio.current) {
+        currentAudio.current.pause();
+        currentAudio.current.currentTime = 0;
+        currentAudio.current = null;
+      }
+    };
+  }, []);
+
+  const checkAndPlayIntro = () => {
+    const userName = localStorage.getItem('userName')?.trim() || '用戶';
+    const audio = new Audio(`/guitar_grip.wav`);
+    currentAudio.current = audio;
+    
+    audio.oncanplaythrough = () => {
+      audio.play().catch(console.error);
+      audio.onended = () => {
+        currentAudio.current = null;
+        startVoiceRecognition();
+      };
+    };
+    
+    audio.onerror = async () => {
+      await fetch(`http://localhost:8000/guitar/grip?username=${encodeURIComponent(userName)}`);
+      setTimeout(() => {
+        const newAudio = new Audio(`/guitar_grip.wav`);
+        currentAudio.current = newAudio;
+        newAudio.play().catch(console.error);
+        newAudio.onended = () => {
+          currentAudio.current = null;
+          startVoiceRecognition();
+        };
+      }, 1000);
+    };
+    
+    audio.load();
+  };
+
+  const startVoiceRecognition = () => {
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'zh-TW';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.start();
+
+    recognition.onresult = async (event) => {
+      const transcript = event.results[0][0].transcript;
+      await sendActionAPI(transcript);
+    };
+
+    setTimeout(() => {
+      recognition.stop();
+    }, 3000);
+  };
+
+  const sendActionAPI = async (voiceInput) => {
+    const response = await fetch(`http://localhost:8000/guitar/action?user_input=${encodeURIComponent(voiceInput)}`, {
+      method: 'POST',
+    });
+    
+    const data = await response.json();
+    const actionResult = data.Response;
+    
+    if (actionResult === true) {
+      // 重新播放 intro
+      checkAndPlayIntro();
+    } else {
+      // 跳轉到 camerascreen
+      onNavigate('guitar-grip-camera');
+    }
+  };
+
   const lessonData = {
     title: '吉他握法',
     description: '學習正確的吉他持琴姿勢，包括坐姿和站姿',
@@ -35,11 +118,9 @@ function GuitarGripPage({ onNavigate }) {
 
   const handleVoiceCommand = (command) => {
     if (command === 'navigate-back') {
-      onNavigate('guitar-lesson');
+      onNavigate('basic-lesson');
     } else if (command === 'navigate-home') {
       onNavigate('home');
-    } else if (command.includes('開始') || command.includes('檢測') || command.includes('練習')) {
-      handleStartPractice();
     }
   };
 
@@ -51,39 +132,39 @@ function GuitarGripPage({ onNavigate }) {
       showStatusBar={true}
     >
       <div className="guitar-grip-page">
-        <div className="lesson-nav">
+        <div className="grip-lesson-nav">
           <button 
-            className="back-button"
-            onClick={() => onNavigate('guitar-lesson')}
+            className="grip-back-button"
+            onClick={() => onNavigate('basic-lesson')}
           >
-            ← 返回教學選單
+            ← 返回基礎教學
           </button>
           <button 
-            className="home-button"
+            className="grip-home-button"
             onClick={() => onNavigate('home')}
           >
             🏠 主頁
           </button>
         </div>
         
-        <div className="lesson-content">
-          <div className="key-points-section">
+        <div className="grip-lesson-content">
+          <div className="grip-key-points-section">
             <h2>💡 動作要點</h2>
-            <div className="key-points-grid">
+            <div className="grip-key-points-grid">
               {lessonData.keyPoints.map((point, index) => (
-                <div key={index} className="key-point-card">
-                  <div className="key-point-header">
+                <div key={index} className="grip-key-point-card">
+                  <div className="grip-key-point-header">
                     <h3>{point.title}</h3>
                   </div>
-                  <p className="key-point-desc">{point.description}</p>
+                  <p className="grip-key-point-desc">{point.description}</p>
                 </div>
               ))}
             </div>
           </div>
           
-          <div className="lesson-actions">
+          <div className="grip-lesson-actions">
             <button 
-              className="practice-button large-button"
+              className="grip-practice-button"
               onClick={handleStartPractice}
             >
               🎯 開始姿勢檢測
