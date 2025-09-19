@@ -15,6 +15,7 @@ async def Intro(username: str) -> str:
     SYSTEM_PROMPT_INTRO = f"""
     你現在要教使用者彈吉他的姿勢，使用者的名字是{username}，請幫我小幅度修改這個模板。
     教學內容如下:
+    你好{username}，很高興你來學習彈吉他，以下我會介紹正確的彈吉他姿勢。
     坐姿要點
     保持背部挺直，雙腳平放地面，吉他琴身貼合身體
 

@@ -7,8 +7,8 @@ from app.services.menu_gemini_service import Intro, action
 router = APIRouter()
 
 @router.get("/intro")
-async def get_intro():
-    response, audio_file = await Intro()
+async def get_intro(username: str):
+    response, audio_file = await Intro(username)
     return {"Response": response, "Audio File": audio_file}
 
 @router.post("/action")
