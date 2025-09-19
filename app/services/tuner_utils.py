@@ -84,7 +84,7 @@ def note_detect(audio_file):
 
 def get_frequency_from_audio(audio_file):
 	"""
-	Extract the fundamental frequency from an audio file using autocorrelation with octave correction
+	Extract the fundamental frequency from an audio file using autocorrelation
 	Returns the frequency in Hz
 	"""
 	#here we are just storing our sound file as a numpy array
@@ -141,23 +141,21 @@ def get_frequency_from_audio(audio_file):
 	# Apply high-pass filter to remove DC component
 	sound = sound - np.mean(sound)
 	
-	# Try multiple methods and choose the most consistent result
-	frequencies_detected = []
-	
-	# Method 1: Autocorrelation method
+	# Autocorrelation method
 	autocorr = np.correlate(sound, sound, mode='full')
 	autocorr = autocorr[len(autocorr)//2:]
 	
-	# For guitar tuning, look for periods corresponding to 60-800Hz
+	# For guitar tuning, look for periods corresponding to 50-800Hz (擴大範圍以涵蓋更多音符)
+	#min_period = int(f_s / 800)  # Max frequency
+	#max_period = int(f_s / 50)   # Min frequency
 	min_period = int(f_s / 800)  # Max frequency
 	max_period = int(f_s / 60)   # Min frequency
 
 	if max_period >= len(autocorr):
 		max_period = len(autocorr) - 1
 	
-	# Find multiple peaks in the valid range
+	# Find the peak in the valid range (skip the first few samples)
 	if min_period < len(autocorr) and max_period > min_period:
-		# Find the strongest peak
 		peak_index = np.argmax(autocorr[min_period:max_period]) + min_period
 		
 		# Parabolic interpolation for better accuracy
@@ -167,82 +165,27 @@ def get_frequency_from_audio(audio_file):
 		else:
 			x0 = peak_index
 		
-		freq_autocorr = f_s / x0
-		frequencies_detected.append(freq_autocorr)
+		freq = f_s / x0
+	else:
+		# Fallback to FFT method with fundamental frequency bias
+		fourier = np.fft.fft(sound)
+		fourier = np.absolute(fourier)
 		
-		# Also check for octave multiples (fundamental frequency might be missed)
-		for octave_mult in [2, 4]:  # Check 1 and 2 octaves higher
-			octave_freq = freq_autocorr * octave_mult
-			if 60 <= octave_freq <= 800:  # Still in valid guitar range
-				frequencies_detected.append(octave_freq)
-	
-	# Method 2: FFT method with harmonic analysis
-	fourier = np.fft.fft(sound)
-	fourier = np.absolute(fourier)
-	
-	# Focus on fundamental frequency range for musical notes
-	freq_resolution = f_s / len(sound)
-	min_bin = int(60 / freq_resolution)   
-	max_bin = int(800 / freq_resolution)  
-	max_bin = min(max_bin, len(fourier)//2)
-	
-	if min_bin < max_bin:
-		# Find the strongest peak
-		imax = np.argmax(fourier[min_bin:max_bin]) + min_bin
-		freq_fft = (imax * f_s) / len(sound)
-		frequencies_detected.append(freq_fft)
+		# Focus on fundamental frequency range for musical notes
+		freq_resolution = f_s / len(sound)
+		min_bin = int(60 / freq_resolution)   # 降低最低頻率
+		max_bin = int(800 / freq_resolution)  # 提高最高頻率
+		#min_bin = int(50 / freq_resolution)   # 降低最低頻率
+		#max_bin = int(800 / freq_resolution)  # 提高最高頻率
+		max_bin = min(max_bin, len(fourier)//2)
 		
-		# Look for potential fundamental frequency if this might be a harmonic
-		for divisor in [2, 3, 4]:  # Check if current peak is 2nd, 3rd, or 4th harmonic
-			potential_fundamental = freq_fft / divisor
-			if 60 <= potential_fundamental <= 800:
-				frequencies_detected.append(potential_fundamental)
-	
-	# Choose the most likely fundamental frequency
-	if not frequencies_detected:
-		return 0
-	
-	# For guitar strings, prefer frequencies in the expected ranges:
-	# E2: ~82Hz, A2: ~110Hz, D3: ~147Hz, G3: ~196Hz, B3: ~247Hz, E4: ~330Hz
-	guitar_ranges = [
-		(75, 90),   # E2 range
-		(100, 120), # A2 range  
-		(140, 155), # D3 range
-		(185, 210), # G3 range
-		(235, 260), # B3 range
-		(315, 350)  # E4 range
-	]
-	
-	# Score each detected frequency based on how well it fits guitar ranges
-	best_freq = 0
-	best_score = -1
-	
-	for freq in frequencies_detected:
-		score = 0
-		
-		# Give higher score if frequency is in a typical guitar range
-		for low, high in guitar_ranges:
-			if low <= freq <= high:
-				score += 10
-				break
+		if min_bin < max_bin:
+			imax = np.argmax(fourier[min_bin:max_bin]) + min_bin
+			freq = (imax * f_s) / len(sound)
 		else:
-			# Even if not in exact range, closer to guitar ranges is better
-			min_distance = min(abs(freq - (low + high)/2) for low, high in guitar_ranges)
-			score += max(0, 5 - min_distance / 20)
-		
-		# Prefer frequencies that are not too high or too low
-		if 70 <= freq <= 400:
-			score += 2
-		
-		if score > best_score:
-			best_score = score
-			best_freq = freq
+			freq = 0
 	
-	# If no good candidate found, fall back to the first detection
-	if best_freq == 0 and frequencies_detected:
-		best_freq = frequencies_detected[0]
-	
-	return best_freq
+	return freq
 
 def get_note_frequency(note_name):
 	"""
@@ -282,42 +225,16 @@ def tune_audio(audio_file, target_note, tolerance_cents=10):
 			"detected_frequency": detected_freq
 		}
 	
-	if detected_freq <= 0:
+	# Calculate the difference in cents
+	# Formula: cents = 1200 * log2(f1/f2)
+	if detected_freq > 0:
+		cents_diff = 1200 * math.log2(detected_freq / target_freq)
+	else:
 		return {
 			"error": "Could not detect frequency from audio",
 			"detected_frequency": detected_freq,
 			"target_frequency": target_freq
 		}
-	
-	# Calculate the difference in cents
-	# Formula: cents = 1200 * log2(f1/f2)
-	cents_diff = 1200 * math.log2(detected_freq / target_freq)
-	
-	# Check for octave errors and correct them
-	# If the difference is close to ±1200 cents (1 octave) or ±2400 cents (2 octaves), 
-	# the detection might have picked up a harmonic instead of fundamental
-	original_cents_diff = cents_diff
-	corrected_freq = detected_freq
-	
-	# Check for octave errors (within ±50 cents of exact octave multiples)
-	octave_corrections = []
-	for octave_shift in [-2, -1, 1, 2]:  # Check 2 octaves down, 1 octave down, 1 octave up, 2 octaves up
-		corrected_candidate = detected_freq * (2 ** octave_shift)
-		candidate_cents_diff = 1200 * math.log2(corrected_candidate / target_freq)
-		octave_corrections.append((abs(candidate_cents_diff), candidate_cents_diff, corrected_candidate, octave_shift))
-	
-	# Sort by absolute cents difference to find the best correction
-	octave_corrections.sort(key=lambda x: x[0])
-	
-	# If the best octave correction is significantly better than the original, use it
-	best_abs_cents, best_cents_diff, best_freq, best_octave_shift = octave_corrections[0]
-	
-	if best_abs_cents < abs(original_cents_diff) and best_abs_cents < 200:  # Much better and reasonable
-		print(f"DEBUG: Octave correction applied - shifted {best_octave_shift} octaves")
-		print(f"DEBUG: Original: {detected_freq:.2f}Hz ({original_cents_diff:.1f} cents)")
-		print(f"DEBUG: Corrected: {best_freq:.2f}Hz ({best_cents_diff:.1f} cents)")
-		cents_diff = best_cents_diff
-		corrected_freq = best_freq
 	
 	# Determine if it's in tune, too high, or too low
 	if abs(cents_diff) <= tolerance_cents:
@@ -330,8 +247,7 @@ def tune_audio(audio_file, target_note, tolerance_cents=10):
 	return {
 		"target_note": target_note,
 		"target_frequency": target_freq,
-		"detected_frequency": corrected_freq,  # Return the corrected frequency
-		"original_detected_frequency": detected_freq,  # Also include original for debugging
+		"detected_frequency": detected_freq,
 		"cents_difference": round(cents_diff, 1),
 		"tuning_status": tuning_status,
 		"tolerance_cents": tolerance_cents
