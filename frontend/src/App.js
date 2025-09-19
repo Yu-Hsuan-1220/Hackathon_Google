@@ -11,6 +11,7 @@ import CameraScreen from './components/CameraScreen';
 import ResultScreen from './components/ResultScreen';
 import FirstTimeUserPage from './components/FirstTimeUserPage';
 import TunerPage from './components/TunerPage';
+import SingleNoteLessonPage from './components/SingleNoteLessonPage';
 import SongTwinkleStarPage from './components/SongTwinkleStarPage';
 import SongHappyBirthdayPage from './components/SongHappyBirthdayPage';
 import SongChildhoodPage from './components/SongChildhoodPage';
@@ -76,6 +77,13 @@ const App = () => {
       case 'tuner':
         return (
           <TunerPage 
+            onNavigate={setCurrentScreen}
+          />
+        );
+      
+      case 'single-note-lesson':
+        return (
+          <SingleNoteLessonPage 
             onNavigate={setCurrentScreen}
           />
         );

@@ -19,18 +19,25 @@ def convert_webm_to_wav(webm_file_path: str) -> str:
         str: Path to the converted wav file
     """
     try:
-        # Create output wav file path
-        wav_file_path = webm_file_path.replace('.webm', '.wav')
+
+        # Create output wav file path - ensure it's different from input
+        if webm_file_path.endswith('.wav'):
+            # If input already has .wav extension, create a new output file
+            wav_file_path = webm_file_path.replace('.wav', '_converted.wav')
+        else:
+            # Normal case: replace extension
+            wav_file_path = webm_file_path.replace('.webm', '.wav')
         
         print(f"DEBUG: Converting {webm_file_path} to {wav_file_path}")
         
-        # Use ffmpeg to convert webm to wav
+        # Use ffmpeg to convert webm to wav with optimal settings for pitch detection
         cmd = [
             'ffmpeg', 
             '-i', webm_file_path,
             '-acodec', 'pcm_s16le',  # 16-bit PCM
-            '-ar', '44100',          # 44.1 kHz sample rate
+            '-ar', '44100',          # 44.1 kHz sample rate for better frequency resolution
             '-ac', '1',              # Mono channel
+            '-af', 'highpass=f=50,lowpass=f=4000',  # 音頻濾波器：去除低頻噪音和高頻雜訊
             '-y',                    # Overwrite output file
             wav_file_path
         ]
@@ -126,8 +133,9 @@ def convert_audio_to_wav(audio_file_path: str) -> str:
             'ffmpeg', 
             '-i', audio_file_path,
             '-acodec', 'pcm_s16le',
-            '-ar', '44100',
+            '-ar', '44100',          # 使用 44.1kHz 以提高精度
             '-ac', '1',
+            '-af', 'highpass=f=50,lowpass=f=4000',  # 音頻濾波器
             '-y',
             wav_file_path
         ]
@@ -169,7 +177,7 @@ def convert_audio_bytes_to_wav_bytes(audio_bytes: bytes, source_format: str = "w
                 'ffmpeg', 
                 '-i', temp_input_path,
                 '-acodec', 'pcm_s16le',
-                '-ar', '44100',
+                '-ar', '24000',
                 '-ac', '1',
                 '-y',
                 temp_output_path
