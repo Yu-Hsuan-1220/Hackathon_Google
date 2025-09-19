@@ -146,9 +146,9 @@ def get_frequency_from_audio(audio_file):
 	autocorr = np.correlate(sound, sound, mode='full')
 	autocorr = autocorr[len(autocorr)//2:]
 	
-	# For guitar tuning, look for periods corresponding to 60-400Hz
-	min_period = int(f_s / 400)  # Max frequency
-	max_period = int(f_s / 60)   # Min frequency
+	# For guitar tuning, look for periods corresponding to 50-800Hz (擴大範圍以涵蓋更多音符)
+	min_period = int(f_s / 800)  # Max frequency
+	max_period = int(f_s / 50)   # Min frequency
 	
 	if max_period >= len(autocorr):
 		max_period = len(autocorr) - 1
@@ -170,10 +170,10 @@ def get_frequency_from_audio(audio_file):
 		fourier = np.fft.fft(sound)
 		fourier = np.absolute(fourier)
 		
-		# Focus on fundamental frequency range for guitar
+		# Focus on fundamental frequency range for musical notes
 		freq_resolution = f_s / len(sound)
-		min_bin = int(60 / freq_resolution)
-		max_bin = int(400 / freq_resolution)
+		min_bin = int(50 / freq_resolution)   # 降低最低頻率
+		max_bin = int(800 / freq_resolution)  # 提高最高頻率
 		max_bin = min(max_bin, len(fourier)//2)
 		
 		if min_bin < max_bin:

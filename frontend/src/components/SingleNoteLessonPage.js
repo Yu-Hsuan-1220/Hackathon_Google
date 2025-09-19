@@ -101,12 +101,23 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
     try {
       console.log('🔍 Processing response:', response);
 
-      const { next_note: nextNote, wav_path: audioPath, confidence, tuning_result } = response;
+      // 從後端回應中正確提取數據
+      const debugInfo = response.debug_info || {};
+      const nextNote = debugInfo.target_note;
+      const audioPath = debugInfo.audio_path;
+      const tuningStatus = debugInfo.tuning_status;
+      const isSuccess = debugInfo.success;
 
       console.log('🔍 Extracted nextNote:', nextNote);
+      console.log('🔍 Extracted audioPath:', audioPath);
+      console.log('🔍 Extracted tuningStatus:', tuningStatus);
+      console.log('🔍 Extracted isSuccess:', isSuccess);
+      console.log('🔍 Current state.currentNote:', state.currentNote);
 
       // Update state FIRST, before playing audio
       if (nextNote && nextNote !== '') {
+        const isRetryingSameNote = nextNote === state.currentNote;
+        console.log('🔍 Is retrying same note?', isRetryingSameNote);
         console.log('🔍 Updating currentNote from', state.currentNote, 'to', nextNote);
         setState(prev => {
           console.log('🔍 setState callback - prev.currentNote:', prev.currentNote, 'new currentNote:', nextNote);
@@ -119,18 +130,20 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
       }
 
       // Update results only for non-initialization requests
-      if (state.currentNote && state.currentNote !== 'AA') {
-        const success = tuning_result === 'success_advance' || tuning_result === 'in_tune';
+      if (state.currentNote && state.currentNote !== 'AA' && state.currentNote !== '') {
+        console.log('🔍 Updating results for note:', state.currentNote);
         setState(prev => {
           const newResults = new Map(prev.questionResults);
           const currentResult = newResults.get(state.currentNote) || { success: false, attempts: 0 };
           newResults.set(state.currentNote, {
-            success: success || currentResult.success,
+            success: isSuccess || currentResult.success,
             attempts: currentResult.attempts + 1
           });
 
           const newAnsweredNotes = new Set(prev.answeredNotes);
-          newAnsweredNotes.add(state.currentNote);
+          if (isSuccess) {
+            newAnsweredNotes.add(state.currentNote);
+          }
 
           return {
             ...prev,
@@ -144,23 +157,19 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
       if (audioPath) {
         console.log('🔍 Playing audio:', audioPath);
         await playInstructionAudio(audioPath);
+      } else {
+        console.log('🔍 No audio path, setting phase to idle');
+        setState(prev => ({ ...prev, phase: 'idle' }));
       }
 
-      // Check if lesson is complete
-      if (response.finish) {
+      // Check if lesson is complete (當 nextNote 為空字符串時表示完成)
+      if (nextNote === "") {
+        console.log('🎉 Lesson complete!');
         setState(prev => ({ ...prev, phase: 'done' }));
+        setTimeout(() => {
+          onNavigate('home');
+        }, 3000);
       }
-
-      // 檢查是否完成所有題目
-      setState(prev => {
-        if (prev.answeredNotes.size >= 7) {
-          setTimeout(() => {
-            onNavigate('home');
-          }, 3000);
-          return { ...prev, phase: 'done' };
-        }
-        return prev;
-      });
 
     } catch (error) {
       console.error('處理回應失敗:', error);
@@ -275,7 +284,7 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           channelCount: 1,
-          sampleRate: 24000,
+          sampleRate: 44100,           // 提升採樣率以提高頻率檢測精度
           echoCancellation: false,
           autoGainControl: false,
           noiseSuppression: false

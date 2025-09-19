@@ -30,13 +30,14 @@ def convert_webm_to_wav(webm_file_path: str) -> str:
         
         print(f"DEBUG: Converting {webm_file_path} to {wav_file_path}")
         
-        # Use ffmpeg to convert webm to wav
+        # Use ffmpeg to convert webm to wav with optimal settings for pitch detection
         cmd = [
             'ffmpeg', 
             '-i', webm_file_path,
             '-acodec', 'pcm_s16le',  # 16-bit PCM
-            '-ar', '24000',          # 24 kHz sample rate to match reference files
+            '-ar', '44100',          # 44.1 kHz sample rate for better frequency resolution
             '-ac', '1',              # Mono channel
+            '-af', 'highpass=f=50,lowpass=f=4000',  # 音頻濾波器：去除低頻噪音和高頻雜訊
             '-y',                    # Overwrite output file
             wav_file_path
         ]
@@ -132,8 +133,9 @@ def convert_audio_to_wav(audio_file_path: str) -> str:
             'ffmpeg', 
             '-i', audio_file_path,
             '-acodec', 'pcm_s16le',
-            '-ar', '24000',
+            '-ar', '44100',          # 使用 44.1kHz 以提高精度
             '-ac', '1',
+            '-af', 'highpass=f=50,lowpass=f=4000',  # 音頻濾波器
             '-y',
             wav_file_path
         ]
