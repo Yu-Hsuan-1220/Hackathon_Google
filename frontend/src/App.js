@@ -21,20 +21,21 @@ const App = () => {
   const [poseResult, setPoseResult] = useState(null);
   const [isFirstTime, setIsFirstTime] = useState(true);
   const [navigationSource, setNavigationSource] = useState(null);
+  const [userName, setUserName] = useState(() => (localStorage.getItem('userName') || '').trim());
 
   useEffect(() => {
-    // 檢查是否有使用者名稱
-    const userName = localStorage.getItem('userName');
-    if (userName && userName.trim() !== '') {
-      setIsFirstTime(false);
-      setCurrentScreen('home');
-    } else {
-      setIsFirstTime(true);
-      setCurrentScreen('first-time');
-    }
+    const saved = (localStorage.getItem('userName') || '').trim();
+    if (saved) setUserName(saved);
+    setIsFirstTime(!(saved && saved !== ''));
   }, []);
 
-  const handleFirstTimeComplete = () => {
+  const handleFirstTimeComplete = (name) => {
+    const n = (name || '').trim();
+    if (n) {
+      localStorage.setItem('userName', n);
+      localStorage.setItem('usr_id', n);
+    }
+    setUserName(n);
     setIsFirstTime(false);
     setCurrentScreen('home');
   };
@@ -49,7 +50,9 @@ const App = () => {
     setCurrentScreen('camera');
   };
 
-  const [currentScreen, setCurrentScreen] = useState('first-time');
+  // 在初始化時就決定要進入哪個畫面，避免先掛載 first-time 再切換
+  const initialScreen = (localStorage.getItem('userName') || '').trim() !== '' ? 'home' : 'first-time';
+  const [currentScreen, setCurrentScreen] = useState(initialScreen);
 
   // 創建智能導航函數，可以跟蹤來源並傳遞數據
   const handleNavigate = (screen, sourceOrData = null) => {
@@ -78,7 +81,7 @@ const App = () => {
         );
       
       case 'home':
-        return <HomePage onNavigate={(screen) => handleNavigate(screen, 'home')} />;
+        return <HomePage userName={userName} onNavigate={(screen) => handleNavigate(screen, 'home')} />;
       
       case 'basic-lesson':
         return (

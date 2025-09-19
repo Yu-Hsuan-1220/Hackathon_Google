@@ -3,7 +3,7 @@ import PhoneContainer from './PhoneContainer';
 import FeatureCarousel from './FeatureCarousel';
 import './HomePage.css';
 
-function HomePage({ onNavigate }) {
+function HomePage({ onNavigate, userName }) {
   const hasCalledAPI = useRef(false);
   const currentAudio = useRef(null);
 
@@ -98,7 +98,6 @@ function HomePage({ onNavigate }) {
     }
   };
   
-  const userName = localStorage.getItem('userName')?.trim() || localStorage.getItem('usr_id')?.trim() || '用戶';
   const features = [
     {
       id: 'tuner',
@@ -154,7 +153,7 @@ function HomePage({ onNavigate }) {
 
   return (
     <PhoneContainer 
-      title={`🎸 歡迎回來，${userName}！`}
+      title={`🎸 歡迎回來，${userName || '用戶'}！`}
       onVoiceCommand={handleVoiceCommand}
       enableVoice={true}
       showStatusBar={true}

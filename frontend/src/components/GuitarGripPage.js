@@ -1,8 +1,91 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import PhoneContainer from './PhoneContainer';
 import './GuitarGripPage.css';
 
 function GuitarGripPage({ onNavigate }) {
+  const hasCalledAPI = useRef(false);
+  const currentAudio = useRef(null);
+
+  useEffect(() => {
+    if (!hasCalledAPI.current) {
+      hasCalledAPI.current = true;
+      checkAndPlayIntro();
+    }
+
+    // 清理音頻
+    return () => {
+      if (currentAudio.current) {
+        currentAudio.current.pause();
+        currentAudio.current.currentTime = 0;
+        currentAudio.current = null;
+      }
+    };
+  }, []);
+
+  const checkAndPlayIntro = () => {
+    const userName = localStorage.getItem('userName')?.trim() || '用戶';
+    const audio = new Audio(`/guitar_grip.wav`);
+    currentAudio.current = audio;
+    
+    audio.oncanplaythrough = () => {
+      audio.play().catch(console.error);
+      audio.onended = () => {
+        currentAudio.current = null;
+        startVoiceRecognition();
+      };
+    };
+    
+    audio.onerror = async () => {
+      await fetch(`http://localhost:8000/guitar/grip?username=${encodeURIComponent(userName)}`);
+      setTimeout(() => {
+        const newAudio = new Audio(`/guitar_grip.wav`);
+        currentAudio.current = newAudio;
+        newAudio.play().catch(console.error);
+        newAudio.onended = () => {
+          currentAudio.current = null;
+          startVoiceRecognition();
+        };
+      }, 1000);
+    };
+    
+    audio.load();
+  };
+
+  const startVoiceRecognition = () => {
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'zh-TW';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.start();
+
+    recognition.onresult = async (event) => {
+      const transcript = event.results[0][0].transcript;
+      await sendActionAPI(transcript);
+    };
+
+    setTimeout(() => {
+      recognition.stop();
+    }, 3000);
+  };
+
+  const sendActionAPI = async (voiceInput) => {
+    const response = await fetch(`http://localhost:8000/guitar/action?user_input=${encodeURIComponent(voiceInput)}`, {
+      method: 'POST',
+    });
+    
+    const data = await response.json();
+    const actionResult = data.Response;
+    
+    if (actionResult === true) {
+      // 重新播放 intro
+      checkAndPlayIntro();
+    } else {
+      // 跳轉到 camerascreen
+      onNavigate('guitar-grip-camera');
+    }
+  };
+
   const lessonData = {
     title: '吉他握法',
     description: '學習正確的吉他持琴姿勢，包括坐姿和站姿',
@@ -38,8 +121,6 @@ function GuitarGripPage({ onNavigate }) {
       onNavigate('basic-lesson');
     } else if (command === 'navigate-home') {
       onNavigate('home');
-    } else if (command.includes('開始') || command.includes('檢測') || command.includes('練習')) {
-      handleStartPractice();
     }
   };
 

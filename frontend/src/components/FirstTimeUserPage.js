@@ -19,10 +19,14 @@ function FirstTimeUserPage({ onComplete }) {
     const guestName = '訪客';
     localStorage.setItem('userName', guestName);
     localStorage.setItem('usr_id', guestName);
-    onComplete();
+    onComplete(guestName);
   };
 
   useEffect(() => {
+    // 只有真的在 first-time 流程裡才播放
+    const userName = (localStorage.getItem('userName') || '').trim();
+    if (userName) return; // 已有名字就不播
+    
     if (!hasCalledAPI.current) {
       hasCalledAPI.current = true;
       playIntro();
@@ -147,9 +151,12 @@ function FirstTimeUserPage({ onComplete }) {
         currentAudio.current = null;
       }
       // API 確認成功，保存用戶名稱
-      localStorage.setItem('userName', userName.trim());
-      localStorage.setItem('usr_id', userName.trim());
-      onComplete();
+      const n = (userName || '').trim();
+      if (n) {
+        localStorage.setItem('userName', n);
+        localStorage.setItem('usr_id', n);
+      }
+      onComplete(n);
     } else {
       // API 確認失敗，重新開始流程但仍保存用戶名稱以防萬一
       if (userName.trim()) {
