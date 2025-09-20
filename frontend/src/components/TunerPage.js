@@ -76,10 +76,24 @@ function TunerPage({ onNavigate }) {
   const recordingTimerRef = useRef(null);
   const audioLevelTimerRef = useRef(null);
   const currentAudioRef = useRef(null);
+  const hasInitialized = useRef(false); // 防止重複初始化
+
+  const deleteAudioFile = async (filename) => {
+    try {
+      await fetch(`http://localhost:8000/home/delete?filename=${encodeURIComponent(filename)}`, {
+        method: 'POST',
+      });
+    } catch (error) {
+      console.error('刪除音檔失敗:', error);
+    }
+  };
 
   // 初始化：進入頁面自動送出 string_num=0
   useEffect(() => {
-    initializeTuning();
+    if (!hasInitialized.current) {
+      hasInitialized.current = true;
+      initializeTuning();
+    }
     return () => {
       cleanup();
     };
@@ -139,9 +153,10 @@ function TunerPage({ onNavigate }) {
     try {
       const formData = new FormData();
       formData.append('string_num', String(stringNum));
+      formData.append('username', userName); // 新增用戶名
       formData.append('file', audioBlob, `string-${stringNum}.webm`);
 
-      console.log(`📡 發送調音請求 - 弦號: ${stringNum}, 音檔大小: ${audioBlob.size} bytes`);
+      console.log(`📡 發送調音請求 - 弦號: ${stringNum}, 用戶: ${userName}, 音檔大小: ${audioBlob.size} bytes`);
       console.log('📋 FormData內容:');
       for (let [key, value] of formData.entries()) {
         console.log(`  ${key}:`, value);
@@ -217,15 +232,47 @@ function TunerPage({ onNavigate }) {
         console.log('✅ 指示音檔播放完成');
         dispatch({ type: 'SET_PLAYING_INSTRUCTION', payload: false });
         currentAudioRef.current = null;
+        // 只有 intro 音檔才需要刪除避免重複播放
+        const filename = audioPath.split('/').pop();
+        if (filename && filename === 'tuner_intro.wav') {
+          deleteAudioFile(filename);
+        }
       };
 
       // 設置錯誤處理
-      const handleAudioError = (e) => {
+      const handleAudioError = async (e) => {
         console.error('🔊 音檔播放錯誤:', e);
         console.error('錯誤的音檔路徑:', audioPath);
-        dispatch({ type: 'SET_PLAYING_INSTRUCTION', payload: false });
-        currentAudioRef.current = null;
-        // 不顯示錯誤給用戶，因為這不是關鍵功能
+        
+        // 輪詢檢查音檔是否已生成
+        const checkAudioReady = () => {
+          const newAudio = new Audio(audioPath);
+          currentAudioRef.current = newAudio;
+          
+          newAudio.oncanplaythrough = () => {
+            newAudio.play().catch(console.error);
+          };
+          
+          newAudio.onended = () => {
+            currentAudioRef.current = null;
+            dispatch({ type: 'SET_PLAYING_INSTRUCTION', payload: false });
+            // 只有 intro 音檔才需要刪除避免重複播放
+            const filename = audioPath.split('/').pop();
+            if (filename && filename === 'tuner_intro.wav') {
+              deleteAudioFile(filename);
+            }
+          };
+          
+          newAudio.onerror = () => {
+            // 如果音檔還沒準備好，500ms 後重試
+            setTimeout(checkAudioReady, 500);
+          };
+          
+          newAudio.load();
+        };
+        
+        // 等待 1 秒後開始檢查
+        setTimeout(checkAudioReady, 1000);
       };
 
       audio.onended = handleAudioEnd;

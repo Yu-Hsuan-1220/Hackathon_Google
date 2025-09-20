@@ -19,6 +19,7 @@ const initialState = {
 
 const SingleNoteLessonPage = ({ onNavigate, navigationSource }) => {
   const [state, setState] = useState(initialState);
+  const [userName] = useState(localStorage.getItem('userName') || '用戶');
   const [stream, setStream] = useState(null);
   const streamRef = useRef(null);  // 新增 streamRef
   const mediaRecorderRef = useRef(null);
@@ -29,6 +30,8 @@ const SingleNoteLessonPage = ({ onNavigate, navigationSource }) => {
   const animationFrameRef = useRef(null);
   const audioContextRef = useRef(null);
   const instructionAudioRef = useRef(new Audio());
+  const hasInitialized = useRef(false); // 防止重複初始化
+  const currentNoteStateRef = useRef(''); // 追蹤當前音符狀態
 
   // 播放指導語音
   const playInstructionAudio = useCallback(async (audioPath) => {
@@ -62,6 +65,15 @@ const SingleNoteLessonPage = ({ onNavigate, navigationSource }) => {
         audio.removeEventListener('ended', handleEnded);
         audio.removeEventListener('error', handleError);
         audio.removeEventListener('canplaythrough', handleCanPlay);
+        
+        // 音檔播放完成後自動開始錄音（如果有當前音符且不是初始化）
+        if (currentNoteStateRef.current && currentNoteStateRef.current !== 'AA' && currentNoteStateRef.current !== '') {
+          console.log('🎤 指導語音播放完成，500ms 後自動開始錄音');
+          setTimeout(() => {
+            startRecording();
+          }, 500); // 等待 500ms 後自動開始錄音
+        }
+        
         resolve();
       };
 
@@ -211,9 +223,10 @@ const SingleNoteLessonPage = ({ onNavigate, navigationSource }) => {
     try {
       const formData = new FormData();
       formData.append('target_note', targetNote);
+      formData.append('username', userName); // 新增用戶名
       formData.append('file', audioBlob, `lesson-${targetNote}.webm`);
 
-      console.log(`📡 發送教學請求 - 音符: ${targetNote}, 音檔大小: ${audioBlob.size} bytes`);
+      console.log(`📡 發送教學請求 - 音符: ${targetNote}, 用戶: ${userName}, 音檔大小: ${audioBlob.size} bytes`);
       console.log('📋 FormData內容:');
       for (let [key, value] of formData.entries()) {
         console.log(`  ${key}:`, value);
@@ -257,6 +270,7 @@ const SingleNoteLessonPage = ({ onNavigate, navigationSource }) => {
   // 同步 ref 與 state
   useEffect(() => {
     currentNoteRef.current = state.currentNote;
+    currentNoteStateRef.current = state.currentNote;
   }, [state.currentNote]);
 
   const uploadRecording = useCallback(async (audioBlob) => {
@@ -402,7 +416,8 @@ const SingleNoteLessonPage = ({ onNavigate, navigationSource }) => {
       await sendLessonRequest('AA', dummyBlob);
     };
 
-    if (state.phase === 'intro') {
+    if (state.phase === 'intro' && !hasInitialized.current) {
+      hasInitialized.current = true;
       initializeLesson();
     }
   }, [state.phase, sendLessonRequest]);
@@ -511,7 +526,7 @@ const SingleNoteLessonPage = ({ onNavigate, navigationSource }) => {
           <div className="status-display">
             <div className="status-label">請彈：</div>
             <div className="note-name">{state.currentNote}</div>
-            <div className="status-text">點擊下方按鈕開始錄音</div>
+            <div className="status-text">播放指導音檔後將自動開始錄音</div>
           </div>
         );
 
@@ -573,7 +588,7 @@ const SingleNoteLessonPage = ({ onNavigate, navigationSource }) => {
             state.phase === 'uploading' ? '分析中...' :
               state.phase === 'playing' ? '播放中...' :
                 state.phase === 'intro' ? '初始化中...' :
-                  `開始錄音 (${RECORD_SECONDS}秒)`}
+                  `手動錄音 (${RECORD_SECONDS}秒)`}
         </button>
       </div>
     );

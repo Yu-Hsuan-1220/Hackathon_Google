@@ -23,6 +23,7 @@ const initialState = {
 
 const ChordLessonPage = ({ onNavigate }) => {
     const [state, setState] = useState(initialState);
+    const [userName] = useState(localStorage.getItem('userName') || '用戶');
     const [stream, setStream] = useState(null);
     const streamRef = useRef(null);
     const mediaRecorderRef = useRef(null);
@@ -35,6 +36,7 @@ const ChordLessonPage = ({ onNavigate }) => {
     const analyserRef = useRef(null);
     const animationFrameRef = useRef(null);
     const audioContextRef = useRef(null);
+    const hasInitialized = useRef(false); // 防止重複初始化
 
     // 取得用戶媒體流
     const getUserMedia = useCallback(async () => {
@@ -189,6 +191,7 @@ const ChordLessonPage = ({ onNavigate }) => {
             }
 
             formData.append('target_chord', currentChord);
+            formData.append('username', userName); // 新增用戶名
             formData.append('whole_chord', wholeChord ? 1 : 0);
             formData.append('string', currentString ? String(currentString) : '');
             formData.append('audio_file', audioBlob, 'audio.webm');
@@ -198,6 +201,7 @@ const ChordLessonPage = ({ onNavigate }) => {
             console.log('當前狀態 - currentString ref:', currentStringRef.current);
             console.log('發送請求:', {
                 target_chord: currentChord,
+                username: userName,
                 whole_chord: wholeChord ? 1 : 0,
                 string: currentString ? String(currentString) : '',
                 audioSize: audioBlob.size
@@ -362,6 +366,7 @@ const ChordLessonPage = ({ onNavigate }) => {
             // 發送初始化請求 (target_chord = "AA")
             const formData = new FormData();
             formData.append('target_chord', 'AA');
+            formData.append('username', userName); // 新增用戶名
             formData.append('whole_chord', 1);
             formData.append('string', '');
 
@@ -398,8 +403,11 @@ const ChordLessonPage = ({ onNavigate }) => {
 
     // 組件初始化
     useEffect(() => {
-        initializeLesson();
-        getUserMedia();
+        if (!hasInitialized.current) {
+            hasInitialized.current = true;
+            initializeLesson();
+            getUserMedia();
+        }
 
         return () => {
             // 清理資源
