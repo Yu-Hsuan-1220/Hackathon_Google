@@ -11,19 +11,19 @@ client = genai.Client()
 
 
 SYSTEM_PROMPT_ACTION = """
-以下是這個APP的功能，判斷回覆要到哪個功能，回傳1到6的數字。
+以下是這個APP的功能，判斷回覆要到哪個功能，回傳1到6或10的數字。
 1. 基本的吉他握法和姿勢
 2. 按弦的方法與單音練習
 3. 簡單的和弦與節奏練習
 4. 最後會教你一首簡單的歌曲
 5. 再介紹一次功能
-6. 其他
+6. 無法判斷
 10. 問其他問題
 """
 
 async def Intro(username:str) -> str:
     SYSTEM_PROMPT_INTRO = f"""
-    你現在要介紹一個APP中menu的功能，這個APP是用來幫助初學者學習彈吉他的，以下是介紹的模板，幫我小幅度修改這個模板。
+    你現在要介紹一個APP中menu的功能，這個APP是用來幫助初學者學習彈吉他的，以下是介紹的模板，幫我小幅度修改這個模板，記得跟使用者打招呼。
     介紹內容如下:
     你好{username}，歡迎來到基礎教學課程，我會一步步從頭教你如何正確彈吉他。
     在這裡你會學到:
@@ -33,6 +33,7 @@ async def Intro(username:str) -> str:
     4. 最後會教你一首簡單的歌曲
     可以讓你從0基礎到學會完整一首歌曲。
     也讓你打下良好的基礎，開始你的吉他之旅！
+    現在你可以選擇要使用的功能、問我其他問題或是要我從新講一次。
 
     """
     response = client.models.generate_content(
@@ -56,7 +57,7 @@ async def action(str) -> int:
         model="gemini-2.5-flash",
         contents=[
             str,
-            "這個回覆要到哪個功能，回傳1到6的數字"
+            "這個回覆要到哪個功能，回傳1到6或10的數字"
         ],
         config=types.GenerateContentConfig(
             system_instruction=SYSTEM_PROMPT_ACTION,
