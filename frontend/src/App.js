@@ -20,23 +20,29 @@ import SongMoonHeartPage from './components/SongMoonHeartPage';
 import './App.css';
 
 const App = () => {
-  const [currentScreen, setCurrentScreen] = useState('home');
+  const [currentScreen, setCurrentScreen] = useState('loading');
   const [poseResult, setPoseResult] = useState(null);
   const [isFirstTime, setIsFirstTime] = useState(true);
   const [navigationSource, setNavigationSource] = useState(null);
+  const [userName, setUserName] = useState('');
 
   useEffect(() => {
-    // 檢查是否為首次使用者
+    // 檢查是否為首次使用者和用戶名稱
     const firstTimeFlag = localStorage.getItem('isFirstTime');
+    const storedUserName = localStorage.getItem('userName') || '';
+    setUserName(storedUserName);
+    
     if (firstTimeFlag === 'false') {
       setIsFirstTime(false);
+      setCurrentScreen('home');
     } else {
       setCurrentScreen('first-time');
     }
   }, []);
 
-  const handleFirstTimeComplete = () => {
+  const handleFirstTimeComplete = (name) => {
     setIsFirstTime(false);
+    setUserName(name || '');
     localStorage.setItem('isFirstTime', 'false');
     setCurrentScreen('tuner');
   };
@@ -67,6 +73,19 @@ const App = () => {
 
   const renderScreen = () => {
     switch (currentScreen) {
+      case 'loading':
+        return (
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            height: '100vh',
+            fontSize: '18px'
+          }}>
+            載入中...
+          </div>
+        );
+
       case 'first-time':
         return <FirstTimeUserPage onComplete={handleFirstTimeComplete} />;
 
@@ -86,7 +105,7 @@ const App = () => {
         );
 
       case 'home':
-        return <HomePage onNavigate={(screen) => handleNavigate(screen, 'home')} />;
+        return <HomePage onNavigate={(screen) => handleNavigate(screen, 'home')} userName={userName} />;
 
       case 'basic-lesson':
         return (
@@ -214,7 +233,7 @@ const App = () => {
         );
 
       default:
-        return <HomePage onNavigate={setCurrentScreen} />;
+        return <HomePage onNavigate={setCurrentScreen} userName={userName} />;
     }
   };
 
