@@ -11,13 +11,9 @@ const ResultScreen = ({ result, onBack, onRetry, onNavigateToBasicLesson }) => {
   const shouldNavigateRef = useRef(false);
 
   const deleteAudioFile = async (filename) => {
-    try {
-      await fetch(`http://localhost:8000/home/delete?filename=${encodeURIComponent(filename)}`, {
-        method: 'POST',
-      });
-    } catch (error) {
-      console.error('刪除音檔失敗:', error);
-    }
+    await fetch(`http://localhost:8000/home/delete?filename=${encodeURIComponent(filename)}`, {
+      method: 'POST',
+    });
   };
 
   const playAudio = async () => {
