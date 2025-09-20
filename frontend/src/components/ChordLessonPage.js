@@ -37,6 +37,7 @@ const ChordLessonPage = ({ onNavigate }) => {
     const animationFrameRef = useRef(null);
     const audioContextRef = useRef(null);
     const hasInitialized = useRef(false); // 防止重複初始化
+    const startRecordingRef = useRef(null); // 保存 startRecording 函數的引用
 
     // 取得用戶媒體流
     const getUserMedia = useCallback(async () => {
@@ -132,6 +133,9 @@ const ChordLessonPage = ({ onNavigate }) => {
             setState(prev => ({ ...prev, error: '錄音失敗', phase: 'idle' }));
         }
     }, [getUserMedia]);
+
+    // 保存 startRecording 函數到 ref，以便在播放完成回調中使用
+    startRecordingRef.current = startRecording;
 
     // 音量檢測
     const startAudioLevelDetection = useCallback(() => {
@@ -308,12 +312,26 @@ const ChordLessonPage = ({ onNavigate }) => {
                             // 确保状态更新后再允许录音
                             setTimeout(() => {
                                 setState(prev => ({ ...prev, phase: 'idle' }));
+                                // 播放完成後自動開始錄音
+                                setTimeout(() => {
+                                    console.log('🤖 自動開始錄音...');
+                                    if (startRecordingRef.current) {
+                                        startRecordingRef.current();
+                                    }
+                                }, 500);
                             }, 100); // 等待 100ms 确保状态同步
                             resolve();
                         };
                         audio.onerror = (error) => {
                             console.error('和弦指導音檔播放失敗:', error);
                             setState(prev => ({ ...prev, phase: 'idle' }));
+                            // 播放失敗也自動開始錄音
+                            setTimeout(() => {
+                                console.log('🤖 播放失敗，自動開始錄音...');
+                                if (startRecordingRef.current) {
+                                    startRecordingRef.current();
+                                }
+                            }, 500);
                             reject(error);
                         };
                         audio.play().catch(reject);
@@ -324,8 +342,14 @@ const ChordLessonPage = ({ onNavigate }) => {
                     // 不阻止流程繼續
                 }
             } else {
-                // 沒有音檔時直接進入 idle 狀態
+                // 沒有音檔時直接進入 idle 狀態並自動錄音
                 setState(prev => ({ ...prev, phase: 'idle' }));
+                setTimeout(() => {
+                    console.log('🤖 無音檔，自動開始錄音...');
+                    if (startRecordingRef.current) {
+                        startRecordingRef.current();
+                    }
+                }, 500);
             }
 
             // 檢查是否完成課程
@@ -508,51 +532,52 @@ const ChordLessonPage = ({ onNavigate }) => {
                         </div>
                     </div>
 
-                    {/* 錄音控制區域 */}
+                    {/* 狀態顯示區域 */}
                     <div className="recording-controls">
-                        {state.phase === 'idle' && (
-                            <button
-                                className="record-btn"
-                                onClick={startRecording}
-                            >
-                                🎤 開始錄音
-                            </button>
-                        )}
-
-                        {state.phase === 'recording' && (
-                            <div className="recording-status">
-                                <div className="recording-indicator">
-                                    <div className="recording-dot"></div>
-                                    <span>錄音中... {state.recordingTime.toFixed(1)}s</span>
+                        <div className="status-indicator">
+                            {state.phase === 'idle' ? (
+                                <div className="status-message">
+                                    🎤 語音指示完成後自動錄音
                                 </div>
-                                <div className="audio-level-container">
-                                    <div
-                                        className="audio-level-bar"
-                                        style={{ width: `${state.audioLevel * 100}%` }}
-                                    ></div>
-                                </div>
-                            </div>
-                        )}
-
-                        {state.phase === 'uploading' && (
-                            <div className="uploading-status">
-                                <div className="loading-spinner"></div>
-                                <span>分析中...</span>
-                            </div>
-                        )}
-
-                        {state.phase === 'playing' && (
-                            <div className="playing-status">
-                                <div className="playing-indicator">
-                                    <div className="playing-waves">
-                                        <span></span>
-                                        <span></span>
-                                        <span></span>
+                            ) : state.phase === 'recording' ? (
+                                <div className="recording-status">
+                                    <div className="recording-indicator">
+                                        <div className="recording-dot"></div>
+                                        <span>錄音中... {state.recordingTime.toFixed(1)}s</span>
                                     </div>
-                                    <span>播放中...</span>
+                                    <div className="audio-level-container">
+                                        <div
+                                            className="audio-level-bar"
+                                            style={{ width: `${state.audioLevel * 100}%` }}
+                                        ></div>
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            ) : state.phase === 'uploading' ? (
+                                <div className="uploading-status">
+                                    <div className="loading-spinner"></div>
+                                    <span>分析中...</span>
+                                </div>
+                            ) : state.phase === 'playing' ? (
+                                <div className="playing-status">
+                                    <div className="playing-indicator">
+                                        <div className="playing-waves">
+                                            <span></span>
+                                            <span></span>
+                                            <span></span>
+                                        </div>
+                                        <span>播放中...</span>
+                                    </div>
+                                </div>
+                            ) : state.phase === 'intro' ? (
+                                <div className="status-message">
+                                    🎵 初始化中...
+                                </div>
+                            ) : (
+                                <div className="status-message">
+                                    ⏳ 請等待...
+                                </div>
+                            )}
+                        </div>
 
                         {state.phase === 'done' && (
                             <div className="completion-status">

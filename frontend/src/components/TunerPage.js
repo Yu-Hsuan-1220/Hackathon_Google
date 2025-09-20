@@ -77,6 +77,7 @@ function TunerPage({ onNavigate }) {
   const audioLevelTimerRef = useRef(null);
   const currentAudioRef = useRef(null);
   const hasInitialized = useRef(false); // 防止重複初始化
+  const startRecordingRef = useRef(null); // 保存 startRecording 函數的引用
 
   const deleteAudioFile = async (filename) => {
     try {
@@ -237,6 +238,17 @@ function TunerPage({ onNavigate }) {
         if (filename && filename === 'tuner_intro.wav') {
           deleteAudioFile(filename);
         }
+        
+        // 播放完成後自動開始錄音 (延遲500ms避免狀態衝突)
+        setTimeout(() => {
+          // 檢查是否可以開始錄音 (包括初始化階段後)
+          if (state.phase === 'idle' && !state.isPlayingInstruction) {
+            console.log('🤖 自動開始錄音...');
+            if (startRecordingRef.current) {
+              startRecordingRef.current();
+            }
+          }
+        }, 500);
       };
 
       // 設置錯誤處理
@@ -261,6 +273,17 @@ function TunerPage({ onNavigate }) {
             if (filename && filename === 'tuner_intro.wav') {
               deleteAudioFile(filename);
             }
+            
+            // 播放完成後自動開始錄音 (延遲500ms避免狀態衝突)
+            setTimeout(() => {
+              // 檢查是否可以開始錄音 (包括初始化階段後)
+              if (state.phase === 'idle' && !state.isPlayingInstruction) {
+                console.log('🤖 自動開始錄音...');
+                if (startRecordingRef.current) {
+                  startRecordingRef.current();
+                }
+              }
+            }, 500);
           };
           
           newAudio.onerror = () => {
@@ -363,6 +386,9 @@ function TunerPage({ onNavigate }) {
       dispatch({ type: 'SET_PHASE', payload: 'idle' });
     }
   };
+
+  // 保存 startRecording 函數到 ref，以便在播放完成回調中使用
+  startRecordingRef.current = startRecording;
 
   const stopRecording = () => {
     if (recordingTimerRef.current) {
@@ -475,7 +501,11 @@ function TunerPage({ onNavigate }) {
   const getPhaseText = () => {
     switch (state.phase) {
       case 'idle':
-        return `請彈第 ${state.currentString} 弦 (${stringData[state.currentString - 1]?.note})`;
+        if (state.currentString > 0) {
+          return `請彈第 ${state.currentString} 弦 (${stringData[state.currentString - 1]?.note})`;
+        } else {
+          return '請彈奏吉他任意弦進行調音';
+        }
       case 'intro':
         return '正在初始化調音器...';
       case 'recording':
@@ -584,26 +614,35 @@ function TunerPage({ onNavigate }) {
           )}
         </div>
 
-        {/* 錄音控制 */}
+        {/* 狀態顯示 */}
         <div className="tuning-controls">
-          {canStartRecording() ? (
-            <button
-              className="start-tuning-btn"
-              onClick={startRecording}
-            >
-              🎤 開始錄音 ({RECORD_SECONDS}秒)
-            </button>
-          ) : (
-            <button
-              className="stop-tuning-btn"
-              disabled
-            >
-              {state.isPlayingInstruction ? '🔊 播放指示中...' :
-                state.phase === 'recording' ? '🎤 錄音中...' :
-                  state.phase === 'uploading' ? '⏳ 分析中...' :
-                    '⏳ 請等待...'}
-            </button>
-          )}
+          <div className="status-indicator">
+            {state.phase === 'idle' ? (
+              <div className="status-message">
+                🎤 語音指示完成後自動錄音
+              </div>
+            ) : state.isPlayingInstruction ? (
+              <div className="status-message">
+                🔊 播放指示中...
+              </div>
+            ) : state.phase === 'recording' ? (
+              <div className="status-message">
+                🎤 錄音中... ({Math.round(state.recordingTime * 10) / 10}s/{RECORD_SECONDS}s)
+              </div>
+            ) : state.phase === 'uploading' ? (
+              <div className="status-message">
+                ⏳ 分析中...
+              </div>
+            ) : state.phase === 'intro' ? (
+              <div className="status-message">
+                � 初始化中...
+              </div>
+            ) : (
+              <div className="status-message">
+                ⏳ 請等待...
+              </div>
+            )}
+          </div>
         </div>
 
         {/* 錯誤顯示 */}
