@@ -38,7 +38,7 @@ function FirstTimeUserPage({ onComplete }) {
   }, []);
 
   const deleteAudioFile = async (filename) => {
-    await fetch(`http://localhost:8000/home/delete?filename=${encodeURIComponent(filename)}`, {
+    await fetch(`https://192.168.1.193:8000/home/delete?filename=${encodeURIComponent(filename)}`, {
       method: 'POST',
     });
   };
@@ -63,7 +63,7 @@ function FirstTimeUserPage({ onComplete }) {
     };
     
     audio.onerror = async () => {
-      await fetch('http://localhost:8000/first_used/intro?username=新用戶');
+      await fetch('https://192.168.1.193:8000/first_used/intro?username=新用戶');
       
       // 輪詢檢查音檔是否已生成
       const checkAudioReady = () => {
@@ -125,7 +125,7 @@ function FirstTimeUserPage({ onComplete }) {
 
   // 發送名字到 first_used/confirmed
   const sendConfirmAPI = async (name) => {
-    await fetch(`http://localhost:8000/first_used/confirmed?user_name=${encodeURIComponent(name)}`);
+    await fetch(`https://192.168.1.193:8000/first_used/confirmed?user_name=${encodeURIComponent(name)}`);
     // 立即保存用戶名稱，不等待後續 API 確認
     localStorage.setItem('userName', name.trim());
     localStorage.setItem('usr_id', name.trim());
@@ -156,7 +156,7 @@ function FirstTimeUserPage({ onComplete }) {
 
   // 發送用戶確認語音到 action API
   const sendActionAPI = async (confirmText) => {
-    const response = await fetch(`http://localhost:8000/first_used/action?user_name=${encodeURIComponent(confirmText)}`);
+    const response = await fetch(`https://192.168.1.193:8000/first_used/action?user_name=${encodeURIComponent(confirmText)}`);
     const data = await response.json();
     
     if (data.Response === true) {

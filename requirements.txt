@@ -3,6 +3,7 @@ aiohttp==3.12.15
 aiosignal==1.4.0
 annotated-types==0.7.0
 anyio==4.10.0
+app==0.0.1
 asttokens==3.0.0
 attrs==25.3.0
 audioread==3.0.1
