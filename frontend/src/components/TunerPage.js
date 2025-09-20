@@ -76,10 +76,25 @@ function TunerPage({ onNavigate }) {
   const recordingTimerRef = useRef(null);
   const audioLevelTimerRef = useRef(null);
   const currentAudioRef = useRef(null);
+  const hasInitialized = useRef(false); // 防止重複初始化
+  const startRecordingRef = useRef(null); // 保存 startRecording 函數的引用
+
+  const deleteAudioFile = async (filename) => {
+    try {
+      await fetch(`http://localhost:8000/home/delete?filename=${encodeURIComponent(filename)}`, {
+        method: 'POST',
+      });
+    } catch (error) {
+      console.error('刪除音檔失敗:', error);
+    }
+  };
 
   // 初始化：進入頁面自動送出 string_num=0
   useEffect(() => {
-    initializeTuning();
+    if (!hasInitialized.current) {
+      hasInitialized.current = true;
+      initializeTuning();
+    }
     return () => {
       cleanup();
     };
@@ -139,9 +154,10 @@ function TunerPage({ onNavigate }) {
     try {
       const formData = new FormData();
       formData.append('string_num', String(stringNum));
+      formData.append('username', userName); // 新增用戶名
       formData.append('file', audioBlob, `string-${stringNum}.webm`);
 
-      console.log(`📡 發送調音請求 - 弦號: ${stringNum}, 音檔大小: ${audioBlob.size} bytes`);
+      console.log(`📡 發送調音請求 - 弦號: ${stringNum}, 用戶: ${userName}, 音檔大小: ${audioBlob.size} bytes`);
       console.log('📋 FormData內容:');
       for (let [key, value] of formData.entries()) {
         console.log(`  ${key}:`, value);
@@ -217,15 +233,69 @@ function TunerPage({ onNavigate }) {
         console.log('✅ 指示音檔播放完成');
         dispatch({ type: 'SET_PLAYING_INSTRUCTION', payload: false });
         currentAudioRef.current = null;
+        // 只有 intro 音檔才需要刪除避免重複播放
+        const filename = audioPath.split('/').pop();
+        if (filename && filename === 'tuner_intro.wav') {
+          deleteAudioFile(filename);
+        }
+        
+        // 播放完成後自動開始錄音 (延遲500ms避免狀態衝突)
+        setTimeout(() => {
+          // 檢查是否可以開始錄音 (包括初始化階段後)
+          if (state.phase === 'idle' && !state.isPlayingInstruction) {
+            console.log('🤖 自動開始錄音...');
+            if (startRecordingRef.current) {
+              startRecordingRef.current();
+            }
+          }
+        }, 500);
       };
 
       // 設置錯誤處理
-      const handleAudioError = (e) => {
+      const handleAudioError = async (e) => {
         console.error('🔊 音檔播放錯誤:', e);
         console.error('錯誤的音檔路徑:', audioPath);
-        dispatch({ type: 'SET_PLAYING_INSTRUCTION', payload: false });
-        currentAudioRef.current = null;
-        // 不顯示錯誤給用戶，因為這不是關鍵功能
+        
+        // 輪詢檢查音檔是否已生成
+        const checkAudioReady = () => {
+          const newAudio = new Audio(audioPath);
+          currentAudioRef.current = newAudio;
+          
+          newAudio.oncanplaythrough = () => {
+            newAudio.play().catch(console.error);
+          };
+          
+          newAudio.onended = () => {
+            currentAudioRef.current = null;
+            dispatch({ type: 'SET_PLAYING_INSTRUCTION', payload: false });
+            // 只有 intro 音檔才需要刪除避免重複播放
+            const filename = audioPath.split('/').pop();
+            if (filename && filename === 'tuner_intro.wav') {
+              deleteAudioFile(filename);
+            }
+            
+            // 播放完成後自動開始錄音 (延遲500ms避免狀態衝突)
+            setTimeout(() => {
+              // 檢查是否可以開始錄音 (包括初始化階段後)
+              if (state.phase === 'idle' && !state.isPlayingInstruction) {
+                console.log('🤖 自動開始錄音...');
+                if (startRecordingRef.current) {
+                  startRecordingRef.current();
+                }
+              }
+            }, 500);
+          };
+          
+          newAudio.onerror = () => {
+            // 如果音檔還沒準備好，500ms 後重試
+            setTimeout(checkAudioReady, 500);
+          };
+          
+          newAudio.load();
+        };
+        
+        // 等待 1 秒後開始檢查
+        setTimeout(checkAudioReady, 1000);
       };
 
       audio.onended = handleAudioEnd;
@@ -316,6 +386,9 @@ function TunerPage({ onNavigate }) {
       dispatch({ type: 'SET_PHASE', payload: 'idle' });
     }
   };
+
+  // 保存 startRecording 函數到 ref，以便在播放完成回調中使用
+  startRecordingRef.current = startRecording;
 
   const stopRecording = () => {
     if (recordingTimerRef.current) {
@@ -428,7 +501,11 @@ function TunerPage({ onNavigate }) {
   const getPhaseText = () => {
     switch (state.phase) {
       case 'idle':
-        return `請彈第 ${state.currentString} 弦 (${stringData[state.currentString - 1]?.note})`;
+        if (state.currentString > 0) {
+          return `請彈第 ${state.currentString} 弦 (${stringData[state.currentString - 1]?.note})`;
+        } else {
+          return '請彈奏吉他任意弦進行調音';
+        }
       case 'intro':
         return '正在初始化調音器...';
       case 'recording':
@@ -537,26 +614,35 @@ function TunerPage({ onNavigate }) {
           )}
         </div>
 
-        {/* 錄音控制 */}
+        {/* 狀態顯示 */}
         <div className="tuning-controls">
-          {canStartRecording() ? (
-            <button
-              className="start-tuning-btn"
-              onClick={startRecording}
-            >
-              🎤 開始錄音 ({RECORD_SECONDS}秒)
-            </button>
-          ) : (
-            <button
-              className="stop-tuning-btn"
-              disabled
-            >
-              {state.isPlayingInstruction ? '🔊 播放指示中...' :
-                state.phase === 'recording' ? '🎤 錄音中...' :
-                  state.phase === 'uploading' ? '⏳ 分析中...' :
-                    '⏳ 請等待...'}
-            </button>
-          )}
+          <div className="status-indicator">
+            {state.phase === 'idle' ? (
+              <div className="status-message">
+                🎤 語音指示完成後自動錄音
+              </div>
+            ) : state.isPlayingInstruction ? (
+              <div className="status-message">
+                🔊 播放指示中...
+              </div>
+            ) : state.phase === 'recording' ? (
+              <div className="status-message">
+                🎤 錄音中... ({Math.round(state.recordingTime * 10) / 10}s/{RECORD_SECONDS}s)
+              </div>
+            ) : state.phase === 'uploading' ? (
+              <div className="status-message">
+                ⏳ 分析中...
+              </div>
+            ) : state.phase === 'intro' ? (
+              <div className="status-message">
+                � 初始化中...
+              </div>
+            ) : (
+              <div className="status-message">
+                ⏳ 請等待...
+              </div>
+            )}
+          </div>
         </div>
 
         {/* 錯誤顯示 */}

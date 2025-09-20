@@ -19,6 +19,7 @@ const initialState = {
 
 const SingleNoteLessonPage = ({ onNavigate, navigationSource }) => {
   const [state, setState] = useState(initialState);
+  const [userName] = useState(localStorage.getItem('userName') || '用戶');
   const [stream, setStream] = useState(null);
   const streamRef = useRef(null);  // 新增 streamRef
   const mediaRecorderRef = useRef(null);
@@ -29,6 +30,8 @@ const SingleNoteLessonPage = ({ onNavigate, navigationSource }) => {
   const animationFrameRef = useRef(null);
   const audioContextRef = useRef(null);
   const instructionAudioRef = useRef(new Audio());
+  const hasInitialized = useRef(false); // 防止重複初始化
+  const startRecordingRef = useRef(null); // 保存 startRecording 函數的引用
 
   // 播放指導語音
   const playInstructionAudio = useCallback(async (audioPath) => {
@@ -62,6 +65,15 @@ const SingleNoteLessonPage = ({ onNavigate, navigationSource }) => {
         audio.removeEventListener('ended', handleEnded);
         audio.removeEventListener('error', handleError);
         audio.removeEventListener('canplaythrough', handleCanPlay);
+        
+        // 播放完成後自動開始錄音 (延遲500ms避免狀態衝突)
+        setTimeout(() => {
+          console.log('🤖 自動開始錄音...');
+          if (startRecordingRef.current) {
+            startRecordingRef.current();
+          }
+        }, 500);
+        
         resolve();
       };
 
@@ -77,6 +89,15 @@ const SingleNoteLessonPage = ({ onNavigate, navigationSource }) => {
         audio.removeEventListener('ended', handleEnded);
         audio.removeEventListener('error', handleError);
         audio.removeEventListener('canplaythrough', handleCanPlay);
+        
+        // 播放失敗也自動開始錄音 (延遲500ms避免狀態衝突)
+        setTimeout(() => {
+          console.log('🤖 播放失敗，自動開始錄音...');
+          if (startRecordingRef.current) {
+            startRecordingRef.current();
+          }
+        }, 500);
+        
         resolve();
       };
 
@@ -211,9 +232,10 @@ const SingleNoteLessonPage = ({ onNavigate, navigationSource }) => {
     try {
       const formData = new FormData();
       formData.append('target_note', targetNote);
+      formData.append('username', userName); // 新增用戶名
       formData.append('file', audioBlob, `lesson-${targetNote}.webm`);
 
-      console.log(`📡 發送教學請求 - 音符: ${targetNote}, 音檔大小: ${audioBlob.size} bytes`);
+      console.log(`📡 發送教學請求 - 音符: ${targetNote}, 用戶: ${userName}, 音檔大小: ${audioBlob.size} bytes`);
       console.log('📋 FormData內容:');
       for (let [key, value] of formData.entries()) {
         console.log(`  ${key}:`, value);
@@ -362,6 +384,9 @@ const SingleNoteLessonPage = ({ onNavigate, navigationSource }) => {
     }
   }, [startAudioLevelMonitoring]);
 
+  // 保存 startRecording 函數到 ref，以便在播放完成回調中使用
+  startRecordingRef.current = startRecording;
+
   // 停止錄音 - 參考調音器的實現
   const stopRecording = useCallback(() => {
     console.log('🛑 停止錄音流程開始');
@@ -402,7 +427,8 @@ const SingleNoteLessonPage = ({ onNavigate, navigationSource }) => {
       await sendLessonRequest('AA', dummyBlob);
     };
 
-    if (state.phase === 'intro') {
+    if (state.phase === 'intro' && !hasInitialized.current) {
+      hasInitialized.current = true;
       initializeLesson();
     }
   }, [state.phase, sendLessonRequest]);
@@ -556,25 +582,39 @@ const SingleNoteLessonPage = ({ onNavigate, navigationSource }) => {
 
   // 渲染控制按鈕
   const renderControls = () => {
-    const isDisabled = ['recording', 'uploading', 'playing', 'intro', 'done'].includes(state.phase);
-
     if (state.phase === 'done') {
       return null;
     }
 
     return (
       <div className="tuning-controls">
-        <button
-          className="start-tuning-btn"
-          onClick={startRecording}
-          disabled={isDisabled}
-        >
-          {state.phase === 'recording' ? `錄音中 (${Math.round(state.recordingTime * 10) / 10}s)` :
-            state.phase === 'uploading' ? '分析中...' :
-              state.phase === 'playing' ? '播放中...' :
-                state.phase === 'intro' ? '初始化中...' :
-                  `開始錄音 (${RECORD_SECONDS}秒)`}
-        </button>
+        <div className="status-indicator">
+          {state.phase === 'idle' ? (
+            <div className="status-message">
+              🎤 語音指示完成後自動錄音
+            </div>
+          ) : state.phase === 'recording' ? (
+            <div className="status-message">
+              🎤 錄音中... ({Math.round(state.recordingTime * 10) / 10}s/{RECORD_SECONDS}s)
+            </div>
+          ) : state.phase === 'uploading' ? (
+            <div className="status-message">
+              ⏳ 分析中...
+            </div>
+          ) : state.phase === 'playing' ? (
+            <div className="status-message">
+              🔊 播放指示中...
+            </div>
+          ) : state.phase === 'intro' ? (
+            <div className="status-message">
+              🎵 初始化中...
+            </div>
+          ) : (
+            <div className="status-message">
+              ⏳ 請等待...
+            </div>
+          )}
+        </div>
       </div>
     );
   };
