@@ -46,25 +46,25 @@ def get_random_string_audio(note: str, status: str) -> str:
         # Check if folder exists
         if not os.path.exists(audio_folder):
             print(f"Audio folder not found: {audio_folder}")
-            return f"audio/string_check/{note}_{folder_status}/default.wav"  # Remove 'public/' prefix
+            return f"frontend/public/audio/string_check/{note}_{folder_status}/default.wav"
         
         # Get all wav files in the folder
         wav_files = [f for f in os.listdir(audio_folder) if f.endswith('.wav')]
         
         if not wav_files:
             print(f"No WAV files found in folder: {audio_folder}")
-            return f"audio/string_check/{note}_{folder_status}/default.wav"  # Remove 'public/' prefix
+            return f"frontend/public/audio/string_check/{note}_{folder_status}/default.wav"
         
         # Select a random file
         random_file = random.choice(wav_files)
-        full_path = f"audio/string_check/{note}_{folder_status}/{random_file}"  # Remove 'public/' prefix
+        full_path = f"frontend/public/audio/string_check/{note}_{folder_status}/{random_file}"
         
         print(f"Selected random audio: {full_path}")
         return full_path
         
     except Exception as e:
         print(f"Error getting random string audio: {e}")
-        return f"audio/string_check/{note}_{status}/default.wav"  # Remove 'public/' prefix
+        return f"frontend/public/audio/string_check/{note}_{status}/default.wav"
 
 def get_next_note(current_note: str) -> str:
     """Get the next note in the major scale sequence"""
@@ -218,7 +218,7 @@ async def note_check(target_note: str, audio_file_content: bytes):
         if target_note == "AA":
             return {
                 "next_note": "C3",  # Start with C3
-                "wav_path": "audio/string_check/string_intro.wav",  # Remove 'public/' prefix
+                "wav_path": "frontend/public/audio/string_check/string_check_intro.wav",
                 "confidence": 1.0,
                 "finish": False,
                 "cent_error": 0,

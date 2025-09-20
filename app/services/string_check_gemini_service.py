@@ -29,5 +29,5 @@ async def Intro(username: str) -> tuple[str, str]:
     )
     
     parsed = response.parsed
-    await text_to_speech(parsed.Intro, "string_check_intro.wav")
-    return parsed.Intro, "string_check_intro.wav"
+    await text_to_speech(parsed.Intro, "audio/string_check/string_check_intro.wav")
+    return parsed.Intro, "audio/string_check/string_check_intro.wav"
