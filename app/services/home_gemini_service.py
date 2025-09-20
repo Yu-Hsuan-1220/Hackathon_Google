@@ -15,6 +15,7 @@ SYSTEM_PROMPT_ACTION = """
 4. 歌曲教學
 5. 歌曲練習
 6. 其他
+10. 問其他問題
 """
 
 async def Intro(username: str) -> str:
