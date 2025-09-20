@@ -6,7 +6,7 @@ import os
 
 # local lib
 
-from app.routers import pose_check, menu, home, first_used, tuner, string_check, guitar
+from app.routers import pose_check, menu, home, first_used, tuner, string_check, guitar, tutor
 
 app = FastAPI()
 
@@ -30,7 +30,7 @@ app.include_router(first_used.router, prefix="/first_used", tags=["First Used"])
 app.include_router(guitar.router, prefix="/guitar", tags=["Guitar"])
 app.include_router(tuner.router,prefix="/tuner",tags=["Tuner"])
 app.include_router(string_check.router, prefix="/simplenote", tags=["Simple Note"])
-
+app.include_router(tutor.router, prefix="/tutor", tags=["Tutor"])
 
 if __name__ == "__main__":
     import uvicorn
