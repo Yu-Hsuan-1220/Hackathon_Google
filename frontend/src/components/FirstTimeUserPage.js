@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import PhoneContainer from './PhoneContainer';
 import './FirstTimeUserPage.css';
+const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000`;
 
 function FirstTimeUserPage({ onComplete }) {
   const [userName, setUserName] = useState('');
@@ -38,7 +39,7 @@ function FirstTimeUserPage({ onComplete }) {
   }, []);
 
   const deleteAudioFile = async (filename) => {
-    await fetch(`https://192.168.1.193:8000/home/delete?filename=${encodeURIComponent(filename)}`, {
+    await fetch(`${API_BASE}/home/delete?filename=${encodeURIComponent(filename)}`, {
       method: 'POST',
     });
   };
@@ -63,7 +64,7 @@ function FirstTimeUserPage({ onComplete }) {
     };
     
     audio.onerror = async () => {
-      await fetch('https://192.168.1.193:8000/first_used/intro?username=新用戶');
+      await fetch(`${API_BASE}/first_used/intro?username=新用戶`);
       
       // 輪詢檢查音檔是否已生成
       const checkAudioReady = () => {
@@ -99,33 +100,34 @@ function FirstTimeUserPage({ onComplete }) {
   };
 
   const startVoiceRecognition = (callback) => {
-    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.lang = 'zh-TW';
-    recognition.continuous = true;
-    recognition.interimResults = true;
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SR();
 
+    recognition.lang = 'zh-TW';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    let done = false;
     setIsListening(true);
     recognition.start();
 
-    recognition.onresult = (event) => {
-      const transcript = event.results[event.results.length - 1][0].transcript;
-      if (event.results[event.results.length - 1].isFinal) {
-        setIsListening(false);
-        recognition.stop();
-        callback(transcript.trim());
-      }
-    };
-    recognition.onend = () => {
+    recognition.onresult = (e) => {
+      if (done) return;
+      done = true;
+      const text = e.results[0][0].transcript || '';
+      const name = text;
       setIsListening(false);
-    };
-    setTimeout(() => {
       recognition.stop();
-    }, 8000);
+      callback(name);
+    };
+    recognition.onerror = () => { setIsListening(false); try { recognition.stop(); } catch {} };
+    recognition.onend = () => { setIsListening(false); };
+    setTimeout(() => { try { recognition.stop(); } catch {} }, 8000);
   };
 
   // 發送名字到 first_used/confirmed
   const sendConfirmAPI = async (name) => {
-    await fetch(`https://192.168.1.193:8000/first_used/confirmed?user_name=${encodeURIComponent(name)}`);
+    await fetch(`${API_BASE}/first_used/confirmed?user_name=${encodeURIComponent(name)}`);
     // 立即保存用戶名稱，不等待後續 API 確認
     localStorage.setItem('userName', name.trim());
     localStorage.setItem('usr_id', name.trim());
@@ -156,7 +158,7 @@ function FirstTimeUserPage({ onComplete }) {
 
   // 發送用戶確認語音到 action API
   const sendActionAPI = async (confirmText) => {
-    const response = await fetch(`https://192.168.1.193:8000/first_used/action?user_name=${encodeURIComponent(confirmText)}`);
+    const response = await fetch(`${API_BASE}/first_used/action?user_name=${encodeURIComponent(confirmText)}`);
     const data = await response.json();
     
     if (data.Response === true) {
