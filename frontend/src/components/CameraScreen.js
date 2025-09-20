@@ -9,42 +9,55 @@ const CameraScreen = ({ onBack, onResult }) => {
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
   const hasCalledIntro = useRef(false);
+  const currentAudio = useRef(null);
 
   const deleteAudioFile = async (filename) => {
-    try {
-      await fetch(`http://localhost:8000/home/delete?filename=${encodeURIComponent(filename)}`, {
-        method: 'POST',
-      });
-    } catch (error) {
-      console.error('刪除音檔失敗:', error);
-    }
+    await fetch(`http://localhost:8000/home/delete?filename=${encodeURIComponent(filename)}`, {
+      method: 'POST',
+    });
   };
 
   // 播放相機介紹音檔
   const playIntro = () => {
     const audio = new Audio('/pose_intro.wav');
+    currentAudio.current = audio;
     
     audio.oncanplaythrough = () => {
-      // 音檔已存在，直接播放
       audio.play();
-      audio.onended = () => {
-        deleteAudioFile('pose_intro.wav');
-        startCamera();
-      };
+    };
+    
+    audio.onended = () => {
+      currentAudio.current = null;
+      deleteAudioFile('pose_intro.wav');
+      startCamera();
     };
     
     audio.onerror = async () => {
-      // 音檔不存在，調用 API 生成音檔
-      const userName = localStorage.getItem('userName') || '用戶';
       await fetch(`http://localhost:8000/pose/intro`);
-      setTimeout(() => {
-        const newAudio = new Audio('/pose_intro.wav');
-        newAudio.play();
+      
+      // 輪詢檢查音檔是否已生成
+      const checkAudioReady = () => {
+        const newAudio = new Audio(`/pose_intro.wav`);
+        currentAudio.current = newAudio;
+        
+        newAudio.oncanplaythrough = () => {
+          newAudio.play();
+        };
+        
         newAudio.onended = () => {
+          currentAudio.current = null;
           deleteAudioFile('pose_intro.wav');
           startCamera();
         };
-      }, 1000);
+        
+        newAudio.onerror = () => {
+          setTimeout(checkAudioReady, 500);
+        };
+        
+        newAudio.load();
+      };
+      
+      setTimeout(checkAudioReady, 1000);
     };
     
     audio.load();
@@ -104,6 +117,11 @@ const CameraScreen = ({ onBack, onResult }) => {
       playIntro();
     }
     return () => {
+      if (currentAudio.current) {
+        currentAudio.current.pause();
+        currentAudio.current.currentTime = 0;
+        currentAudio.current = null;
+      }
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
