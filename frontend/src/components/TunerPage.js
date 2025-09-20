@@ -416,22 +416,6 @@ function TunerPage({ onNavigate }) {
     }
   };
 
-  const completeTuning = () => {
-    localStorage.setItem('hasCompletedTuning', 'true');
-    stopListening();
-    onNavigate('basic-lesson');
-  };
-
-  const selectString = (index) => {
-    setCurrentString(index);
-  };
-
-  const skipTuning = () => {
-    localStorage.setItem('hasCompletedTuning', 'true');
-    onNavigate('basic-lesson');
-  };
-
-
   const getDirectionHint = (centsError) => {
     if (centsError > 0) {
       return { text: '音太高，請放鬆弦', color: '#FF5722' };
@@ -467,25 +451,7 @@ function TunerPage({ onNavigate }) {
   return (
     <PhoneContainer>
       <div className="tuner-container">
-        <div className="tuner-nav">
-          <button 
-            className="tuner-back-button"
-            onClick={() => onNavigate('basic-lesson')}
-            title="返回基礎教學"
-          >
-            ← 返回基礎教學
-          </button>
-          <button 
-            className="tuner-home-button"
-            onClick={() => onNavigate('home')}
-            title="返回主頁"
-          >
-            🏠 主頁
-          </button>
-        </div>
-        
         <div className="tuner-header">
-
           <div className="header-top">
             <button
               className="back-btn"

@@ -253,7 +253,7 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
 
   // 上傳錄音 - 使用 ref 來避免閉包陷阱
   const currentNoteRef = useRef('');
-  
+
   // 同步 ref 與 state
   useEffect(() => {
     currentNoteRef.current = state.currentNote;

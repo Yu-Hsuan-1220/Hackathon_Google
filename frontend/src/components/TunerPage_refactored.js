@@ -68,7 +68,7 @@ function tuningReducer(state, action) {
 function TunerPage({ onNavigate }) {
   const [state, dispatch] = useReducer(tuningReducer, initialState);
   const [userName] = useState(localStorage.getItem('userName') || '用戶');
-  
+
   // Refs
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
@@ -101,13 +101,13 @@ function TunerPage({ onNavigate }) {
     try {
       dispatch({ type: 'SET_PHASE', payload: 'intro' });
       dispatch({ type: 'RESET_ERROR' });
-      
+
       // 創建空白音檔以符合 API 要求
       const emptyBlob = new Blob([new ArrayBuffer(1024)], { type: 'audio/webm;codecs=opus' });
-      
+
       console.log('🎵 初始化調音器...');
       const response = await sendTuningRequest(0, emptyBlob);
-      
+
       if (response) {
         await playInstructionAudio(response);
         dispatch({ type: 'SET_PHASE', payload: 'idle' });
@@ -134,24 +134,24 @@ function TunerPage({ onNavigate }) {
       const formData = new FormData();
       formData.append('string_num', String(stringNum));
       formData.append('file', audioBlob, `string-${stringNum}.webm`);
-      
+
       console.log(`📡 發送調音請求 - 弦號: ${stringNum}`);
-      
+
       const response = await fetch('http://127.0.0.1:8000/tuner/tuner', {
         method: 'POST',
         mode: 'cors',
         headers: { 'Accept': 'application/json' },
         body: formData
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const data = await response.json();
       console.log('📦 收到回應:', data);
       return data;
-      
+
     } catch (error) {
       console.error('API 請求失敗:', error);
       if (error.message.includes('fetch')) {
@@ -164,33 +164,33 @@ function TunerPage({ onNavigate }) {
   const playInstructionAudio = async (response) => {
     try {
       dispatch({ type: 'SET_PLAYING_INSTRUCTION', payload: true });
-      
+
       // 從後端回應中獲取音檔路徑
       let audioPath = response.audio_path;
-      
+
       if (!audioPath) {
         throw new Error('沒有找到音檔路徑');
       }
-      
+
       // 轉換後端路徑為前端可用路徑
       // 後端返回: "audio/tuner/xxx.wav" -> 前端使用: "/audio/tuner/xxx.wav"
       if (!audioPath.startsWith('/')) {
         audioPath = '/' + audioPath;
       }
-      
+
       console.log('🎵 播放音檔路徑:', audioPath);
-      
+
       const audio = new Audio(audioPath);
       currentAudioRef.current = audio;
-      
+
       console.log('▶️ 播放指示音檔');
-      
+
       audio.onended = () => {
         console.log('✅ 指示音檔播放完成');
         dispatch({ type: 'SET_PLAYING_INSTRUCTION', payload: false });
         currentAudioRef.current = null;
       };
-      
+
       audio.onerror = (e) => {
         console.error('🔊 音檔播放錯誤:', e);
         console.error('錯誤的音檔路徑:', audioPath);
@@ -198,9 +198,9 @@ function TunerPage({ onNavigate }) {
         dispatch({ type: 'SET_ERROR', payload: '音檔播放失敗' });
         currentAudioRef.current = null;
       };
-      
+
       await audio.play();
-      
+
     } catch (error) {
       console.error('播放指示音檔失敗:', error);
       dispatch({ type: 'SET_PLAYING_INSTRUCTION', payload: false });
@@ -211,7 +211,7 @@ function TunerPage({ onNavigate }) {
   const startRecording = async () => {
     try {
       dispatch({ type: 'RESET_ERROR' });
-      
+
       console.log('🎤 請求麥克風權限...');
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
@@ -222,39 +222,39 @@ function TunerPage({ onNavigate }) {
           noiseSuppression: false
         }
       });
-      
+
       streamRef.current = stream;
       audioChunksRef.current = [];
-      
+
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: 'audio/webm;codecs=opus',
         audioBitsPerSecond: 24000
       });
-      
+
       mediaRecorderRef.current = mediaRecorder;
-      
+
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
           audioChunksRef.current.push(event.data);
         }
       };
-      
+
       mediaRecorder.onstop = () => {
         console.log('🎤 錄音結束');
-        const audioBlob = new Blob(audioChunksRef.current, { 
-          type: 'audio/webm;codecs=opus' 
+        const audioBlob = new Blob(audioChunksRef.current, {
+          type: 'audio/webm;codecs=opus'
         });
-        
+
         console.log('📦 音檔大小:', audioBlob.size, 'bytes');
         uploadRecording(audioBlob);
       };
-      
+
       dispatch({ type: 'SET_PHASE', payload: 'recording' });
       dispatch({ type: 'SET_RECORDING_TIME', payload: 0 });
-      
+
       mediaRecorder.start();
       console.log(`🎤 開始錄音 ${RECORD_SECONDS} 秒...`);
-      
+
       // 錄音計時器
       let currentTime = 0;
       recordingTimerRef.current = setInterval(() => {
@@ -264,10 +264,10 @@ function TunerPage({ onNavigate }) {
           stopRecording();
         }
       }, 100);
-      
+
       // 音量監測
       startAudioLevelMonitoring(stream);
-      
+
     } catch (error) {
       console.error('錄音失敗:', error);
       if (error.name === 'NotAllowedError') {
@@ -284,16 +284,16 @@ function TunerPage({ onNavigate }) {
       clearInterval(recordingTimerRef.current);
       recordingTimerRef.current = null;
     }
-    
+
     if (audioLevelTimerRef.current) {
       clearInterval(audioLevelTimerRef.current);
       audioLevelTimerRef.current = null;
     }
-    
+
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.stop();
     }
-    
+
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
@@ -305,18 +305,18 @@ function TunerPage({ onNavigate }) {
       const audioContext = new AudioContext();
       const analyser = audioContext.createAnalyser();
       const microphone = audioContext.createMediaStreamSource(stream);
-      
+
       analyser.fftSize = 256;
       microphone.connect(analyser);
-      
+
       const dataArray = new Uint8Array(analyser.frequencyBinCount);
-      
+
       audioLevelTimerRef.current = setInterval(() => {
         analyser.getByteFrequencyData(dataArray);
         const average = dataArray.reduce((sum, value) => sum + value, 0) / dataArray.length;
         dispatch({ type: 'SET_AUDIO_LEVEL', payload: average });
       }, 100);
-      
+
     } catch (error) {
       console.error('音量監測失敗:', error);
     }
@@ -325,26 +325,26 @@ function TunerPage({ onNavigate }) {
   const uploadRecording = async (audioBlob) => {
     try {
       dispatch({ type: 'SET_PHASE', payload: 'uploading' });
-      
+
       const response = await sendTuningRequest(state.currentString, audioBlob);
-      
+
       if (response) {
         // 儲存cents_error用於UI顯示
         if (typeof response.cents_error === 'number') {
           dispatch({ type: 'SET_CENTS_ERROR', payload: response.cents_error });
         }
-        
+
         // 更新弦的狀態
         const status = response.tuning_status ? 'correct' : 'retry';
-        dispatch({ 
-          type: 'SET_STRING_STATUS', 
-          stringIndex: state.currentString - 1, 
-          status 
+        dispatch({
+          type: 'SET_STRING_STATUS',
+          stringIndex: state.currentString - 1,
+          status
         });
-        
+
         dispatch({ type: 'SET_PHASE', payload: 'playing' });
         await playInstructionAudio(response);
-        
+
         // 根據結果決定下一步
         if (response.tuning_finish) {
           // 調音完成
@@ -365,7 +365,7 @@ function TunerPage({ onNavigate }) {
           dispatch({ type: 'SET_PHASE', payload: 'idle' });
         }
       }
-      
+
     } catch (error) {
       console.error('上傳錄音失敗:', error);
       dispatch({ type: 'SET_ERROR', payload: error.message });
@@ -410,7 +410,7 @@ function TunerPage({ onNavigate }) {
       <div className="tuner-container">
         <div className="tuner-header">
           <div className="header-top">
-            <button 
+            <button
               className="back-btn"
               onClick={() => onNavigate('home')}
               title="返回主頁"
@@ -430,9 +430,8 @@ function TunerPage({ onNavigate }) {
           {stringData.map((string, index) => (
             <div
               key={index}
-              className={`string-button ${
-                state.currentString === string.string ? 'active' : ''
-              } ${state.stringStatus[index] === 'correct' ? 'tuned' : ''}`}
+              className={`string-button ${state.currentString === string.string ? 'active' : ''
+                } ${state.stringStatus[index] === 'correct' ? 'tuned' : ''}`}
             >
               <div className="string-number">{string.string}</div>
               <div className="string-note">{string.note}</div>
@@ -454,7 +453,7 @@ function TunerPage({ onNavigate }) {
               目標頻率: {stringData[state.currentString - 1]?.frequency || 82.41} Hz
             </div>
           </div>
-          
+
           <div className="frequency-display">
             <div className="detected-freq">
               {state.phase === 'recording' && `音量: ${Math.round(state.audioLevel)}%`}
@@ -463,7 +462,7 @@ function TunerPage({ onNavigate }) {
               )}
             </div>
           </div>
-          
+
           <div className="tuning-status">
             {getPhaseText()}
           </div>
@@ -472,7 +471,7 @@ function TunerPage({ onNavigate }) {
         {/* 調音提示 */}
         {state.centsError !== 0 && state.currentString > 0 && state.phase === 'idle' && (
           <div className="frequency-display">
-            <div 
+            <div
               className="detected-freq"
               style={{ color: getDirectionHint(state.centsError).color }}
             >
@@ -485,7 +484,7 @@ function TunerPage({ onNavigate }) {
         {state.phase === 'recording' && (
           <div className="tuning-progress">
             <div className="progress-bar">
-              <div 
+              <div
                 className="progress-fill"
                 style={{ width: `${(state.recordingTime / RECORD_SECONDS) * 100}%` }}
               ></div>
@@ -496,21 +495,21 @@ function TunerPage({ onNavigate }) {
         {/* 錄音控制 */}
         <div className="tuning-controls">
           {canStartRecording() ? (
-            <button 
+            <button
               className="start-tuning-btn"
               onClick={startRecording}
             >
               🎤 開始錄音 ({RECORD_SECONDS}秒)
             </button>
           ) : (
-            <button 
+            <button
               className="stop-tuning-btn"
               disabled
             >
-              {state.isPlayingInstruction ? '🔊 播放指示中...' : 
-               state.phase === 'recording' ? '🎤 錄音中...' :
-               state.phase === 'uploading' ? '⏳ 分析中...' :
-               '⏳ 請等待...'}
+              {state.isPlayingInstruction ? '🔊 播放指示中...' :
+                state.phase === 'recording' ? '🎤 錄音中...' :
+                  state.phase === 'uploading' ? '⏳ 分析中...' :
+                    '⏳ 請等待...'}
             </button>
           )}
         </div>
@@ -521,7 +520,7 @@ function TunerPage({ onNavigate }) {
             <div className="detected-freq" style={{ color: '#f44336' }}>
               ⚠️ {state.error}
             </div>
-            <button 
+            <button
               className="start-tuning-btn"
               style={{ marginTop: '8px', fontSize: '12px', padding: '6px 12px' }}
               onClick={() => dispatch({ type: 'RESET_ERROR' })}
@@ -534,10 +533,10 @@ function TunerPage({ onNavigate }) {
         {/* 整體進度 */}
         <div className="tuning-progress">
           <div className="progress-bar">
-            <div 
+            <div
               className="progress-fill"
-              style={{ 
-                width: `${(state.stringStatus.filter(s => s === 'correct').length / 6) * 100}%` 
+              style={{
+                width: `${(state.stringStatus.filter(s => s === 'correct').length / 6) * 100}%`
               }}
             ></div>
           </div>
@@ -550,14 +549,14 @@ function TunerPage({ onNavigate }) {
 
         {/* 底部按鈕 */}
         <div className="tuner-footer">
-          <button 
+          <button
             className="skip-btn"
             onClick={() => onNavigate('home')}
           >
             跳過調音
           </button>
           {state.stringStatus.filter(s => s === 'correct').length === 6 && (
-            <button 
+            <button
               className="complete-btn"
               onClick={() => onNavigate('home')}
             >

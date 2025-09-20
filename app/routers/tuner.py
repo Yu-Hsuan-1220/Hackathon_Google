@@ -9,7 +9,7 @@ from app.services.tuner_service import tune_guitar_string
 router = APIRouter()
 
 @router.post("/tuner")
-async def post(string_num: str, file: UploadFile = File(...)):
+async def post(string_num: str = Form(...), file: UploadFile = File(...)):
     # Handle string_num = "0" case - return tuner intro
     if string_num == "0":
         return {
@@ -49,6 +49,3 @@ async def post(string_num: str, file: UploadFile = File(...)):
         # Clean up temporary file
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
-
-
-
