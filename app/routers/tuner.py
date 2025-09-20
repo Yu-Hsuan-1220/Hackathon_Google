@@ -5,13 +5,15 @@ import os
 
 # local lib
 from app.services.tuner_service import tune_guitar_string
+from app.services.tuner_gemini_service import Intro
 
 router = APIRouter()
 
 @router.post("/tuner")
-async def post(string_num: str = Form(...), file: UploadFile = File(...)):
-    # Handle string_num = "0" case - return tuner intro
+async def post(string_num: str = Form(...), username: str = Form(...), file: UploadFile = File(...)):
+    # Handle string_num = "0" case - generate personalized tuner intro
     if string_num == "0":
+        intro_text, audio_filename = await Intro(username)
         return {
             "tuning_status": False,
             "string_num": "6", 

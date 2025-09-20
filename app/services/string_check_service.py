@@ -10,6 +10,8 @@ import librosa
 from .tuner_utils import tune_audio, get_frequency_from_audio, get_note_frequency
 from .audio_conversion_utils import convert_webm_to_wav
 
+
+
 # Major scale sequence for string-pressing tutorial
 MAJOR_SCALE_SEQUENCE = [
     "C3",  # Do
