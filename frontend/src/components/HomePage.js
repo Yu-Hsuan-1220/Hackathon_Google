@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import PhoneContainer from './PhoneContainer';
 import FeatureCarousel from './FeatureCarousel';
 import './HomePage.css';
+const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000`;
 
 function HomePage({ onNavigate, userName }) {
   const hasCalledAPI = useRef(false);
@@ -11,7 +12,9 @@ function HomePage({ onNavigate, userName }) {
   useEffect(() => {
     if (!hasCalledAPI.current) {
       hasCalledAPI.current = true;
-      checkAndPlayIntro();
+      // 確保使用最新的 userName，如果沒有則從 localStorage 讀取
+      const currentUserName = userName || localStorage.getItem('userName') || '用戶';
+      checkAndPlayIntro(currentUserName);
     }
 
     // 清理音頻
@@ -24,13 +27,23 @@ function HomePage({ onNavigate, userName }) {
     };
   }, []);
 
+  // 當 userName 變化時，重新呼叫 intro API
+  useEffect(() => {
+    if (userName && hasCalledAPI.current) {
+      // 重置 hasCalledAPI 並重新呼叫 intro
+      hasCalledAPI.current = false;
+      const currentUserName = userName || localStorage.getItem('userName') || '用戶';
+      checkAndPlayIntro(currentUserName);
+    }
+  }, [userName]);
+
   const deleteAudioFile = async (filename) => {
-    await fetch(`http://localhost:8000/home/delete?filename=${encodeURIComponent(filename)}`, {
+    await fetch(`${API_BASE}/home/delete?filename=${encodeURIComponent(filename)}`, {
       method: 'POST',
     });
   };
 
-  const checkAndPlayIntro = () => {
+  const checkAndPlayIntro = (currentUserName) => {
     const audio = new Audio(`/home_intro.wav`);
     currentAudio.current = audio;
     
@@ -45,7 +58,7 @@ function HomePage({ onNavigate, userName }) {
     };
     
     audio.onerror = async () => {
-      await fetch(`http://localhost:8000/home/intro?username=${encodeURIComponent(userName || '用戶')}`);
+      await fetch(`${API_BASE}/home/intro?username=${encodeURIComponent(currentUserName)}`);
       
       // 輪詢檢查音檔是否已生成
       const checkAudioReady = () => {
@@ -76,24 +89,32 @@ function HomePage({ onNavigate, userName }) {
   };
 
   const startVoiceRecognition = () => {
-    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SR();
+
     recognition.lang = 'zh-TW';
     recognition.continuous = false;
     recognition.interimResults = false;
 
-    recognition.onresult = async (event) => {
-      const transcript = event.results[0][0].transcript;
-      await sendActionAPI(transcript);
-    };
-
+    let done = false;
     recognition.start();
-    setTimeout(() => recognition.stop(), 3000);
+
+    recognition.onresult = async (e) => {
+      if (done) return;
+      done = true;
+      const text = e.results[0][0].transcript || '';
+      recognition.stop();
+      await sendActionAPI(text);
+    };
+    recognition.onerror = () => { try { recognition.stop(); } catch {} };
+    recognition.onend = () => {};
+    setTimeout(() => { try { recognition.stop(); } catch {} }, 8000);
   };
 
   const sendActionAPI = async (voiceInput) => {
     userQuestion.current = voiceInput;
     
-    const response = await fetch(`http://localhost:8000/home/action?user_input=${encodeURIComponent(voiceInput)}`, {
+    const response = await fetch(`${API_BASE}/home/action?user_input=${encodeURIComponent(voiceInput)}`, {
       method: 'POST',
     });
     
@@ -132,7 +153,7 @@ function HomePage({ onNavigate, userName }) {
   };
 
   const handleTutorAPI = async (question) => {
-    await fetch(`http://localhost:8000/tutor/ask?user_input=${encodeURIComponent(question)}`, {
+    await fetch(`${API_BASE}/tutor/ask?user_input=${encodeURIComponent(question)}`, {
       method: 'POST',
     });
     
@@ -162,7 +183,7 @@ function HomePage({ onNavigate, userName }) {
   };
 
   const handleReplayIntro = async () => {
-    await fetch(`http://localhost:8000/home/intro?username=${encodeURIComponent(userName || '用戶')}`);
+    await fetch(`${API_BASE}/home/intro?username=${encodeURIComponent(userName || '用戶')}`);
     
     // 輪詢檢查音檔是否已生成
     const checkAudioReady = () => {
@@ -227,10 +248,6 @@ function HomePage({ onNavigate, userName }) {
     }
   ];
 
-  const handleVoiceCommand = (command) => {
-    // 語音指令由 API 處理
-  };
-
   const handleResetUserData = () => {
     // 清除所有本地存儲的使用者資料
     localStorage.removeItem('userName');
@@ -244,9 +261,7 @@ function HomePage({ onNavigate, userName }) {
 
   return (
     <PhoneContainer 
-      title={`🎸 歡迎回來，${userName || '用戶'}！`}
-      onVoiceCommand={handleVoiceCommand}
-      enableVoice={true}
+      title={`🎸 歡迎回來，${userName || localStorage.getItem('userName') || '用戶'}！`}
       showStatusBar={true}
     >
       <div className="home-content">

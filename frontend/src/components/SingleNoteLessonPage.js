@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import PhoneContainer from './PhoneContainer';
 import './SingleNoteLessonPage.css';
+const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000`;
 
 // 錄音秒數常數
 const RECORD_SECONDS = 4;
@@ -241,7 +242,7 @@ const SingleNoteLessonPage = ({ onNavigate, navigationSource }) => {
         console.log(`  ${key}:`, value);
       }
 
-      const response = await fetch('http://127.0.0.1:8000/simplenote/string_check', {
+      const response = await fetch(`${API_BASE}/simplenote/string_check`, {
         method: 'POST',
         mode: 'cors',
         headers: { 'Accept': 'application/json' },

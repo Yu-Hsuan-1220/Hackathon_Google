@@ -28,19 +28,9 @@ function PickingTechniquePage({ onNavigate }) {
     ]
   };
 
-  const handleVoiceCommand = (command) => {
-    if (command === 'navigate-back') {
-      onNavigate('guitar-lesson');
-    } else if (command === 'navigate-home') {
-      onNavigate('home');
-    }
-  };
-
   return (
     <PhoneContainer
       title="🎼 右手撥弦技巧"
-      onVoiceCommand={handleVoiceCommand}
-      enableVoice={true}
       showStatusBar={true}
     >
       <div className="picking-technique-page">

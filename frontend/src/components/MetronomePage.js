@@ -10,23 +10,6 @@ function MetronomePage({ onNavigate }) {
   const intervalRef = useRef(null);
   const audioContextRef = useRef(null);
 
-  // 語音命令處理
-  const handleVoiceCommand = (command) => {
-    const lowerCommand = command.toLowerCase();
-    
-    if (lowerCommand.includes('開始') || lowerCommand.includes('播放')) {
-      startMetronome();
-    } else if (lowerCommand.includes('停止') || lowerCommand.includes('暫停')) {
-      stopMetronome();
-    } else if (lowerCommand.includes('快一點') || lowerCommand.includes('加速')) {
-      setBpm(prev => Math.min(prev + 10, 200));
-    } else if (lowerCommand.includes('慢一點') || lowerCommand.includes('減速')) {
-      setBpm(prev => Math.max(prev - 10, 60));
-    } else if (lowerCommand.includes('返回') || lowerCommand.includes('主頁')) {
-      onNavigate('home');
-    }
-  };
-
   useEffect(() => {
     // 創建音頻上下文
     audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
@@ -113,8 +96,6 @@ function MetronomePage({ onNavigate }) {
   return (
     <PhoneContainer 
       title="⏱️ 節拍器"
-      onVoiceCommand={handleVoiceCommand}
-      enableVoice={true}
       showStatusBar={true}
     >
       <div className="metronome-content">

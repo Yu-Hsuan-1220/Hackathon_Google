@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import PhoneContainer from './PhoneContainer';
 import './ResultScreen.css';
+const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000`;
 
 const ResultScreen = ({ result, onBack, onRetry, onNavigateToBasicLesson }) => {
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
@@ -11,7 +12,7 @@ const ResultScreen = ({ result, onBack, onRetry, onNavigateToBasicLesson }) => {
   const shouldNavigateRef = useRef(false);
 
   const deleteAudioFile = async (filename) => {
-    await fetch(`http://localhost:8000/home/delete?filename=${encodeURIComponent(filename)}`, {
+    await fetch(`${API_BASE}/home/delete?filename=${encodeURIComponent(filename)}`, {
       method: 'POST',
     });
   };
@@ -44,7 +45,7 @@ const ResultScreen = ({ result, onBack, onRetry, onNavigateToBasicLesson }) => {
   const analyzePose = async (photoData) => {
     setIsAnalyzing(true);
     
-    const response = await fetch('http://localhost:8000/pose/check_pose', {
+    const response = await fetch(`${API_BASE}/pose/check_pose`, {
       method: 'POST',
       body: photoData
     });
@@ -83,7 +84,7 @@ const ResultScreen = ({ result, onBack, onRetry, onNavigateToBasicLesson }) => {
 
   if (isAnalyzing) {
     return (
-      <PhoneContainer title="分析中..." enableVoice={false}>
+      <PhoneContainer title="分析中...">
         <div className="result-content-wrapper">
           <div className="analyzing-content">
             <h3>正在分析你的姿勢...</h3>
@@ -93,17 +94,9 @@ const ResultScreen = ({ result, onBack, onRetry, onNavigateToBasicLesson }) => {
     );
   }
 
-  const handleVoiceCommand = (command) => {
-    if (command.includes('返回') || command.includes('回去')) {
-      if (onBack) onBack();
-    }
-  };
-
   return (
     <PhoneContainer 
-      title="姿勢分析結果" 
-      onVoiceCommand={handleVoiceCommand}
-      enableVoice={false}
+      title="姿勢分析結果"
     >
       <div className="result-content-wrapper">
         <div className="result-main-content">

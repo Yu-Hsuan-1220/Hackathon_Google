@@ -43,30 +43,9 @@ function SongPracticePage({ onNavigate }) {
     // }
   ];
 
-  // 語音命令處理
-  const handleVoiceCommand = (command) => {
-    const lowerCommand = command.toLowerCase();
-    
-    if (lowerCommand.includes('返回') || lowerCommand.includes('主頁')) {
-      onNavigate('home');
-    } else if (lowerCommand.includes('小星星')) {
-      onNavigate('song-twinkle-star');
-    }
-    // 其他語音命令暫時註解
-    // else if (lowerCommand.includes('生日')) {
-    //   onNavigate('song-happy-birthday');
-    // } else if (lowerCommand.includes('童年')) {
-    //   onNavigate('song-childhood');
-    // } else if (lowerCommand.includes('月亮')) {
-    //   onNavigate('song-moon-heart');
-    // }
-  };
-
   return (
     <PhoneContainer 
       title="🎤 歌曲練習"
-      onVoiceCommand={handleVoiceCommand}
-      enableVoice={true}
       showStatusBar={true}
     >
       <div className="lesson-list">

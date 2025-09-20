@@ -36,16 +36,6 @@ function SongTwinkleStarPage({ onBack, onHome }) {
     }
   };
 
-  const handleVoiceCommand = (command) => {
-    if (command === 'navigate-back') {
-      onBack();
-    } else if (command === 'navigate-home') {
-      onHome();
-    } else if (command.includes('練習')) {
-      onBack(); // 返回到來源頁面
-    }
-  };
-
   const renderChordDiagram = (chordName) => {
     const chord = songData.chordDiagrams[chordName];
     if (!chord) return <div className="chord-diagram">和弦圖不可用</div>;
@@ -76,8 +66,6 @@ function SongTwinkleStarPage({ onBack, onHome }) {
   return (
     <PhoneContainer 
       title={`${songData.emoji} ${songData.title}`}
-      onVoiceCommand={handleVoiceCommand}
-      enableVoice={true}
       showStatusBar={true}
     >
       <div className="song-page">

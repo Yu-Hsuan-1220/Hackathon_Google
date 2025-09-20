@@ -28,19 +28,9 @@ function ChordPracticePage({ onNavigate }) {
     ]
   };
 
-  const handleVoiceCommand = (command) => {
-    if (command === 'navigate-back') {
-      onNavigate('guitar-lesson');
-    } else if (command === 'navigate-home') {
-      onNavigate('home');
-    }
-  };
-
   return (
     <PhoneContainer
       title="🎵 基本和弦練習"
-      onVoiceCommand={handleVoiceCommand}
-      enableVoice={true}
       showStatusBar={true}
     >
       <div className="chord-practice-page">

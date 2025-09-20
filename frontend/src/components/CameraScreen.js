@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import PhoneContainer from './PhoneContainer';
 import './CameraScreen.css';
+const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000`;
 
 const CameraScreen = ({ onBack, onResult }) => {
   const [isCapturing, setIsCapturing] = useState(false);
@@ -12,7 +13,7 @@ const CameraScreen = ({ onBack, onResult }) => {
   const currentAudio = useRef(null);
 
   const deleteAudioFile = async (filename) => {
-    await fetch(`http://localhost:8000/home/delete?filename=${encodeURIComponent(filename)}`, {
+    await fetch(`${API_BASE}/home/delete?filename=${encodeURIComponent(filename)}`, {
       method: 'POST',
     });
   };
@@ -33,7 +34,7 @@ const CameraScreen = ({ onBack, onResult }) => {
     };
     
     audio.onerror = async () => {
-      await fetch(`http://localhost:8000/pose/intro`);
+      await fetch(`${API_BASE}/pose/intro`);
       
       // 輪詢檢查音檔是否已生成
       const checkAudioReady = () => {
@@ -128,17 +129,9 @@ const CameraScreen = ({ onBack, onResult }) => {
     };
   }, []);
 
-  const handleVoiceCommand = (command) => {
-    if (command.includes('返回') || command.includes('回去')) {
-      if (onBack) onBack();
-    }
-  };
-
   return (
     <PhoneContainer 
-      title="握法姿勢分析" 
-      onVoiceCommand={handleVoiceCommand}
-      enableVoice={false}
+      title="握法姿勢分析"
     >
       <div className="camera-screen-wrapper">
         {/* 相機區域佔據剩餘空間 */}

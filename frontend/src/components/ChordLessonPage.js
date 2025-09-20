@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import PhoneContainer from './PhoneContainer';
 import './ChordLessonPage.css';
+const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000`;
 
 // 錄音秒數常數
 const RECORD_SECONDS = 4;
@@ -38,6 +39,17 @@ const ChordLessonPage = ({ onNavigate }) => {
     const audioContextRef = useRef(null);
     const hasInitialized = useRef(false); // 防止重複初始化
     const startRecordingRef = useRef(null); // 保存 startRecording 函數的引用
+
+    // 刪除音檔函數
+    const deleteAudioFile = async (filename) => {
+        try {
+            await fetch(`${API_BASE}/home/delete?filename=${encodeURIComponent(filename)}`, {
+                method: 'POST',
+            });
+        } catch (error) {
+            console.error('刪除音檔失敗:', error);
+        }
+    };
 
     // 取得用戶媒體流
     const getUserMedia = useCallback(async () => {
@@ -211,7 +223,7 @@ const ChordLessonPage = ({ onNavigate }) => {
                 audioSize: audioBlob.size
             });
 
-            const response = await fetch('http://127.0.0.1:8000/chord/chord-check', {
+            const response = await fetch(`${API_BASE}/chord/chord-check`, {
                 method: 'POST',
                 mode: 'cors',
                 headers: { 'Accept': 'application/json' },
@@ -309,6 +321,13 @@ const ChordLessonPage = ({ onNavigate }) => {
                     await new Promise((resolve, reject) => {
                         audio.onended = () => {
                             console.log('和弦指導音檔播放完成');
+                            
+                            // 只有 chord_intro.wav 才刪除
+                            const filename = audioPath.split('/').pop();
+                            if (filename && filename === 'chord_intro.wav') {
+                                deleteAudioFile(filename);
+                            }
+                            
                             // 确保状态更新后再允许录音
                             setTimeout(() => {
                                 setState(prev => ({ ...prev, phase: 'idle' }));
@@ -398,7 +417,7 @@ const ChordLessonPage = ({ onNavigate }) => {
             const emptyBlob = new Blob([], { type: 'audio/webm;codecs=opus' });
             formData.append('audio_file', emptyBlob, 'empty.webm');
 
-            const response = await fetch('http://127.0.0.1:8000/chord/chord-check', {
+            const response = await fetch(`${API_BASE}/chord/chord-check`, {
                 method: 'POST',
                 mode: 'cors',
                 headers: { 'Accept': 'application/json' },

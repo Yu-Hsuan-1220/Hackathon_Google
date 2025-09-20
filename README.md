@@ -21,6 +21,14 @@ export GOOGLE_API_KEY="YOUR_API_KEY"
 python -m app.main
 ```
 
+```
+uvicorn app.main:app \
+  --host 0.0.0.0 --port 8000 \
+  --ssl-certfile ./localhost+3.pem \
+  --ssl-keyfile ./localhost+3-key.pem
+```
+
+
 ## Frontend
 
 ```
@@ -30,6 +38,10 @@ cd /home/apollo/Hackathon/Hackathon_Google/frontend && npm install
 will see 9 vulnerabilities (3 moderate, 6 high)
 
 ```
+HTTPS=true \
+SSL_CRT_FILE=../localhost+3.pem \
+SSL_KEY_FILE=../localhost+3-key.pem \
+PORT=3000 \
 npm start
 ```
 
