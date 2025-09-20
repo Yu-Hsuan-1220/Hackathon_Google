@@ -42,9 +42,13 @@ const App = () => {
 
   const handleFirstTimeComplete = (name) => {
     setIsFirstTime(false);
-    setUserName(name || '');
+    const finalUserName = name || '';
+    setUserName(finalUserName);
     localStorage.setItem('isFirstTime', 'false');
-    setCurrentScreen('tuner');
+    // 確保 userName 設置後再導航
+    setTimeout(() => {
+      setCurrentScreen('home');
+    }, 100);
   };
 
   const handlePoseResult = (result) => {

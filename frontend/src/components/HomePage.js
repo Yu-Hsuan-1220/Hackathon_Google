@@ -12,7 +12,9 @@ function HomePage({ onNavigate, userName }) {
   useEffect(() => {
     if (!hasCalledAPI.current) {
       hasCalledAPI.current = true;
-      checkAndPlayIntro();
+      // 確保使用最新的 userName，如果沒有則從 localStorage 讀取
+      const currentUserName = userName || localStorage.getItem('userName') || '用戶';
+      checkAndPlayIntro(currentUserName);
     }
 
     // 清理音頻
@@ -25,13 +27,23 @@ function HomePage({ onNavigate, userName }) {
     };
   }, []);
 
+  // 當 userName 變化時，重新呼叫 intro API
+  useEffect(() => {
+    if (userName && hasCalledAPI.current) {
+      // 重置 hasCalledAPI 並重新呼叫 intro
+      hasCalledAPI.current = false;
+      const currentUserName = userName || localStorage.getItem('userName') || '用戶';
+      checkAndPlayIntro(currentUserName);
+    }
+  }, [userName]);
+
   const deleteAudioFile = async (filename) => {
     await fetch(`${API_BASE}/home/delete?filename=${encodeURIComponent(filename)}`, {
       method: 'POST',
     });
   };
 
-  const checkAndPlayIntro = () => {
+  const checkAndPlayIntro = (currentUserName) => {
     const audio = new Audio(`/home_intro.wav`);
     currentAudio.current = audio;
     
@@ -46,7 +58,7 @@ function HomePage({ onNavigate, userName }) {
     };
     
     audio.onerror = async () => {
-      await fetch(`${API_BASE}/home/intro?username=${encodeURIComponent(userName || '用戶')}`);
+      await fetch(`${API_BASE}/home/intro?username=${encodeURIComponent(currentUserName)}`);
       
       // 輪詢檢查音檔是否已生成
       const checkAudioReady = () => {
@@ -249,7 +261,7 @@ function HomePage({ onNavigate, userName }) {
 
   return (
     <PhoneContainer 
-      title={`🎸 歡迎回來，${userName || '用戶'}！`}
+      title={`🎸 歡迎回來，${userName || localStorage.getItem('userName') || '用戶'}！`}
       showStatusBar={true}
     >
       <div className="home-content">
