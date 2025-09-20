@@ -1,6 +1,7 @@
 from fastapi import APIRouter, File, Form, UploadFile
 from fastapi.responses import JSONResponse
 from ..services.chord_check_service import chord_check
+from ..services.chord_gemini_service import Intro
 import logging
 
 router = APIRouter()
@@ -9,6 +10,7 @@ logger = logging.getLogger(__name__)
 @router.post("/chord-check")
 async def check_chord_endpoint(
     target_chord: str = Form(..., description="Target chord: C, D, G, or AA for intro"),
+    username: str = Form(..., description="Username for personalized intro"),
     whole_chord: int = Form(..., description="1 for whole chord check, 0 for string check"),
     string: str = Form(None, description="String number when whole_chord=0 (e.g., '1', '2', '3', '4', '5', '6')"),
     audio_file: UploadFile = File(..., description="WebM or WAV audio file")
@@ -18,6 +20,7 @@ async def check_chord_endpoint(
     
     Parameters:
     - target_chord: Target chord (C, D, G) or AA for intro
+    - username: Username for personalized intro generation
     - whole_chord: 1 for chord check, 0 for string check
     - string: Required when whole_chord=0, specifies the string number to check (1-6)
     - audio_file: WebM or WAV audio file to analyze
@@ -30,6 +33,28 @@ async def check_chord_endpoint(
     - details: Additional information about the check
     """
     try:
+        # Handle AA initialization case - generate personalized chord intro
+        if target_chord == "AA":
+            intro_text, audio_filename = await Intro(username)
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "target_chord": "C",  # First chord to learn
+                    "whole_chord": 1,
+                    "finish_lesson": False,
+                    "audio": "frontend/public/chord_intro.wav",
+                    "details": {
+                        "is_correct": False,
+                        "detected_chords": [],
+                        "is_string_correct": False,
+                        "next_string": None,
+                        "cent_error": 0,
+                        "tuning_result": "intro_generated",
+                        "confidence": 0.0
+                    }
+                }
+            )
+        
         # Debug logging
         logger.info(f"📋 Chord check request - target_chord: {target_chord}, whole_chord: {whole_chord}, string: {string}")
         logger.info(f"📋 Audio file - name: {audio_file.filename}, content_type: {audio_file.content_type}")
