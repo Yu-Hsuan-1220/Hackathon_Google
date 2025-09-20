@@ -23,16 +23,11 @@ function FirstTimeUserPage({ onComplete }) {
   };
 
   useEffect(() => {
-    // 只有真的在 first-time 流程裡才播放
-    const userName = (localStorage.getItem('userName') || '').trim();
-    if (userName) return; // 已有名字就不播
-    
     if (!hasCalledAPI.current) {
       hasCalledAPI.current = true;
       playIntro();
     }
 
-    // 清理音頻
     return () => {
       if (currentAudio.current) {
         currentAudio.current.pause();
@@ -43,42 +38,42 @@ function FirstTimeUserPage({ onComplete }) {
   }, []);
 
   const deleteAudioFile = async (filename) => {
-    try {
-      await fetch(`http://localhost:8000/home/delete?filename=${encodeURIComponent(filename)}`, {
-        method: 'POST',
-      });
-    } catch (error) {
-      console.error('刪除音檔失敗:', error);
-    }
+    await fetch(`http://localhost:8000/home/delete?filename=${encodeURIComponent(filename)}`, {
+      method: 'POST',
+    });
   };
 
-  // 播放 intro 音檔
   const playIntro = () => {
     const audio = new Audio('/firstused_intro.wav');
     currentAudio.current = audio;
     
     audio.oncanplaythrough = () => {
-      setTimeout(() => {
-        audio.play().catch(console.error);
-      }, 1000);
-      audio.onended = () => {
-        currentAudio.current = null;
-        deleteAudioFile('firstused_intro.wav');
-        setStep('name');
-        startVoiceRecognition((name) => {
-          setUserName(name);
-          setStep('confirm');
-          sendConfirmAPI(name);
-        });
-      };
+      audio.play();
+    };
+    
+    audio.onended = () => {
+      currentAudio.current = null;
+      deleteAudioFile('firstused_intro.wav');
+      setStep('name');
+      startVoiceRecognition((name) => {
+        setUserName(name);
+        setStep('confirm');
+        sendConfirmAPI(name);
+      });
     };
     
     audio.onerror = async () => {
       await fetch('http://localhost:8000/first_used/intro?username=新用戶');
-      setTimeout(() => {
+      
+      // 輪詢檢查音檔是否已生成
+      const checkAudioReady = () => {
         const newAudio = new Audio('/firstused_intro.wav');
         currentAudio.current = newAudio;
-        newAudio.play().catch(console.error);
+        
+        newAudio.oncanplaythrough = () => {
+          newAudio.play();
+        };
+        
         newAudio.onended = () => {
           currentAudio.current = null;
           deleteAudioFile('firstused_intro.wav');
@@ -89,7 +84,15 @@ function FirstTimeUserPage({ onComplete }) {
             sendConfirmAPI(name);
           });
         };
-      }, 1000);
+        
+        newAudio.onerror = () => {
+          setTimeout(checkAudioReady, 500);
+        };
+        
+        newAudio.load();
+      };
+      
+      setTimeout(checkAudioReady, 1000);
     };
     
     audio.load();
@@ -137,7 +140,7 @@ function FirstTimeUserPage({ onComplete }) {
       }
       const audio = new Audio('/firstused_confirmed.wav');
       currentAudio.current = audio;
-      audio.play().catch(console.error);
+      audio.play();
       audio.onended = () => {
         currentAudio.current = null;
         deleteAudioFile('firstused_confirmed.wav');
