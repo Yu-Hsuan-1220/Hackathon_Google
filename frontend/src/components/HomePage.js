@@ -99,9 +99,15 @@ function HomePage({ onNavigate, userName }) {
     
     const data = await response.json();
     const actionId = data.Response;
+    console.log('Received action ID:', actionId);
     
     if (actionId === 10) {
       await handleTutorAPI(userQuestion.current);
+      return;
+    }
+    
+    if (actionId === 6 || actionId === 9) {
+      await handleReplayIntro();
       return;
     }
     
@@ -142,6 +148,34 @@ function HomePage({ onNavigate, userName }) {
       audio.onended = () => {
         currentAudio.current = null;
         deleteAudioFile('guitar_ask.wav');
+        startVoiceRecognition();
+      };
+      
+      audio.onerror = () => {
+        setTimeout(checkAudioReady, 500);
+      };
+      
+      audio.load();
+    };
+    
+    setTimeout(checkAudioReady, 1000);
+  };
+
+  const handleReplayIntro = async () => {
+    await fetch(`http://localhost:8000/home/intro?username=${encodeURIComponent(userName || '用戶')}`);
+    
+    // 輪詢檢查音檔是否已生成
+    const checkAudioReady = () => {
+      const audio = new Audio(`/home_intro.wav`);
+      currentAudio.current = audio;
+      
+      audio.oncanplaythrough = () => {
+        audio.play();
+      };
+      
+      audio.onended = () => {
+        currentAudio.current = null;
+        deleteAudioFile('home_intro.wav');
         startVoiceRecognition();
       };
       

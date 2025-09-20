@@ -118,9 +118,12 @@ function BasicLessonPage({ onBack, onNavigate }) {
         onNavigate('single-note');
         break;
       case 4:
-        onNavigate('chord-practice');
+        onNavigate('chord-lesson');
         break;
       case 5:
+        onNavigate('song-twinkle-star');
+        break;
+      case 6:
         onNavigate('song-twinkle-star');
         break;
       default:
@@ -189,7 +192,7 @@ function BasicLessonPage({ onBack, onNavigate }) {
       description: '學習 C、G、D 等基本和弦的按法',
       difficulty: '中級',
       duration: '15 分鐘',
-      route: 'chord-practice'
+      route: 'chord-lesson'
     },
     {
       id: 5,

@@ -36,7 +36,7 @@ const CameraScreen = ({ onBack, onResult }) => {
     audio.onerror = async () => {
       // 音檔不存在，調用 API 生成音檔
       const userName = localStorage.getItem('userName') || '用戶';
-      await fetch(`http://localhost:8000/pose/intro?username=${encodeURIComponent(userName)}`);
+      await fetch(`http://localhost:8000/pose/intro`);
       setTimeout(() => {
         const newAudio = new Audio('/pose_intro.wav');
         newAudio.play();

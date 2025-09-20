@@ -149,7 +149,8 @@ const App = () => {
       case 'chord-lesson':
         return (
           <ChordLessonPage
-            onNavigate={setCurrentScreen}
+            onNavigate={handleNavigate}
+            navigationSource={navigationSource}
           />
         );
 
