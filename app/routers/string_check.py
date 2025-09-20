@@ -26,7 +26,9 @@ async def post(target_note: str = Form(...), file: UploadFile = File(...)):
         # Additional debugging information
         "cents_off": result.get("cent_error", 0),  # Alternative naming for cent error
         "detected_frequency": result.get("detected_frequency", 0),
-        "target_frequency": result.get("target_frequency", 0)
+        "target_frequency": result.get("target_frequency", 0),
+        "raw_detected_frequency": result.get("raw_detected_frequency", 0),
+        "octave_corrected": result.get("octave_corrected", False)
     }
     
     return {

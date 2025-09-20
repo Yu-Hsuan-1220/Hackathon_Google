@@ -451,25 +451,7 @@ function TunerPage({ onNavigate }) {
   return (
     <PhoneContainer>
       <div className="tuner-container">
-        <div className="tuner-nav">
-          <button 
-            className="tuner-back-button"
-            onClick={() => onNavigate('basic-lesson')}
-            title="返回基礎教學"
-          >
-            ← 返回基礎教學
-          </button>
-          <button 
-            className="tuner-home-button"
-            onClick={() => onNavigate('home')}
-            title="返回主頁"
-          >
-            🏠 主頁
-          </button>
-        </div>
-        
         <div className="tuner-header">
-
           <div className="header-top">
             <button
               className="back-btn"

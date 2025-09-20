@@ -57,7 +57,8 @@ async def check_chord_endpoint(
         # Read audio file content
         audio_content = await audio_file.read()
         
-        if len(audio_content) == 0:
+        # For AA initialization, empty audio file is allowed
+        if len(audio_content) == 0 and target_chord != "AA":
             return JSONResponse(
                 status_code=400,
                 content={"error": "Empty audio file"}
@@ -89,7 +90,10 @@ async def check_chord_endpoint(
                     "is_correct": result.get("is_correct"),
                     "detected_chords": result.get("detected_chords"),
                     "is_string_correct": result.get("is_string_correct"),
-                    "next_string": result.get("next_string")
+                    "next_string": result.get("next_string"),
+                    "cent_error": result.get("cent_error"),  # 添加 cent 误差
+                    "tuning_result": result.get("tuning_result"),  # 添加调音结果
+                    "confidence": result.get("confidence")  # 添加置信度
                 }
             }
         )
@@ -145,4 +149,3 @@ async def get_chord_info(chord: str):
         "chord": chord,
         "info": chord_info[chord]
     }
-

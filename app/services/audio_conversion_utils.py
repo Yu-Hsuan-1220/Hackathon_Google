@@ -19,7 +19,6 @@ def convert_webm_to_wav(webm_file_path: str) -> str:
         str: Path to the converted wav file
     """
     try:
-
         # Create output wav file path - ensure it's different from input
         if webm_file_path.endswith('.wav'):
             # If input already has .wav extension, create a new output file
