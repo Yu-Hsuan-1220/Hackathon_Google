@@ -8,13 +8,14 @@ client = genai.Client()
 
 
 SYSTEM_PROMPT_ACTION = """
-以下是這個APP的功能，判斷回覆要到哪個功能，回傳1到6的數字。
+以下是這個APP的功能，判斷回覆要到哪個功能，回傳1到6或9、10的數字。
 1. 基礎教學
 2. 調音器
 3. 節拍器
 4. 歌曲教學
 5. 歌曲練習
-6. 其他
+6. 無法辨識
+9. 重新介紹一次
 10. 問其他問題
 """
 
@@ -32,6 +33,7 @@ async def Intro(username: str) -> str:
     4. 歌曲教學
     5. 歌曲練習
     請選擇你想要的功能，開始你的吉他之旅！
+    你想問我其他問題或是重新介紹一次也可以喔！
     """
     response = client.models.generate_content(
         model="gemini-2.5-flash",
@@ -53,7 +55,7 @@ async def action(str) -> int:
         model="gemini-2.5-flash",
         contents=[
             str,
-            "這個回覆要到哪個功能，回傳1到6的數字"
+            "這個回覆要到哪個功能，回傳1到6或9、10的數字"
         ],
         config=types.GenerateContentConfig(
             system_instruction=SYSTEM_PROMPT_ACTION,
