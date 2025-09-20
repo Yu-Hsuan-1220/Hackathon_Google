@@ -4,6 +4,6 @@ __pycache__
 *.wav
 node_modules/
 venv/
-
+__MACOSX/
 .DS_Store
 Thumbs.db

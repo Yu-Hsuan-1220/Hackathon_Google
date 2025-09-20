@@ -6,7 +6,7 @@ We have to use 3.11
 
 ### venv
 ```
-python3 -m venv venv
+python3.11 -m venv venv
 source venv/bin/activate
 ```
 
@@ -14,6 +14,11 @@ source venv/bin/activate
 ```
 pip install -r requirements.txt
 ```
+### import
+```
+unzip audio.zip -d frontend/public
+```
+
 
 ### setting API key and activate backend
 ```
@@ -24,7 +29,7 @@ python -m app.main
 ## Frontend
 
 ```
-cd /home/apollo/Hackathon/Hackathon_Google/frontend && npm install
+cd frontend && npm install
 ```
 
 will see 9 vulnerabilities (3 moderate, 6 high)
