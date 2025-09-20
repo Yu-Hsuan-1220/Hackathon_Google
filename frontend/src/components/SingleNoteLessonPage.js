@@ -17,7 +17,7 @@ const initialState = {
   isPlayingInstruction: false
 };
 
-const SingleNoteLessonPage = ({ onNavigate }) => {
+const SingleNoteLessonPage = ({ onNavigate, navigationSource }) => {
   const [state, setState] = useState(initialState);
   const [stream, setStream] = useState(null);
   const streamRef = useRef(null);  // 新增 streamRef
@@ -167,7 +167,7 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
         console.log('🎉 Lesson complete!');
         setState(prev => ({ ...prev, phase: 'done' }));
         setTimeout(() => {
-          onNavigate('home');
+          onNavigate(navigationSource === 'picking-technique' ? 'picking-technique' : 'basic-lesson');
         }, 3000);
       }
 
@@ -545,7 +545,7 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
           <div className="status-display">
             <div className="note-name">🎉</div>
             <div className="status-text">教學完成！</div>
-            <div className="completion-message">3秒後自動返回主頁</div>
+            <div className="completion-message">3秒後自動返回{navigationSource === 'picking-technique' ? '撥弦技巧頁面' : '基礎教學頁面'}</div>
           </div>
         );
 
@@ -584,7 +584,7 @@ const SingleNoteLessonPage = ({ onNavigate }) => {
       <div className="lesson-container">
         <div className="lesson-header">
           <div className="header-top">
-            <button className="back-btn" onClick={() => onNavigate('home')}>
+            <button className="back-btn" onClick={() => onNavigate(navigationSource === 'picking-technique' ? 'picking-technique' : 'basic-lesson')}>
               ← 返回
             </button>
           </div>

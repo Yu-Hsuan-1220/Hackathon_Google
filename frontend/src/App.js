@@ -80,7 +80,8 @@ const App = () => {
       case 'single-note-lesson':
         return (
           <SingleNoteLessonPage
-            onNavigate={setCurrentScreen}
+            onNavigate={handleNavigate}
+            navigationSource={navigationSource}
           />
         );
 
@@ -136,7 +137,7 @@ const App = () => {
       case 'picking-technique':
         return (
           <PickingTechniquePage
-            onNavigate={setCurrentScreen}
+            onNavigate={handleNavigate}
           />
         );
       case 'metronome':
