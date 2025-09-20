@@ -140,6 +140,7 @@ const App = () => {
             result={poseResult}
             onBack={() => handleNavigate('guitar-grip')}
             onRetry={() => handleNavigate('guitar-grip-camera')}
+            onNavigateToBasicLesson={() => handleNavigate('basic-lesson')}
           />
         );
 
@@ -196,14 +197,6 @@ const App = () => {
           />
         );
 
-      case 'result':
-        return (
-          <ResultScreen
-            result={poseResult}
-            onBack={() => setCurrentScreen('home')}
-            onRetry={handleRetryPose}
-          />
-        );
 
       case 'song-twinkle-star':
         return (
