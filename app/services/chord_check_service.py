@@ -75,11 +75,11 @@ def get_next_string_for_chord(chord: str, current_string: str = None) -> str:
 
 def get_intro_audio() -> str:
     """Get intro audio file"""
-    return "audio/chord/chord_intro.wav"
+    return "frontend/public/audio/chord/chord_intro.wav"
 
 def get_next_chord_intro_audio(next_chord: str) -> str:
     """Get intro audio for next chord"""
-    return f"audio/chord/chord_{next_chord}_intro.wav"
+    return f"frontend/public/audio/chord/chord_{next_chord}_intro.wav"
 
 def get_random_chord_audio(chord: str, result_type: str) -> str:
     """
@@ -97,23 +97,23 @@ def get_random_chord_audio(chord: str, result_type: str) -> str:
         
         if not os.path.exists(audio_folder):
             print(f"Audio folder not found: {audio_folder}")
-            return f"audio/chord/{chord}/{result_type}/default.wav"  # Remove 'public/' prefix
+            return f"frontend/public/audio/chord/{chord}/{result_type}/default.wav"
         
         wav_files = [f for f in os.listdir(audio_folder) if f.endswith('.wav')]
         
         if not wav_files:
             print(f"No WAV files found in folder: {audio_folder}")
-            return f"audio/chord/{chord}/{result_type}/default.wav"  # Remove 'public/' prefix
+            return f"frontend/public/audio/chord/{chord}/{result_type}/default.wav"
         
         random_file = random.choice(wav_files)
-        full_path = f"audio/chord/{chord}/{result_type}/{random_file}"  # Remove 'public/' prefix
+        full_path = f"frontend/public/audio/chord/{chord}/{result_type}/{random_file}"
         
         print(f"Selected chord audio: {full_path}")
         return full_path
         
     except Exception as e:
         print(f"Error getting random chord audio: {e}")
-        return f"audio/chord/{chord}/{result_type}/default.wav"  # Remove 'public/' prefix
+        return f"frontend/public/audio/chord/{chord}/{result_type}/default.wav"
 
 def get_random_string_chord_audio() -> str:
     """Get random audio from chord/string folder"""
@@ -122,23 +122,23 @@ def get_random_string_chord_audio() -> str:
         
         if not os.path.exists(audio_folder):
             print(f"String audio folder not found: {audio_folder}")
-            return "audio/chord/string/default.wav"  # Remove 'public/' prefix
+            return "frontend/public/audio/chord/string/default.wav"
         
         wav_files = [f for f in os.listdir(audio_folder) if f.endswith('.wav')]
         
         if not wav_files:
             print(f"No WAV files found in string folder: {audio_folder}")
-            return "audio/chord/string/default.wav"  # Remove 'public/' prefix
+            return "frontend/public/audio/chord/string/default.wav"
         
         random_file = random.choice(wav_files)
-        full_path = f"audio/chord/string/{random_file}"  # Remove 'public/' prefix
+        full_path = f"frontend/public/audio/chord/string/{random_file}"
         
         print(f"Selected string chord audio: {full_path}")
         return full_path
         
     except Exception as e:
         print(f"Error getting random string chord audio: {e}")
-        return "audio/chord/string/default.wav"  # Remove 'public/' prefix
+        return "frontend/public/audio/chord/string/default.wav"
 
 async def chord_check(target_chord: str, audio_file_content: bytes, whole_chord: bool, string: str = None):
     """
@@ -220,11 +220,8 @@ async def chord_check(target_chord: str, audio_file_content: bytes, whole_chord:
                     next_chord = get_next_chord(target_chord)
                     finish_lesson = (target_chord == "G")  # Finish when G chord is played correctly
                     
-                    # Return next chord intro audio when current chord is correct
-                    if finish_lesson:
-                        audio_path = get_random_chord_audio(target_chord, "correct")
-                    else:
-                        audio_path = get_next_chord_intro_audio(next_chord)
+                    # Always return the correct feedback for the current chord
+                    audio_path = get_random_chord_audio(target_chord, "correct")
                     
                     return {
                         "success": True,
