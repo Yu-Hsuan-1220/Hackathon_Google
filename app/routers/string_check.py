@@ -3,11 +3,34 @@ from fastapi import APIRouter, UploadFile, File, Form
 
 # local lib
 from app.services.string_check_service import note_check
+from app.services.string_check_gemini_service import Intro
 
 router = APIRouter()
 
 @router.post("/string_check")
-async def post(target_note: str = Form(...), file: UploadFile = File(...)):
+async def post(target_note: str = Form(...), username: str = Form(...), file: UploadFile = File(...)):
+    # Handle target_note = "AA" case - generate personalized string check intro
+    if target_note == "AA":
+        intro_text, audio_filename = await Intro(username)
+        return {
+            "status": "intro_generated",
+            "target_note": "C",  # First note to practice
+            "debug_info": {
+                "target_note": "C",
+                "audio_path": "frontend/public/string_check_intro.wav",
+                "tuning_status": False,
+                "success": False,
+                "confidence": 0.0,
+                "cent_error": 0,
+                "finish": False,
+                "cents_off": 0,
+                "detected_frequency": 0,
+                "target_frequency": 0,
+                "raw_detected_frequency": 0,
+                "octave_corrected": False
+            }
+        }
+    
     # Read the uploaded file content directly as bytes
     content = await file.read()
     
