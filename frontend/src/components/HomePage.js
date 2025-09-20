@@ -23,6 +23,16 @@ function HomePage({ onNavigate, userName }) {
     };
   }, []);
 
+  const deleteAudioFile = async (filename) => {
+    try {
+      await fetch(`http://localhost:8000/home/delete?filename=${encodeURIComponent(filename)}`, {
+        method: 'POST',
+      });
+    } catch (error) {
+      console.error('刪除音檔失敗:', error);
+    }
+  };
+
   const checkAndPlayIntro = () => {
     const audio = new Audio(`/home_intro.wav`);
     currentAudio.current = audio;
@@ -31,18 +41,20 @@ function HomePage({ onNavigate, userName }) {
       audio.play().catch(console.error);
       audio.onended = () => {
         currentAudio.current = null;
+        deleteAudioFile('home_intro.wav');
         startVoiceRecognition();
       };
     };
     
     audio.onerror = async () => {
-      await fetch(`http://localhost:8000/home/intro`);
+      await fetch(`http://localhost:8000/home/intro?username=${encodeURIComponent(userName || '用戶')}`);
       setTimeout(() => {
         const newAudio = new Audio(`/home_intro.wav`);
         currentAudio.current = newAudio;
         newAudio.play().catch(console.error);
         newAudio.onended = () => {
           currentAudio.current = null;
+          deleteAudioFile('home_intro.wav');
           startVoiceRecognition();
         };
       }, 1000);

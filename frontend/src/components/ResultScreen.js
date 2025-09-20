@@ -10,6 +10,16 @@ const ResultScreen = ({ result, onBack, onRetry, onNavigateToBasicLesson }) => {
   const hasAnalyzed = useRef(false);
   const shouldNavigateRef = useRef(false);
 
+  const deleteAudioFile = async (filename) => {
+    try {
+      await fetch(`http://localhost:8000/home/delete?filename=${encodeURIComponent(filename)}`, {
+        method: 'POST',
+      });
+    } catch (error) {
+      console.error('刪除音檔失敗:', error);
+    }
+  };
+
   const playAudio = async () => {
     setIsPlayingAudio(true);
     
@@ -24,6 +34,7 @@ const ResultScreen = ({ result, onBack, onRetry, onNavigateToBasicLesson }) => {
     
     audio.onended = () => {
       setIsPlayingAudio(false);
+      deleteAudioFile('pose_suggestion.wav');
       URL.revokeObjectURL(audioUrl);
       setTimeout(() => {
         handleNavigation();

@@ -10,6 +10,16 @@ const CameraScreen = ({ onBack, onResult }) => {
   const streamRef = useRef(null);
   const hasCalledIntro = useRef(false);
 
+  const deleteAudioFile = async (filename) => {
+    try {
+      await fetch(`http://localhost:8000/home/delete?filename=${encodeURIComponent(filename)}`, {
+        method: 'POST',
+      });
+    } catch (error) {
+      console.error('刪除音檔失敗:', error);
+    }
+  };
+
   // 播放相機介紹音檔
   const playIntro = () => {
     const audio = new Audio('/pose_intro.wav');
@@ -18,17 +28,20 @@ const CameraScreen = ({ onBack, onResult }) => {
       // 音檔已存在，直接播放
       audio.play();
       audio.onended = () => {
+        deleteAudioFile('pose_intro.wav');
         startCamera();
       };
     };
     
     audio.onerror = async () => {
       // 音檔不存在，調用 API 生成音檔
-      await fetch('http://localhost:8000/pose/intro');
+      const userName = localStorage.getItem('userName') || '用戶';
+      await fetch(`http://localhost:8000/pose/intro?username=${encodeURIComponent(userName)}`);
       setTimeout(() => {
         const newAudio = new Audio('/pose_intro.wav');
         newAudio.play();
         newAudio.onended = () => {
+          deleteAudioFile('pose_intro.wav');
           startCamera();
         };
       }, 1000);
