@@ -5,15 +5,12 @@ import './BasicLessonPage.css';
 function BasicLessonPage({ onBack, onNavigate }) {
   const hasCalledAPI = useRef(false);
   const currentAudio = useRef(null);
+  const userQuestion = useRef('');
 
   const deleteAudioFile = async (filename) => {
-    try {
-      await fetch(`http://localhost:8000/home/delete?filename=${encodeURIComponent(filename)}`, {
-        method: 'POST',
-      });
-    } catch (error) {
-      console.error('刪除音檔失敗:', error);
-    }
+    await fetch(`http://localhost:8000/home/delete?filename=${encodeURIComponent(filename)}`, {
+      method: 'POST',
+    });
   };
 
   useEffect(() => {
@@ -37,7 +34,7 @@ function BasicLessonPage({ onBack, onNavigate }) {
     currentAudio.current = audio;
     
     audio.oncanplaythrough = () => {
-      audio.play().catch(console.error);
+      audio.play();
     };
     
     audio.onended = () => {
@@ -56,7 +53,7 @@ function BasicLessonPage({ onBack, onNavigate }) {
         currentAudio.current = newAudio;
         
         newAudio.oncanplaythrough = () => {
-          newAudio.play().catch(console.error);
+          newAudio.play();
         };
         
         newAudio.onended = () => {
@@ -66,7 +63,6 @@ function BasicLessonPage({ onBack, onNavigate }) {
         };
         
         newAudio.onerror = () => {
-          // 如果音檔還沒準備好，500ms 後重試
           setTimeout(checkAudioReady, 500);
         };
         
@@ -86,26 +82,29 @@ function BasicLessonPage({ onBack, onNavigate }) {
     recognition.continuous = false;
     recognition.interimResults = false;
 
-    recognition.start();
-
     recognition.onresult = async (event) => {
       const transcript = event.results[0][0].transcript;
       await sendActionAPI(transcript);
     };
 
-    // 智能停止收音 - 3秒後自動停止
-    setTimeout(() => {
-      recognition.stop();
-    }, 3000);
+    recognition.start();
+    setTimeout(() => recognition.stop(), 3000);
   };
 
   const sendActionAPI = async (voiceInput) => {
+    userQuestion.current = voiceInput;
+    
     const response = await fetch(`http://localhost:8000/menu/action?user_input=${encodeURIComponent(voiceInput)}`, {
       method: 'POST',
     });
     
     const data = await response.json();
     const actionId = data.Response;
+    
+    if (actionId === 10) {
+      await handleTutorAPI(userQuestion.current);
+      return;
+    }
     
     // 根據 id 進行頁面跳轉
     switch(actionId) {
@@ -127,6 +126,36 @@ function BasicLessonPage({ onBack, onNavigate }) {
       default:
         break;
     }
+  };
+
+  const handleTutorAPI = async (question) => {
+    await fetch(`http://localhost:8000/tutor/ask?user_input=${encodeURIComponent(question)}`, {
+      method: 'POST',
+    });
+    
+    // 輪詢檢查音檔是否已生成
+    const checkAudioReady = () => {
+      const audio = new Audio(`/guitar_ask.wav`);
+      currentAudio.current = audio;
+      
+      audio.oncanplaythrough = () => {
+        audio.play();
+      };
+      
+      audio.onended = () => {
+        currentAudio.current = null;
+        deleteAudioFile('guitar_ask.wav');
+        startVoiceRecognition();
+      };
+      
+      audio.onerror = () => {
+        setTimeout(checkAudioReady, 500);
+      };
+      
+      audio.load();
+    };
+    
+    setTimeout(checkAudioReady, 1000);
   };
 
   const lessons = [
