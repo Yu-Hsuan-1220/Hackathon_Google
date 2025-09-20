@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import PhoneContainer from './PhoneContainer';
 import './ChordLessonPage.css';
+const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000`;
 
 // 錄音秒數常數
 const RECORD_SECONDS = 4;
@@ -211,7 +212,7 @@ const ChordLessonPage = ({ onNavigate }) => {
                 audioSize: audioBlob.size
             });
 
-            const response = await fetch('http://127.0.0.1:8000/chord/chord-check', {
+            const response = await fetch(`${API_BASE}/chord/chord-check`, {
                 method: 'POST',
                 mode: 'cors',
                 headers: { 'Accept': 'application/json' },
@@ -398,7 +399,7 @@ const ChordLessonPage = ({ onNavigate }) => {
             const emptyBlob = new Blob([], { type: 'audio/webm;codecs=opus' });
             formData.append('audio_file', emptyBlob, 'empty.webm');
 
-            const response = await fetch('http://127.0.0.1:8000/chord/chord-check', {
+            const response = await fetch(`${API_BASE}/chord/chord-check`, {
                 method: 'POST',
                 mode: 'cors',
                 headers: { 'Accept': 'application/json' },

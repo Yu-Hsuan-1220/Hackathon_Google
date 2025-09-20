@@ -124,7 +124,7 @@ function BasicLessonPage({ onBack, onNavigate }) {
         onNavigate('tuner');
         break;
       case 3:
-        onNavigate('single-note');
+        onNavigate('single-note-lesson');
         break;
       case 4:
         onNavigate('chord-lesson');
