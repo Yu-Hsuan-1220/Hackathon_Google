@@ -2,6 +2,8 @@
 
 ## Backends env setup
 
+We have to use 3.11
+
 ### venv
 ```
 python3 -m venv venv
