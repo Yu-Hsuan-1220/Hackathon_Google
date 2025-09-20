@@ -11,7 +11,8 @@ client = genai.Client()
 async def Intro(username: str) -> tuple[str, str]:
     SYSTEM_PROMPT_INTRO = f"""
     你是一個資深的吉他老師，今天學生是個盲人，準備要開始學怎麼調音，我想要你向他簡單介紹什麼是調音以及什麼其重要性
-    請以：你好{username}...開頭，介紹完後請以盲人角度引導他如何找到第六弦旋鈕，並叫他記住旋鈕位置，以及如和用右手找到弦並撥動，整體指示在三十秒內結束，請注意第六弦旋鈕位於上排三個旋鈕中最靠近身體的
+    請以：你好{username}...開頭，介紹完後請以盲人角度引導他如何找到第六弦旋鈕，並叫他記住旋鈕位置，以及如和用右手找到弦(像是從下面數上來第六跟弦)並撥動，整體指示在三十秒內結束，請注意第六弦旋鈕位於上排三個旋鈕中最靠近身體的
+    最後一定是：請聽到逼聲後開始彈奏第六弦，逼。
     """
     
     response = client.models.generate_content(
@@ -27,5 +28,5 @@ async def Intro(username: str) -> tuple[str, str]:
     )
     
     parsed = response.parsed
-    await text_to_speech(parsed.Intro, "audio/tuner/tuner_intro.wav")
-    return parsed.Intro, "audio/tuner/tuner_intro.wav"
+    await text_to_speech(parsed.Intro, "tuner_intro.wav")
+    return parsed.Intro, "tuner_intro.wav"
