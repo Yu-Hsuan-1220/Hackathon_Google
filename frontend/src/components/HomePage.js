@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import PhoneContainer from './PhoneContainer';
 import FeatureCarousel from './FeatureCarousel';
 import './HomePage.css';
+const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000`;
 
 function HomePage({ onNavigate, userName }) {
   const hasCalledAPI = useRef(false);
@@ -25,7 +26,7 @@ function HomePage({ onNavigate, userName }) {
   }, []);
 
   const deleteAudioFile = async (filename) => {
-    await fetch(`http://localhost:8000/home/delete?filename=${encodeURIComponent(filename)}`, {
+    await fetch(`${API_BASE}/home/delete?filename=${encodeURIComponent(filename)}`, {
       method: 'POST',
     });
   };
@@ -45,7 +46,7 @@ function HomePage({ onNavigate, userName }) {
     };
     
     audio.onerror = async () => {
-      await fetch(`http://localhost:8000/home/intro?username=${encodeURIComponent(userName || '用戶')}`);
+      await fetch(`${API_BASE}/home/intro?username=${encodeURIComponent(userName || '用戶')}`);
       
       // 輪詢檢查音檔是否已生成
       const checkAudioReady = () => {
@@ -76,24 +77,32 @@ function HomePage({ onNavigate, userName }) {
   };
 
   const startVoiceRecognition = () => {
-    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SR();
+
     recognition.lang = 'zh-TW';
     recognition.continuous = false;
     recognition.interimResults = false;
 
-    recognition.onresult = async (event) => {
-      const transcript = event.results[0][0].transcript;
-      await sendActionAPI(transcript);
-    };
-
+    let done = false;
     recognition.start();
-    setTimeout(() => recognition.stop(), 3000);
+
+    recognition.onresult = async (e) => {
+      if (done) return;
+      done = true;
+      const text = e.results[0][0].transcript || '';
+      recognition.stop();
+      await sendActionAPI(text);
+    };
+    recognition.onerror = () => { try { recognition.stop(); } catch {} };
+    recognition.onend = () => {};
+    setTimeout(() => { try { recognition.stop(); } catch {} }, 8000);
   };
 
   const sendActionAPI = async (voiceInput) => {
     userQuestion.current = voiceInput;
     
-    const response = await fetch(`http://localhost:8000/home/action?user_input=${encodeURIComponent(voiceInput)}`, {
+    const response = await fetch(`${API_BASE}/home/action?user_input=${encodeURIComponent(voiceInput)}`, {
       method: 'POST',
     });
     
@@ -132,7 +141,7 @@ function HomePage({ onNavigate, userName }) {
   };
 
   const handleTutorAPI = async (question) => {
-    await fetch(`http://localhost:8000/tutor/ask?user_input=${encodeURIComponent(question)}`, {
+    await fetch(`${API_BASE}/tutor/ask?user_input=${encodeURIComponent(question)}`, {
       method: 'POST',
     });
     
@@ -162,7 +171,7 @@ function HomePage({ onNavigate, userName }) {
   };
 
   const handleReplayIntro = async () => {
-    await fetch(`http://localhost:8000/home/intro?username=${encodeURIComponent(userName || '用戶')}`);
+    await fetch(`${API_BASE}/home/intro?username=${encodeURIComponent(userName || '用戶')}`);
     
     // 輪詢檢查音檔是否已生成
     const checkAudioReady = () => {

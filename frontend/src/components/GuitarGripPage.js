@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import PhoneContainer from './PhoneContainer';
 import './GuitarGripPage.css';
+const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000`;
 
 function GuitarGripPage({ onNavigate }) {
   const hasCalledAPI = useRef(false);
@@ -8,7 +9,7 @@ function GuitarGripPage({ onNavigate }) {
   const userQuestion = useRef('');
 
   const deleteAudioFile = async (filename) => {
-    await fetch(`http://localhost:8000/home/delete?filename=${encodeURIComponent(filename)}`, {
+    await fetch(`${API_BASE}/home/delete?filename=${encodeURIComponent(filename)}`, {
       method: 'POST',
     });
   };
@@ -45,7 +46,7 @@ function GuitarGripPage({ onNavigate }) {
     };
     
     audio.onerror = async () => {
-      await fetch(`http://localhost:8000/guitar/grip?username=${encodeURIComponent(userName)}`);
+      await fetch(`${API_BASE}/guitar/grip?username=${encodeURIComponent(userName)}`);
       
       // 輪詢檢查音檔是否已生成
       const checkAudioReady = () => {
@@ -76,24 +77,32 @@ function GuitarGripPage({ onNavigate }) {
   };
 
   const startVoiceRecognition = () => {
-    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SR();
+
     recognition.lang = 'zh-TW';
     recognition.continuous = false;
     recognition.interimResults = false;
 
-    recognition.onresult = async (event) => {
-      const transcript = event.results[0][0].transcript;
-      await sendActionAPI(transcript);
-    };
-
+    let done = false;
     recognition.start();
-    setTimeout(() => recognition.stop(), 3000);
+
+    recognition.onresult = async (e) => {
+      if (done) return;
+      done = true;
+      const text = e.results[0][0].transcript || '';
+      recognition.stop();
+      await sendActionAPI(text);
+    };
+    recognition.onerror = () => { try { recognition.stop(); } catch {} };
+    recognition.onend = () => {};
+    setTimeout(() => { try { recognition.stop(); } catch {} }, 8000);
   };
 
   const sendActionAPI = async (voiceInput) => {
     userQuestion.current = voiceInput;
     
-    const response = await fetch(`http://localhost:8000/guitar/action?user_input=${encodeURIComponent(voiceInput)}`, {
+    const response = await fetch(`${API_BASE}/guitar/action?user_input=${encodeURIComponent(voiceInput)}`, {
       method: 'POST',
     });
     
@@ -115,7 +124,7 @@ function GuitarGripPage({ onNavigate }) {
   };
 
   const handleTutorAPI = async (question) => {
-    await fetch(`http://localhost:8000/tutor/ask?user_input=${encodeURIComponent(question)}`, {
+    await fetch(`${API_BASE}/tutor/ask?user_input=${encodeURIComponent(question)}`, {
       method: 'POST',
     });
     
