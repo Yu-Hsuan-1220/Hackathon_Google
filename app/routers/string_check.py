@@ -17,7 +17,7 @@ async def post(target_note: str = Form(...), username: str = Form(...), file: Up
             "target_note": "C",  # First note to practice
             "debug_info": {
                 "target_note": "C",
-                "audio_path": "frontend/public/audio/string_check/string_check_intro.wav",
+                "audio_path": "frontend/public/string_check_intro.wav",
                 "tuning_status": False,
                 "success": False,
                 "confidence": 0.0,
