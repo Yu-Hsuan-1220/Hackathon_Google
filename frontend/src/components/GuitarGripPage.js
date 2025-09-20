@@ -183,19 +183,9 @@ function GuitarGripPage({ onNavigate }) {
     onNavigate('guitar-grip-camera');
   };
 
-  const handleVoiceCommand = (command) => {
-    if (command === 'navigate-back') {
-      onNavigate('basic-lesson');
-    } else if (command === 'navigate-home') {
-      onNavigate('home');
-    }
-  };
-
   return (
     <PhoneContainer 
       title="🎸 吉他握法"
-      onVoiceCommand={handleVoiceCommand}
-      enableVoice={true}
       showStatusBar={true}
     >
       <div className="guitar-grip-page">

@@ -217,15 +217,9 @@ function BasicLessonPage({ onBack, onNavigate }) {
     onNavigate(lesson.route);
   };
 
-  const handleVoiceCommand = (command) => {
-    // 簡化的語音指令處理
-  };
-
   return (
     <PhoneContainer 
       title="📚 基礎教學"
-      onVoiceCommand={handleVoiceCommand}
-      enableVoice={true}
       showStatusBar={true}
     >
       <div className="lesson-list">

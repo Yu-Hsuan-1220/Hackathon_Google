@@ -129,17 +129,9 @@ const CameraScreen = ({ onBack, onResult }) => {
     };
   }, []);
 
-  const handleVoiceCommand = (command) => {
-    if (command.includes('返回') || command.includes('回去')) {
-      if (onBack) onBack();
-    }
-  };
-
   return (
     <PhoneContainer 
-      title="握法姿勢分析" 
-      onVoiceCommand={handleVoiceCommand}
-      enableVoice={false}
+      title="握法姿勢分析"
     >
       <div className="camera-screen-wrapper">
         {/* 相機區域佔據剩餘空間 */}

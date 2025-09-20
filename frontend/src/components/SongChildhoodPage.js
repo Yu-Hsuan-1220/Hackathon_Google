@@ -55,16 +55,6 @@ function SongChildhoodPage({ onNavigate }) {
     }
   };
 
-  const handleVoiceCommand = (command) => {
-    if (command === 'navigate-back') {
-      onNavigate('song-tutorial');
-    } else if (command === 'navigate-home') {
-      onNavigate('home');
-    } else if (command.includes('練習')) {
-      onNavigate('song-practice');
-    }
-  };
-
   const renderChordDiagram = (chordName) => {
     const chord = songData.chordDiagrams[chordName];
     if (!chord) return <div className="chord-diagram">和弦圖不可用</div>;
@@ -95,8 +85,6 @@ function SongChildhoodPage({ onNavigate }) {
   return (
     <PhoneContainer 
       title={`${songData.emoji} ${songData.title}`}
-      onVoiceCommand={handleVoiceCommand}
-      enableVoice={true}
       showStatusBar={true}
     >
       <div className="song-page childhood-theme">

@@ -64,19 +64,9 @@ function SongTutorialPage({ onNavigate }) {
     // }
   ];
 
-  const handleVoiceCommand = (command) => {
-    if (command === 'navigate-back') {
-      onNavigate('home');
-    } else if (command === 'navigate-home') {
-      onNavigate('home');
-    }
-  };
-
   return (
     <PhoneContainer 
       title="🎵 歌曲教學"
-      onVoiceCommand={handleVoiceCommand}
-      enableVoice={true}
       showStatusBar={true}
     >
       <div className="lesson-list">

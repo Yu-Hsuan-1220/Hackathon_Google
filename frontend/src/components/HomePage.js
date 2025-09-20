@@ -236,10 +236,6 @@ function HomePage({ onNavigate, userName }) {
     }
   ];
 
-  const handleVoiceCommand = (command) => {
-    // 語音指令由 API 處理
-  };
-
   const handleResetUserData = () => {
     // 清除所有本地存儲的使用者資料
     localStorage.removeItem('userName');
@@ -254,8 +250,6 @@ function HomePage({ onNavigate, userName }) {
   return (
     <PhoneContainer 
       title={`🎸 歡迎回來，${userName || '用戶'}！`}
-      onVoiceCommand={handleVoiceCommand}
-      enableVoice={true}
       showStatusBar={true}
     >
       <div className="home-content">

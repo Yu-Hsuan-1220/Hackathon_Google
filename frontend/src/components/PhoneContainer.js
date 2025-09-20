@@ -1,34 +1,11 @@
 import React from 'react';
-import VoiceControl from './VoiceControl';
 import './PhoneContainer.css';
 
 const PhoneContainer = ({ 
   children, 
   title = "", 
-  onVoiceCommand, 
-  enableVoice = true,
   showStatusBar = true 
 }) => {
-  const handleVoiceCommand = (command) => {
-    console.log('語音指令:', command);
-    
-    // 處理通用語音指令
-    if (command.includes('返回') || command.includes('回去')) {
-      // 這裡可以觸發返回操作
-      if (onVoiceCommand) {
-        onVoiceCommand('navigate-back');
-      }
-    } else if (command.includes('主頁') || command.includes('首頁')) {
-      if (onVoiceCommand) {
-        onVoiceCommand('navigate-home');
-      }
-    } else {
-      // 傳遞給父組件處理特定指令
-      if (onVoiceCommand) {
-        onVoiceCommand(command);
-      }
-    }
-  };
 
   return (
     <div className="phone-screen-container">
@@ -53,13 +30,6 @@ const PhoneContainer = ({
           </div>
         </div>
       </div>
-      
-      {enableVoice && (
-        <VoiceControl 
-          onVoiceCommand={handleVoiceCommand}
-          isEnabled={true}
-        />
-      )}
     </div>
   );
 };
