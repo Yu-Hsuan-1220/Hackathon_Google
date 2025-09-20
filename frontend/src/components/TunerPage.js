@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useReducer } from 'react';
 import PhoneContainer from './PhoneContainer';
 import './TunerPage.css';
+const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000`;
 
 // 錄音秒數常數
 const RECORD_SECONDS = 4;
@@ -81,7 +82,7 @@ function TunerPage({ onNavigate }) {
 
   const deleteAudioFile = async (filename) => {
     try {
-      await fetch(`http://localhost:8000/home/delete?filename=${encodeURIComponent(filename)}`, {
+      await fetch(`${API_BASE}/home/delete?filename=${encodeURIComponent(filename)}`, {
         method: 'POST',
       });
     } catch (error) {
@@ -163,7 +164,7 @@ function TunerPage({ onNavigate }) {
         console.log(`  ${key}:`, value);
       }
 
-      const response = await fetch('http://127.0.0.1:8000/tuner/tuner', {
+      const response = await fetch(`${API_BASE}/tuner/tuner`, {
         method: 'POST',
         mode: 'cors',
         headers: { 'Accept': 'application/json' },
