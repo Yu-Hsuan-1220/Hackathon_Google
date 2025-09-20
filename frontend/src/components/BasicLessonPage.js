@@ -152,7 +152,7 @@ function BasicLessonPage({ onBack, onNavigate }) {
       description: '掌握正確的撥弦手法和節拍',
       difficulty: '中級',
       duration: '20 分鐘',
-      route: 'single-note'
+      route: 'single-note-lesson'
     },
     {
       id: 4,
