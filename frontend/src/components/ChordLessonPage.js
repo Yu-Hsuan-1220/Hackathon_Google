@@ -40,6 +40,17 @@ const ChordLessonPage = ({ onNavigate }) => {
     const hasInitialized = useRef(false); // 防止重複初始化
     const startRecordingRef = useRef(null); // 保存 startRecording 函數的引用
 
+    // 刪除音檔函數
+    const deleteAudioFile = async (filename) => {
+        try {
+            await fetch(`${API_BASE}/home/delete?filename=${encodeURIComponent(filename)}`, {
+                method: 'POST',
+            });
+        } catch (error) {
+            console.error('刪除音檔失敗:', error);
+        }
+    };
+
     // 取得用戶媒體流
     const getUserMedia = useCallback(async () => {
         try {
@@ -310,6 +321,13 @@ const ChordLessonPage = ({ onNavigate }) => {
                     await new Promise((resolve, reject) => {
                         audio.onended = () => {
                             console.log('和弦指導音檔播放完成');
+                            
+                            // 只有 chord_intro.wav 才刪除
+                            const filename = audioPath.split('/').pop();
+                            if (filename && filename === 'chord_intro.wav') {
+                                deleteAudioFile(filename);
+                            }
+                            
                             // 确保状态更新后再允许录音
                             setTimeout(() => {
                                 setState(prev => ({ ...prev, phase: 'idle' }));
