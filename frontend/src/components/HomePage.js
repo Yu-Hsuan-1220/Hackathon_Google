@@ -6,6 +6,7 @@ import './HomePage.css';
 function HomePage({ onNavigate, userName }) {
   const hasCalledAPI = useRef(false);
   const currentAudio = useRef(null);
+  const userQuestion = useRef('');
 
   useEffect(() => {
     if (!hasCalledAPI.current) {
@@ -24,13 +25,9 @@ function HomePage({ onNavigate, userName }) {
   }, []);
 
   const deleteAudioFile = async (filename) => {
-    try {
-      await fetch(`http://localhost:8000/home/delete?filename=${encodeURIComponent(filename)}`, {
-        method: 'POST',
-      });
-    } catch (error) {
-      console.error('刪除音檔失敗:', error);
-    }
+    await fetch(`http://localhost:8000/home/delete?filename=${encodeURIComponent(filename)}`, {
+      method: 'POST',
+    });
   };
 
   const checkAndPlayIntro = () => {
@@ -38,26 +35,41 @@ function HomePage({ onNavigate, userName }) {
     currentAudio.current = audio;
     
     audio.oncanplaythrough = () => {
-      audio.play().catch(console.error);
-      audio.onended = () => {
-        currentAudio.current = null;
-        deleteAudioFile('home_intro.wav');
-        startVoiceRecognition();
-      };
+      audio.play();
+    };
+    
+    audio.onended = () => {
+      currentAudio.current = null;
+      deleteAudioFile('home_intro.wav');
+      startVoiceRecognition();
     };
     
     audio.onerror = async () => {
       await fetch(`http://localhost:8000/home/intro?username=${encodeURIComponent(userName || '用戶')}`);
-      setTimeout(() => {
+      
+      // 輪詢檢查音檔是否已生成
+      const checkAudioReady = () => {
         const newAudio = new Audio(`/home_intro.wav`);
         currentAudio.current = newAudio;
-        newAudio.play().catch(console.error);
+        
+        newAudio.oncanplaythrough = () => {
+          newAudio.play();
+        };
+        
         newAudio.onended = () => {
           currentAudio.current = null;
           deleteAudioFile('home_intro.wav');
           startVoiceRecognition();
         };
-      }, 1000);
+        
+        newAudio.onerror = () => {
+          setTimeout(checkAudioReady, 500);
+        };
+        
+        newAudio.load();
+      };
+      
+      setTimeout(checkAudioReady, 1000);
     };
     
     audio.load();
@@ -69,26 +81,29 @@ function HomePage({ onNavigate, userName }) {
     recognition.continuous = false;
     recognition.interimResults = false;
 
-    recognition.start();
-
     recognition.onresult = async (event) => {
       const transcript = event.results[0][0].transcript;
       await sendActionAPI(transcript);
     };
 
-    // 智能停止收音 - 3秒後自動停止
-    setTimeout(() => {
-      recognition.stop();
-    }, 3000);
+    recognition.start();
+    setTimeout(() => recognition.stop(), 3000);
   };
 
   const sendActionAPI = async (voiceInput) => {
+    userQuestion.current = voiceInput;
+    
     const response = await fetch(`http://localhost:8000/home/action?user_input=${encodeURIComponent(voiceInput)}`, {
       method: 'POST',
     });
     
     const data = await response.json();
     const actionId = data.Response;
+    
+    if (actionId === 10) {
+      await handleTutorAPI(userQuestion.current);
+      return;
+    }
     
     // 根據 id 進行頁面跳轉
     switch(actionId) {
@@ -108,6 +123,36 @@ function HomePage({ onNavigate, userName }) {
         onNavigate('song-practice');
         break;
     }
+  };
+
+  const handleTutorAPI = async (question) => {
+    await fetch(`http://localhost:8000/tutor/ask?user_input=${encodeURIComponent(question)}`, {
+      method: 'POST',
+    });
+    
+    // 輪詢檢查音檔是否已生成
+    const checkAudioReady = () => {
+      const audio = new Audio(`/guitar_ask.wav`);
+      currentAudio.current = audio;
+      
+      audio.oncanplaythrough = () => {
+        audio.play();
+      };
+      
+      audio.onended = () => {
+        currentAudio.current = null;
+        deleteAudioFile('guitar_ask.wav');
+        startVoiceRecognition();
+      };
+      
+      audio.onerror = () => {
+        setTimeout(checkAudioReady, 500);
+      };
+      
+      audio.load();
+    };
+    
+    setTimeout(checkAudioReady, 1000);
   };
   
   const features = [
