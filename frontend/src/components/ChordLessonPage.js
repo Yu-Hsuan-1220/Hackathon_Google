@@ -7,7 +7,7 @@ const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000`
 const RECORD_SECONDS = 4;
 
 // 和弦順序定義
-const CHORD_SEQUENCE = ['C', 'G', 'F']; // 3個基本和弦
+const CHORD_SEQUENCE = ['C', 'D', 'G']; // 3個基本和弦
 
 // 狀態管理的初始狀態
 const initialState = {
@@ -317,6 +317,7 @@ const ChordLessonPage = ({ onNavigate }) => {
 
                 // 播放音檔
                 setState(prev => ({ ...prev, phase: 'playing' }));
+                audio.play()
                 try {
                     await new Promise((resolve, reject) => {
                         audio.onended = () => {
