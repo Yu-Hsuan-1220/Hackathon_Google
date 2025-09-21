@@ -6,9 +6,21 @@ import random
 import asyncio
 from .audio_conversion_utils import convert_webm_to_wav
 from .string_check_service import note_check
+from google import genai
+from google.genai import types
 
 # Setup Chordino with one of several parameters that can be passed
 chordino = Chordino(roll_on=1)  
+
+# Gemini client for dynamic TTS generation
+client = genai.Client()
+
+SYSTEM_PROMPT_INCORRECT_CHORD = """現在你是一名吉他老師，使用者在彈和絃
+target_chord:正確和絃
+detect_chord:偵測出的和弦
+請分析使用者可能的錯誤並精簡指導他。
+最後都說：請在倒數五秒後的逼聲開始彈奏x和絃 五。四。三。二。一。逼。
+"""  
 
 # Chord progression sequence
 CHORD_PROGRESSION = ["C", "D", "G"]
@@ -72,6 +84,105 @@ def get_next_string_for_chord(chord: str, current_string: str = None) -> str:
             return None  # All strings completed
     except ValueError:
         return chord_strings[0]  # If current string not found, start from beginning
+
+def wave_file(filename, pcm, channels=1, rate=24000, sample_width=2):
+    """Set up the wave file to save the output"""
+    with wave.open(filename, "wb") as wf:
+        wf.setnchannels(channels)
+        wf.setsampwidth(sample_width)
+        wf.setframerate(rate)
+        wf.writeframes(pcm)
+
+async def text_to_speech(text: str, output_filename: str = "tts.wav") -> str:
+    """
+    Convert text to speech using Gemini TTS
+    
+    Args:
+        text (str): Text to convert to speech
+        output_filename (str): Output WAV file name
+    
+    Returns:
+        str: Path to the generated WAV file
+    """
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash-preview-tts",
+            contents=text,
+            config=types.GenerateContentConfig(
+                response_modalities=["AUDIO"],
+                speech_config=types.SpeechConfig(
+                    voice_config=types.VoiceConfig(
+                        prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                            voice_name='Zephyr',
+                        )
+                    ),
+                    language_code="cmn-CN"
+                ),
+            )
+        )
+        
+        # Extract audio data
+        audio_data = response.candidates[0].content.parts[0].inline_data.data
+        
+        # Save as WAV file
+        wave_file(output_filename, audio_data)
+        
+        return output_filename
+        
+    except Exception as e:
+        print(f"Error generating TTS: {e}")
+        raise e
+
+async def generate_incorrect_chord_feedback(target_chord: str, detected_chord: str) -> str:
+    """
+    Generate dynamic incorrect chord feedback using Gemini AI
+    
+    Args:
+        target_chord (str): The correct chord that should be played
+        detected_chord (str): The chord that was actually detected
+    
+    Returns:
+        str: Path to the generated audio file
+    """
+    try:
+        # Prepare feedback data
+        feedback_data = {
+            "target_chord": target_chord,
+            "detect_chord": detected_chord
+        }
+        
+        # Generate feedback text using Gemini
+        response = await client.aio.models.generate_content(
+            model="gemini-2.5-pro",
+            contents=[
+                f'請分析使用者錯誤並給予指導 {feedback_data}'
+            ],
+            config=types.GenerateContentConfig(
+                system_instruction=SYSTEM_PROMPT_INCORRECT_CHORD,
+                temperature=1.2
+            )
+        )
+        
+        feedback_text = response.text
+        
+        # Create directory if it doesn't exist
+        audio_folder = os.path.join("frontend", "public", "audio", "chord", target_chord, "incorrect")
+        if not os.path.exists(audio_folder):
+            os.makedirs(audio_folder)
+        
+        # Generate TTS and save to version1.wav
+        output_filename = os.path.join(audio_folder, "version_1.wav")
+        await text_to_speech(feedback_text, output_filename)
+        
+        print(f"Generated dynamic incorrect feedback: {output_filename}")
+        print(f"Feedback text: {feedback_text}")
+        
+        return f"frontend/public/audio/chord/{target_chord}/incorrect/version_1.wav"
+        
+    except Exception as e:
+        print(f"Error generating incorrect chord feedback: {e}")
+        # Fallback to existing random audio
+        return get_random_chord_audio(target_chord, "incorrect")
 
 def get_intro_audio() -> str:
     """Get intro audio file"""
@@ -235,8 +346,18 @@ async def chord_check(target_chord: str, audio_file_content: bytes, whole_chord:
                         "next_string": None
                     }
                 else:
-                    # Incorrect chord played - stay in whole chord mode, let frontend try again
-                    audio_path = get_random_chord_audio(target_chord, "incorrect")
+                    # Incorrect chord played - generate dynamic feedback
+                    # Find the first non-N chord from detected chords
+                    detected_chord = "N"  # Default to N (no chord)
+                    for chord in detected_chords:
+                        if chord != "N":
+                            detected_chord = chord
+                            break
+                    
+                    print(f"Generating dynamic feedback for target='{target_chord}', detected='{detected_chord}'")
+                    
+                    # Generate dynamic incorrect feedback
+                    audio_path = await generate_incorrect_chord_feedback(target_chord, detected_chord)
                     
                     return {
                         "success": True,
