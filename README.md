@@ -39,6 +39,7 @@ uv sync
 ### 5. Setting API key
 
 copy `.env.example` and rename to `.env`
+
 set your GOOGLE_API_KEY
 
 ```
@@ -54,16 +55,21 @@ ipconfig
 ```
 
 And get your wifi's IPv4's address
+
 Maybe will be `192.168.x.xx`  
 
 ### 7. Install mkcert
 Go to [mkcert official website](https://github.com/FiloSottile/mkcert/releases) and download your computer's version
+
 After installed, you have to rename it to `mkcert`
+
 And move it to `C:\Tools\` (If you don't have this file, you need to create one)
 
 ### 8. Setting PATH
 控制台 → 系統 → 進階系統設定 → 環境變數 → Path → 編輯 → 新增 C:\Tools
+
 or you can use cmd
+
 ```
 [Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Tools", "User")
 ```
@@ -85,6 +91,7 @@ mkcert localhost 127.0.0.1 ::1 [your IPv4 address here]
 ```
 
 It will generate `localhost+M.pem` and `localhost+M-key.pem` in `C:\Windows\System32`
+
 copy them to `Hackathon_Google\` and `Hackathon_Google\forntend\`
 
 ### 10. Setting CA
@@ -92,11 +99,17 @@ copy them to `Hackathon_Google\` and `Hackathon_Google\forntend\`
 ```
 mkcert -CAROOT
 ```
+
 It will output the CA's path
+
 open it and copy `rootCA.pem`
+
 Rename to `rootCA.crt`
+
 Send this file to phone by using gmail/discord/...
+
 And 設定 → 安全性 → 安裝憑證 → 來自檔案，選這個檔案安裝
+
 It will say `mkcert <你的電腦名稱>`
 
 ### 11. unzip audio
@@ -128,11 +141,4 @@ SSL_CRT_FILE=../localhost+3.pem \
 SSL_KEY_FILE=../localhost+3-key.pem \
 PORT=3000 \
 npm start
-```
-
-## open LAN
-
-install ngrok and open cmd type
-```
-ngrok http 3000
 ```
