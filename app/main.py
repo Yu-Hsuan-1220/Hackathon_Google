@@ -3,13 +3,19 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import os
+from dotenv import load_dotenv, find_dotenv
 
 # local lib
+load_dotenv(find_dotenv())
 from app.routers import pose_check, menu, home, first_used, tuner, string_check, chord, guitar, tutor
 
 
 app = FastAPI()
 
+@app.get("/secret")
+def read_secret():
+    api_key = os.getenv("GOOGLE_API_KEY")
+    return {"GOOGLE_API_KEY": api_key}
 
 ##########################################################
 # 新增：CORS 支援
